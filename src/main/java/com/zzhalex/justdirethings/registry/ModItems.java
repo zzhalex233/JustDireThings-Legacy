@@ -165,7 +165,10 @@ public final class ModItems {
         registerModel(BLAZEJET_WAND);
         registerModel(VOIDSHIFT_WAND);
         registerModel(ECLIPSEGATE_WAND);
-        ModelBakery.registerItemVariants(CREATURE_CATCHER, new ResourceLocation(Reference.MOD_ID, "creaturecatcher_base"));
+        ModelBakery.registerItemVariants(CREATURE_CATCHER,
+                new ResourceLocation(Reference.MOD_ID, "creaturecatcher_base"),
+                new ResourceLocation(Reference.MOD_ID, "creaturecatcher_bottom"),
+                new ResourceLocation(Reference.MOD_ID, "creaturecatcher_shield"));
         registerModel(CREATURE_CATCHER);
         registerModel(MACHINE_SETTINGS_COPIER);
         registerModel(PORTAL_GUN);

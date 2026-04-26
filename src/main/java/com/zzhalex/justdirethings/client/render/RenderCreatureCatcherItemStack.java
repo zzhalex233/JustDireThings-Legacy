@@ -2,18 +2,26 @@ package com.zzhalex.justdirethings.client.render;
 
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.entity.EntityCreatureCatcher;
+import com.zzhalex.justdirethings.common.item.misc.ItemCreatureCatcher;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
@@ -22,6 +30,8 @@ import org.lwjgl.opengl.GL11;
 public class RenderCreatureCatcherItemStack extends TileEntityItemStackRenderer {
 
     private static final ModelResourceLocation BASE_MODEL = new ModelResourceLocation(Reference.MOD_ID + ":creaturecatcher_base", "inventory");
+    private static final ModelResourceLocation BOTTOM_MODEL = new ModelResourceLocation(Reference.MOD_ID + ":creaturecatcher_bottom", "inventory");
+    private static final ModelResourceLocation SHIELD_MODEL = new ModelResourceLocation(Reference.MOD_ID + ":creaturecatcher_shield", "inventory");
 
     @Override
     public void renderByItem(ItemStack stack) {
@@ -30,18 +40,101 @@ public class RenderCreatureCatcherItemStack extends TileEntityItemStackRenderer 
 
     @Override
     public void renderByItem(ItemStack stack, float partialTicks) {
-        renderBaseModel(stack);
-        renderCapturedEntity(stack, partialTicks);
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        try {
+            if (ItemCreatureCatcher.hasEntity(stack)) {
+                renderBottomModel(stack);
+                renderCapturedEntity(stack, partialTicks);
+                renderShieldModel(stack);
+            } else {
+                renderBaseModel(stack);
+            }
+        } finally {
+            GL11.glPopAttrib();
+            syncGlStateManagerCache();
+        }
+    }
+
+    private static void syncGlStateManagerCache() {
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_DEPTH_TEST), GlStateManager::enableDepth, GlStateManager::disableDepth);
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_BLEND), GlStateManager::enableBlend, GlStateManager::disableBlend);
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_CULL_FACE), GlStateManager::enableCull, GlStateManager::disableCull);
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_LIGHTING), GlStateManager::enableLighting, GlStateManager::disableLighting);
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_ALPHA_TEST), GlStateManager::enableAlpha, GlStateManager::disableAlpha);
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_FOG), GlStateManager::enableFog, GlStateManager::disableFog);
+        forceSetToggle(GL11.glIsEnabled(GL11.GL_TEXTURE_2D), GlStateManager::enableTexture2D, GlStateManager::disableTexture2D);
+        boolean dm = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
+        GlStateManager.depthMask(!dm);
+        GlStateManager.depthMask(dm);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(0.0F, 0.0F, 0.0F, 0.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.bindTexture(0);
+    }
+
+    private static void forceSetToggle(boolean desired, Runnable enable, Runnable disable) {
+        if (desired) {
+            disable.run();
+            enable.run();
+        } else {
+            enable.run();
+            disable.run();
+        }
     }
 
     private void renderBaseModel(ItemStack stack) {
+        renderModel(stack, BASE_MODEL);
+    }
+
+    private void renderBottomModel(ItemStack stack) {
+        renderModel(stack, BOTTOM_MODEL);
+    }
+
+    private void renderShieldModel(ItemStack stack) {
         Minecraft minecraft = Minecraft.getMinecraft();
-        RenderItem renderItem = minecraft.getRenderItem();
-        IBakedModel baseModel = renderItem.getItemModelMesher().getModelManager().getModel(BASE_MODEL);
+        IBakedModel model = minecraft.getRenderItem().getItemModelMesher()
+                .getModelManager().getModel(SHIELD_MODEL);
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
-        renderItem.renderItem(stack, baseModel);
+        GlStateManager.enableBlend();
+        GlStateManager.enableCull();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.depthMask(false);
+        GlStateManager.disableLighting();
+
+        minecraft.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(-0.5F, -0.5F, -0.5F);
+        renderModelDirectly(model);
+        GlStateManager.popMatrix();
+        GlStateManager.popMatrix();
+    }
+
+    private static void renderModelDirectly(IBakedModel model) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+        for (EnumFacing face : EnumFacing.values()) {
+            for (BakedQuad quad : model.getQuads(null, face, 0L)) {
+                LightUtil.renderQuadColor(buffer, quad, 0xFFFFFFFF);
+            }
+        }
+        for (BakedQuad quad : model.getQuads(null, null, 0L)) {
+            LightUtil.renderQuadColor(buffer, quad, 0xFFFFFFFF);
+        }
+        tessellator.draw();
+    }
+
+    private void renderModel(ItemStack stack, ModelResourceLocation modelLocation) {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        RenderItem renderItem = minecraft.getRenderItem();
+        IBakedModel model = renderItem.getItemModelMesher().getModelManager().getModel(modelLocation);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.translate(0.5F, 0.5F, 0.5F);
+        renderItem.renderItem(stack, model);
         GlStateManager.popMatrix();
     }
 
@@ -70,25 +163,15 @@ public class RenderCreatureCatcherItemStack extends TileEntityItemStackRenderer 
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.translate(0.0F, (float) (-height * scale * 0.5D), 0.0F);
         GlStateManager.scale(scale, scale, scale);
-        GlStateManager.rotate(-30.0F, 0.0F, 1.0F, 0.0F);
+        GlStateManager.rotate(150.0F, 0.0F, 1.0F, 0.0F);
 
         RenderManager renderManager = minecraft.getRenderManager();
         boolean oldRenderShadow = renderManager.isRenderShadow();
-        boolean depthWasEnabled = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
         renderManager.setRenderShadow(false);
         RenderHelper.enableStandardItemLighting();
-        GlStateManager.disableDepth();
+        GlStateManager.disableCull();
         renderManager.renderEntity(living, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks, false);
-        restoreDepthState(depthWasEnabled);
         renderManager.setRenderShadow(oldRenderShadow);
         GlStateManager.popMatrix();
-    }
-
-    private static void restoreDepthState(boolean depthWasEnabled) {
-        if (depthWasEnabled) {
-            GlStateManager.enableDepth();
-        } else {
-            GlStateManager.disableDepth();
-        }
     }
 }

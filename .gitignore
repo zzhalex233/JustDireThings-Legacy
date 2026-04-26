@@ -6,6 +6,7 @@ out/
 bin/
 logs/
 source/
+.claude/
 
 # Ignore Gradle GUI config
 gradle-app.setting
