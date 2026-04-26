@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "justdirethings:raw_coal_t1_ore",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "justdirethings:raw_coal_t1_ore",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "justdirethings:raw_coal_t1_ore",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "justdirethings:raw_coal_t1_ore",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "justdirethings:raw_coal_t1_ore"
+    },
+    "facing=west": {
+      "model": "justdirethings:raw_coal_t1_ore",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

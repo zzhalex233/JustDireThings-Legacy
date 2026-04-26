@@ -1,0 +1,18 @@
+﻿{
+    "type":  "minecraft:crafting_shapeless",
+    "ingredients":  [
+                        {
+                            "item":  "justdirethings:template_celestigem"
+                        },
+                        {
+                            "item":  "justdirethings:celestigem"
+                        },
+                        {
+                            "item":  "justdirethings:celestigem"
+                        }
+                    ],
+    "result":  {
+                   "item":  "justdirethings:template_celestigem",
+                   "count":  2
+               }
+}

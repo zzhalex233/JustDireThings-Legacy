@@ -1,0 +1,29 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "fdf",
+                    "lol",
+                    "frf"
+                ],
+    "key":  {
+                "d":  {
+                          "item":  "minecraft:ender_eye"
+                      },
+                "f":  {
+                          "item":  "justdirethings:ferricore_ingot"
+                      },
+                "l":  {
+                          "item":  "minecraft:lapis_lazuli"
+                      },
+                "o":  {
+                          "item":  "minecraft:observer"
+                      },
+                "r":  {
+                          "item":  "minecraft:redstone"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:sensort1"
+               }
+}

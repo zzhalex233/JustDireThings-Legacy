@@ -1,0 +1,12 @@
+[{
+  "modid": "justdirethings",
+  "name": "JustDireThings-Legacy",
+  "version": "1.12.2-0.1",
+  "mcversion": "1.12.2",
+  "description": "Backport of JustDireThings to Minecraft 1.12.2.",
+  "authorList": ["zzhalex233"],
+  "credits": "",
+  "url": "https://github.com/zzhalex233/JustDireThings-Legacy",
+  "updateJSON": "",
+  "logoFile": ""
+}]

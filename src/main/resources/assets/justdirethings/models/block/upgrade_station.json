@@ -1,0 +1,9 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "bottom": "justdirethings:block/paradoxmachine_bottom",
+    "side": "justdirethings:block/paradoxmachine_side",
+    "top": "justdirethings:block/paradoxmachine_top",
+    "particle": "justdirethings:block/paradoxmachine_side"
+  }
+}

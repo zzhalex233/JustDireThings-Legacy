@@ -1,0 +1,23 @@
+﻿{
+    "type":  "forge:ore_shaped",
+    "pattern":  [
+                    " e ",
+                    "fbf",
+                    " e "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:leather"
+                      },
+                "f":  {
+                          "type":  "forge:ore_dict",
+                          "ore":  "blockWool"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_negatefalldamage"
+               }
+}

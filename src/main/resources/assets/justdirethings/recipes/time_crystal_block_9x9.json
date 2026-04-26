@@ -1,0 +1,13 @@
+﻿{
+    "type":  "minecraft:crafting_shapeless",
+    "group":  "justdirethings",
+    "ingredients":  [
+                        {
+                            "item":  "justdirethings:time_crystal_block"
+                        }
+                    ],
+    "result":  {
+                   "item":  "justdirethings:time_crystal",
+                   "count":  9
+               }
+}

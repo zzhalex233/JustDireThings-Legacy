@@ -1,0 +1,22 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "p p",
+                    "gbg",
+                    "p p"
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "g":  {
+                          "item":  "minecraft:glass_bottle"
+                      },
+                "p":  {
+                          "item":  "minecraft:nether_wart"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_potionarrow"
+               }
+}

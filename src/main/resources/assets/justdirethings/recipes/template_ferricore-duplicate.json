@@ -1,0 +1,18 @@
+﻿{
+    "type":  "minecraft:crafting_shapeless",
+    "ingredients":  [
+                        {
+                            "item":  "justdirethings:template_ferricore"
+                        },
+                        {
+                            "item":  "justdirethings:ferricore_ingot"
+                        },
+                        {
+                            "item":  "justdirethings:ferricore_ingot"
+                        }
+                    ],
+    "result":  {
+                   "item":  "justdirethings:template_ferricore",
+                   "count":  2
+               }
+}

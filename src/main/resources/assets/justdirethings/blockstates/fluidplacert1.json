@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "facing=down": { "model": "justdirethings:fluidplacert1", "x": 180 },
+    "facing=east": { "model": "justdirethings:fluidplacert1", "x": 90, "y": 90 },
+    "facing=north": { "model": "justdirethings:fluidplacert1", "x": 90 },
+    "facing=south": { "model": "justdirethings:fluidplacert1", "x": 90, "y": 180 },
+    "facing=up": { "model": "justdirethings:fluidplacert1" },
+    "facing=west": { "model": "justdirethings:fluidplacert1", "x": 90, "y": 270 },
+    "inventory": { "model": "justdirethings:fluidplacert1" }
+  }
+}

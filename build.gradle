@@ -5,7 +5,6 @@ plugins {
     id 'com.gradleup.shadow' version '9.4.0'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.4.1'
     id 'xyz.wagyourtail.unimined' version '1.4.16-kappa'
-    id 'net.kyori.blossom' version '2.2.0'
 }
 
 import org.jetbrains.gradle.ext.Gradle
@@ -54,6 +53,13 @@ configurations {
     compileOnly.extendsFrom(modCompileOnly)
     modRuntimeOnly
     runtimeOnly.extendsFrom(modRuntimeOnly)
+}
+
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
 }
 
 String remapTaskName = propertyBool('enable_shadow') ? "remapShadowJar" : "remapJar"
@@ -105,6 +111,22 @@ unimined.minecraft {
     }
 }
 
+unimined.minecraft(sourceSets.test, false) {
+    version "1.12.2"
+    mappings {
+        mcp("stable", "39-1.12")
+    }
+    cleanroom {
+        if (propertyBool('use_access_transformer')) {
+            accessTransformer "${rootProject.projectDir}/src/main/resources/${propertyString('access_transformer_locations')}"
+        }
+        loader "0.5.6-alpha"
+    }
+    createJarTask = false
+    defaultRemapJar = false
+    defaultRemapSourcesJar = false
+}
+
 dependencies {
     if (propertyBool('use_asset_mover')) {
         implementation "com.cleanroommc:assetmover:${propertyString('asset_mover_version')}"
@@ -119,30 +141,6 @@ apply from: 'gradle/scripts/dependencies.gradle'
 
 processResources {
     rename '(.+_at.cfg)', 'META-INF/$1'
-}
-
-sourceSets {
-    main {
-        blossom {
-            javaSources {
-                property('mod_id', propertyString('mod_id'))
-                property('mod_name', propertyString('mod_name'))
-                property('mod_version', propertyString('mod_version'))
-                property('package', "${root_package}.${mod_id}")
-            }
-            resources {
-                property('mod_id', propertyString('mod_id'))
-                property('mod_name', propertyString('mod_name'))
-                property('mod_version', propertyString('mod_version'))
-                property('mod_description', propertyString('mod_description'))
-                property('mod_authors', propertyStringList('mod_authors', ',').collect {it.strip()}.join('", "'))
-                property('mod_credits', propertyString('mod_credits'))
-                property('mod_url', propertyString('mod_url'))
-                property('mod_update_json', propertyString('mod_update_json'))
-                property('mod_logo_path', propertyString('mod_logo_path'))
-            }
-        }
-    }
 }
 
 idea {
@@ -230,7 +228,7 @@ tasks.named(remapTaskName).configure {
 }
 
 compileTestJava {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_25
 }
 
 test {

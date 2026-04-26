@@ -1,0 +1,17 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "###",
+                    "###",
+                    "###"
+                ],
+    "key":  {
+                "#":  {
+                          "item":  "justdirethings:time_crystal"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:time_crystal_block"
+               }
+}

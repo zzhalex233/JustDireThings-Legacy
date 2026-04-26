@@ -1,0 +1,19 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "f f",
+                    "fbf",
+                    " f "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "f":  {
+                          "item":  "justdirethings:celestigem"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:template_celestigem"
+               }
+}

@@ -1,0 +1,19 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "   ",
+                    "fbf",
+                    "   "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "f":  {
+                          "item":  "minecraft:piston"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_jumpboost"
+               }
+}

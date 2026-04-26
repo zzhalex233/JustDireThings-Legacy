@@ -1,0 +1,26 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    " bc",
+                    "beb",
+                    "bf "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:blazegold_ingot"
+                      },
+                "c":  {
+                          "item":  "justdirethings:celestigem"
+                      },
+                "e":  {
+                          "item":  "justdirethings:portal_fluid_catalyst"
+                      },
+                "f":  {
+                          "item":  "justdirethings:fluid_canister"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:portalgun_v2"
+               }
+}

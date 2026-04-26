@@ -1,0 +1,27 @@
+﻿{
+    "type":  "forge:ore_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "brb",
+                    "wgw",
+                    "brb"
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "minecraft:blaze_powder"
+                      },
+                "g":  {
+                          "item":  "justdirethings:gooblock_tier1"
+                      },
+                "r":  {
+                          "type":  "forge:ore_dict",
+                          "ore":  "dustRedstone"
+                      },
+                "w":  {
+                          "item":  "minecraft:nether_wart"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:gooblock_tier2"
+               }
+}

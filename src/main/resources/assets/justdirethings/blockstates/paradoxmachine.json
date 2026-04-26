@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "facing=down": { "model": "justdirethings:paradoxmachine", "x": 180 },
+    "facing=east": { "model": "justdirethings:paradoxmachine", "x": 90, "y": 90 },
+    "facing=north": { "model": "justdirethings:paradoxmachine", "x": 90 },
+    "facing=south": { "model": "justdirethings:paradoxmachine", "x": 90, "y": 180 },
+    "facing=up": { "model": "justdirethings:paradoxmachine" },
+    "facing=west": { "model": "justdirethings:paradoxmachine", "x": 90, "y": 270 },
+    "inventory": { "model": "justdirethings:paradoxmachine" }
+  }
+}

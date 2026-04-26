@@ -1,0 +1,13 @@
+﻿{
+    "type":  "minecraft:crafting_shapeless",
+    "group":  "justdirethings",
+    "ingredients":  [
+                        {
+                            "item":  "justdirethings:coalblock_t2"
+                        }
+                    ],
+    "result":  {
+                   "item":  "justdirethings:coal_t2",
+                   "count":  9
+               }
+}

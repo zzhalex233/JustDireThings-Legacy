@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "justdirethings:experienceholder" },
+    "facing=east": { "model": "justdirethings:experienceholder", "x": 270, "y": 90 },
+    "facing=north": { "model": "justdirethings:experienceholder", "x": 270 },
+    "facing=south": { "model": "justdirethings:experienceholder", "x": 270, "y": 180 },
+    "facing=up": { "model": "justdirethings:experienceholder", "x": 180, "y": 180 },
+    "facing=west": { "model": "justdirethings:experienceholder", "x": 270, "y": 270 }
+  }
+}

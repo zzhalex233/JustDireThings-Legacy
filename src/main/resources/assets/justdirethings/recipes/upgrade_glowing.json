@@ -1,0 +1,25 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "aea",
+                    "fbf",
+                    "aea"
+                ],
+    "key":  {
+                "a":  {
+                          "item":  "minecraft:end_rod"
+                      },
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:calibrated_sculk_sensor"
+                      },
+                "f":  {
+                          "item":  "minecraft:sculk_shrieker"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_glowing"
+               }
+}

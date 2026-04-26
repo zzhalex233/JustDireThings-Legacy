@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "justdirethings:item/pocket_generator"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "justdirethings:enabled": 1
+      },
+      "model": "justdirethings:item/pocket_generator_active"
+    }
+  ]
+}

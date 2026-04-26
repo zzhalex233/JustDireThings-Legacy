@@ -1,0 +1,19 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "   ",
+                    "fbf",
+                    "   "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "f":  {
+                          "item":  "minecraft:short_grass"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_lawnmower"
+               }
+}

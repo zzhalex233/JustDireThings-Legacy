@@ -1,0 +1,25 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "aea",
+                    "fbf",
+                    "aea"
+                ],
+    "key":  {
+                "a":  {
+                          "item":  "minecraft:netherite_scrap"
+                      },
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:lava_bucket"
+                      },
+                "f":  {
+                          "item":  "minecraft:magma_cream"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_lavaimmunity"
+               }
+}

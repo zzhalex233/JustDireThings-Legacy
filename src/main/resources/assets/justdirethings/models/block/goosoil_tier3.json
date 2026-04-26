@@ -1,0 +1,8 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "bottom": "minecraft:blocks/dirt",
+    "top": "justdirethings:block/goofarmland_tier3",
+    "side": "justdirethings:block/goosoilside_tier3"
+  }
+}

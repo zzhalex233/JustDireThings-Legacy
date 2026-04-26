@@ -1,0 +1,22 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    " e ",
+                    "fbf",
+                    " e "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:golden_apple"
+                      },
+                "f":  {
+                          "item":  "minecraft:magma_cream"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_cauterizewounds"
+               }
+}

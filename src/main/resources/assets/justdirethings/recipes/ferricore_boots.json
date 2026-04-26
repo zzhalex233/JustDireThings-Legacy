@@ -1,0 +1,17 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "f f",
+                    "f f",
+                    "   "
+                ],
+    "key":  {
+                "f":  {
+                          "item":  "justdirethings:ferricore_ingot"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:ferricore_boots"
+               }
+}

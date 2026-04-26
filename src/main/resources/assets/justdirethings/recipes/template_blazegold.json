@@ -1,0 +1,19 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "f f",
+                    "fbf",
+                    " f "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "f":  {
+                          "item":  "justdirethings:blazegold_ingot"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:template_blazegold"
+               }
+}

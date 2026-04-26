@@ -1,0 +1,17 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "###",
+                    "###",
+                    "###"
+                ],
+    "key":  {
+                "#":  {
+                          "item":  "minecraft:charcoal"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:charcoal"
+               }
+}

@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "facing=down": { "model": "justdirethings:inventory_holder", "x": 180 },
+    "facing=east": { "model": "justdirethings:inventory_holder", "x": 90, "y": 90 },
+    "facing=north": { "model": "justdirethings:inventory_holder", "x": 90 },
+    "facing=south": { "model": "justdirethings:inventory_holder", "x": 90, "y": 180 },
+    "facing=up": { "model": "justdirethings:inventory_holder" },
+    "facing=west": { "model": "justdirethings:inventory_holder", "x": 90, "y": 270 },
+    "inventory": { "model": "justdirethings:inventory_holder" }
+  }
+}

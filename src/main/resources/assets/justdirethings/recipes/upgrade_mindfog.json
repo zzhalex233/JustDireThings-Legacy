@@ -1,0 +1,22 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    " e ",
+                    "fbf",
+                    " e "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:lapis_lazuli"
+                      },
+                "f":  {
+                          "item":  "minecraft:fermented_spider_eye"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_mindfog"
+               }
+}

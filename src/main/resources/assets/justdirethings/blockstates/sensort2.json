@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "facing=down": { "model": "justdirethings:sensort2", "x": 180 },
+    "facing=east": { "model": "justdirethings:sensort2", "x": 90, "y": 90 },
+    "facing=north": { "model": "justdirethings:sensort2", "x": 90 },
+    "facing=south": { "model": "justdirethings:sensort2", "x": 90, "y": 180 },
+    "facing=up": { "model": "justdirethings:sensort2" },
+    "facing=west": { "model": "justdirethings:sensort2", "x": 90, "y": 270 },
+    "inventory": { "model": "justdirethings:sensort2" }
+  }
+}

@@ -1,0 +1,108 @@
+package com.zzhalex.justdirethings.common.item.misc;
+
+import com.zzhalex.justdirethings.JustDireThingsLegacy;
+import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.data.JDTDataKeys;
+import com.zzhalex.justdirethings.registry.ModContainers;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.world.World;
+
+public class FuelCanisterItem extends Item {
+
+    public static final int MAX_FUEL = 64000;
+    public static final int MINIMUM_TICKS_CONSUMED = 200;
+
+    public FuelCanisterItem() {
+        setMaxStackSize(1);
+        setTranslationKey(Reference.MOD_ID + ".fuel_canister");
+    }
+
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack heldStack = player.getHeldItem(hand);
+        if (!world.isRemote) {
+            player.openGui(JustDireThingsLegacy.INSTANCE, ModContainers.GUI_FUEL_CANISTER, world, 0, 0, 0);
+        }
+        return new ActionResult<>(EnumActionResult.SUCCESS, heldStack);
+    }
+
+    @Override
+    public int getItemBurnTime(ItemStack itemStack) {
+        return getFuelLevel(itemStack) >= MINIMUM_TICKS_CONSUMED ? MINIMUM_TICKS_CONSUMED : 0;
+    }
+
+    @Override
+    public boolean hasContainerItem(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getContainerItem(ItemStack itemStack) {
+        ItemStack copy = itemStack.copy();
+        decrementFuel(copy);
+        return copy;
+    }
+
+    public static int getFuelLevel(ItemStack stack) {
+        return getOrCreateTag(stack).getInteger(JDTDataKeys.FUEL_CANISTER_FUEL_LEVEL);
+    }
+
+    public static void setFuelLevel(ItemStack stack, int fuelLevel) {
+        getOrCreateTag(stack).setInteger(JDTDataKeys.FUEL_CANISTER_FUEL_LEVEL, Math.max(0, Math.min(MAX_FUEL, fuelLevel)));
+    }
+
+    public static double getBurnSpeed(ItemStack stack) {
+        NBTTagCompound tag = getOrCreateTag(stack);
+        return tag.hasKey(JDTDataKeys.FUEL_CANISTER_BURN_SPEED) ? tag.getDouble(JDTDataKeys.FUEL_CANISTER_BURN_SPEED) : 1.0D;
+    }
+
+    public static int getBurnSpeedMultiplier(ItemStack stack) {
+        return Math.max(1, (int) Math.round(getBurnSpeed(stack)));
+    }
+
+    public static void setBurnSpeed(ItemStack stack, double burnSpeed) {
+        getOrCreateTag(stack).setDouble(JDTDataKeys.FUEL_CANISTER_BURN_SPEED, Math.max(1.0D, burnSpeed));
+    }
+
+    public static void decrementFuel(ItemStack stack) {
+        setFuelLevel(stack, getFuelLevel(stack) - MINIMUM_TICKS_CONSUMED);
+    }
+
+    public static void incrementFuel(ItemStack canister, ItemStack fuelStack) {
+        int fuelPerPiece = fuelStack.getItem().getItemBurnTime(fuelStack);
+        if (fuelPerPiece <= 0) {
+            return;
+        }
+
+        int currentFuel = getFuelLevel(canister);
+        double currentBurnSpeed = getBurnSpeed(canister);
+        int totalAddedFuel = 0;
+
+        while (!fuelStack.isEmpty() && currentFuel + totalAddedFuel + fuelPerPiece <= MAX_FUEL) {
+            totalAddedFuel += fuelPerPiece;
+            fuelStack.shrink(1);
+        }
+
+        if (totalAddedFuel <= 0) {
+            return;
+        }
+
+        setFuelLevel(canister, currentFuel + totalAddedFuel);
+        setBurnSpeed(canister, PocketGeneratorMath.weightedBurnMultiplier(currentFuel, currentBurnSpeed, totalAddedFuel, 1.0D));
+    }
+
+    private static NBTTagCompound getOrCreateTag(ItemStack stack) {
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+        return tag;
+    }
+}

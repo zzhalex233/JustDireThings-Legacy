@@ -1,0 +1,19 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    " f ",
+                    "fbf",
+                    " f "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "f":  {
+                          "item":  "minecraft:ladder"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_stepheight"
+               }
+}

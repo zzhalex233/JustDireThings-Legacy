@@ -1,0 +1,17 @@
+﻿{
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "###",
+                    "###",
+                    "###"
+                ],
+    "key":  {
+                "#":  {
+                          "item":  "justdirethings:ferricore_ingot"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:ferricore_block"
+               }
+}

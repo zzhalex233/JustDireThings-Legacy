@@ -55,3 +55,20 @@ dependencies {
     //     transitive = false
     // }
 }
+
+def optionalDependency = { String propertyName, String configurationName ->
+    def notation = project.findProperty(propertyName)?.toString()?.trim()
+    if (notation) {
+        project.dependencies.add(configurationName, notation)
+    }
+}
+
+// Integration hooks. These stay inert until coordinates are supplied in gradle.properties.
+optionalDependency('jei_dependency', 'modCompileOnly')
+optionalDependency('jei_dependency', 'modRuntimeOnly')
+optionalDependency('patchouli_dependency', 'modCompileOnly')
+optionalDependency('patchouli_dependency', 'modRuntimeOnly')
+optionalDependency('futuremc_dependency', 'modCompileOnly')
+optionalDependency('futuremc_dependency', 'modRuntimeOnly')
+optionalDependency('bubblesex_dependency', 'modCompileOnly')
+optionalDependency('baubles_dependency', 'modCompileOnly')

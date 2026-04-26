@@ -1,0 +1,44 @@
+package com.zzhalex.justdirethings.data.tool;
+
+import net.minecraft.nbt.NBTTagCompound;
+
+public final class AbilityCooldown {
+
+    private final String abilityId;
+    private final int remainingTicks;
+    private final boolean active;
+
+    public AbilityCooldown(String abilityId, int remainingTicks, boolean active) {
+        this.abilityId = abilityId;
+        this.remainingTicks = remainingTicks;
+        this.active = active;
+    }
+
+    public String getAbilityId() {
+        return abilityId;
+    }
+
+    public int getRemainingTicks() {
+        return remainingTicks;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public NBTTagCompound writeToNbt() {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString("AbilityId", abilityId);
+        tag.setInteger("RemainingTicks", remainingTicks);
+        tag.setBoolean("Active", active);
+        return tag;
+    }
+
+    public static AbilityCooldown readFromNbt(NBTTagCompound tag) {
+        return new AbilityCooldown(
+                tag.getString("AbilityId"),
+                tag.getInteger("RemainingTicks"),
+                tag.getBoolean("Active")
+        );
+    }
+}
