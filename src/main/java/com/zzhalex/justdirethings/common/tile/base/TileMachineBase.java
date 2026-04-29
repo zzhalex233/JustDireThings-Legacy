@@ -6,7 +6,11 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 public class TileMachineBase extends TileEntity {
@@ -20,6 +24,7 @@ public class TileMachineBase extends TileEntity {
     private final MachineAreaState areaState = new MachineAreaState();
     private final MachineFilterState filterState = new MachineFilterState();
     private final MachineEnergyState energyState = new MachineEnergyState();
+    private final IEnergyStorage energyCapability = new SyncingEnergyStorage();
     private final MachineFluidState fluidState = new MachineFluidState();
 
     public int getDirection() {
@@ -27,7 +32,9 @@ public class TileMachineBase extends TileEntity {
     }
 
     public void setDirection(int direction) {
+        int oldDirection = this.direction;
         this.direction = Math.max(0, direction);
+        rotateDefaultAreaWithFacing(oldDirection, this.direction);
     }
 
     public int getTickSpeed() {
@@ -127,7 +134,7 @@ public class TileMachineBase extends TileEntity {
     }
 
     public void readMachineStateFromNbt(NBTTagCompound compound) {
-        direction = compound.getInteger("Direction");
+        setDirection(compound.getInteger("Direction"));
         tickSpeed = compound.hasKey("TickSpeed") ? Math.max(1, compound.getInteger("TickSpeed")) : 20;
         operationTicks = compound.hasKey("OperationTicks") ? compound.getInteger("OperationTicks") : -1;
         ownerUuid = compound.hasKey("OwnerUuid") ? UUID.fromString(compound.getString("OwnerUuid")) : null;
@@ -173,5 +180,79 @@ public class TileMachineBase extends TileEntity {
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         readFromNBT(pkt.getNbtCompound());
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable net.minecraft.util.EnumFacing facing) {
+        return (capability != null && capability == CapabilityEnergy.ENERGY && energyState.getCapacity() > 0)
+                || super.hasCapability(capability, facing);
+    }
+
+    @Nullable
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getCapability(Capability<T> capability, @Nullable net.minecraft.util.EnumFacing facing) {
+        if (capability != null && capability == CapabilityEnergy.ENERGY && energyState.getCapacity() > 0) {
+            return (T) energyCapability;
+        }
+        return super.getCapability(capability, facing);
+    }
+
+    private final class SyncingEnergyStorage implements IEnergyStorage {
+        @Override
+        public int receiveEnergy(int maxReceive, boolean simulate) {
+            int received = energyState.receiveEnergy(maxReceive, simulate);
+            if (received > 0 && !simulate) {
+                markDirtyClient();
+            }
+            return received;
+        }
+
+        @Override
+        public int extractEnergy(int maxExtract, boolean simulate) {
+            int extracted = energyState.extractEnergy(maxExtract, simulate);
+            if (extracted > 0 && !simulate) {
+                markDirtyClient();
+            }
+            return extracted;
+        }
+
+        @Override
+        public int getEnergyStored() {
+            return energyState.getEnergyStored();
+        }
+
+        @Override
+        public int getMaxEnergyStored() {
+            return energyState.getMaxEnergyStored();
+        }
+
+        @Override
+        public boolean canExtract() {
+            return energyState.canExtract();
+        }
+
+        @Override
+        public boolean canReceive() {
+            return energyState.canReceive();
+        }
+    }
+
+    private void rotateDefaultAreaWithFacing(int oldDirection, int newDirection) {
+        if (areaState.getXRadius() != 0.0D || areaState.getYRadius() != 0.0D || areaState.getZRadius() != 0.0D) {
+            return;
+        }
+        net.minecraft.util.EnumFacing oldFacing = net.minecraft.util.EnumFacing.byIndex(oldDirection);
+        net.minecraft.util.EnumFacing newFacing = net.minecraft.util.EnumFacing.byIndex(newDirection);
+        if (oldFacing == null || newFacing == null) {
+            return;
+        }
+        boolean followsOldFacing = areaState.getXOffset() == oldFacing.getXOffset()
+                && areaState.getYOffset() == oldFacing.getYOffset()
+                && areaState.getZOffset() == oldFacing.getZOffset();
+        boolean unset = areaState.getXOffset() == 0 && areaState.getYOffset() == 0 && areaState.getZOffset() == 0;
+        if (followsOldFacing || unset) {
+            areaState.setOffset(newFacing.getXOffset(), newFacing.getYOffset(), newFacing.getZOffset());
+        }
     }
 }

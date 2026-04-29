@@ -1,20 +1,47 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
+import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileTimedMachineBase;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.passive.EntityAnimal;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.FakePlayer;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class TileClicker extends TileTimedMachineBase {
+
+    public enum ClickTarget {
+        BLOCK,
+        AIR,
+        HOSTILE,
+        PASSIVE,
+        ADULT,
+        CHILD,
+        PLAYER,
+        LIVING
+    }
 
     private int clickTarget;
     private int clickType;
     private boolean sneaking;
-    private boolean showFakePlayer = true;
+    private boolean showFakePlayer;
+    private int maxHoldTicks = 1;
 
     public TileClicker() {
         super(1);
@@ -25,7 +52,7 @@ public class TileClicker extends TileTimedMachineBase {
     }
 
     public void setClickTarget(int clickTarget) {
-        this.clickTarget = Math.max(0, Math.min(7, clickTarget));
+        this.clickTarget = Math.max(0, Math.min(ClickTarget.values().length - 1, clickTarget));
     }
 
     public int getClickType() {
@@ -52,29 +79,153 @@ public class TileClicker extends TileTimedMachineBase {
         this.showFakePlayer = showFakePlayer;
     }
 
+    public int getMaxHoldTicks() {
+        return maxHoldTicks;
+    }
+
+    public void setMaxHoldTicks(int maxHoldTicks) {
+        this.maxHoldTicks = Math.max(1, Math.min(1200, maxHoldTicks));
+    }
+
     @Override
     protected boolean performWork() {
         if (!(world instanceof WorldServer)) {
             return false;
         }
 
-        BlockPos targetPos = MachineActionHelper.targetPos(this);
+        ClickTarget target = getClickTargetMode();
+        if (target == ClickTarget.BLOCK || target == ClickTarget.AIR) {
+            for (BlockPos targetPos : findSpotsToClick()) {
+                if (clickBlock(targetPos)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for (EntityLivingBase entity : findEntitiesToClick(getClickAABB())) {
+            if (clickEntity(entity)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected ClickTarget getClickTargetMode() {
+        return ClickTarget.values()[Math.max(0, Math.min(ClickTarget.values().length - 1, clickTarget))];
+    }
+
+    protected boolean clickBlock(BlockPos targetPos) {
+        if (!isBlockPosValidForClick(targetPos)) {
+            return false;
+        }
+        if (getClickTargetMode() == ClickTarget.AIR) {
+            return clickAir(targetPos);
+        }
+
         EnumFacing facing = MachineActionHelper.getFacing(this);
+        ItemStack heldStack = getItemHandler().getStackInSlot(0);
+        boolean replaceable = MachineActionHelper.canReplace(world, targetPos);
+        if (replaceable && MachineActionHelper.canAttemptPlacement(heldStack)) {
+            return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, targetPos, facing, true);
+        }
+        IBlockState state = world.getBlockState(targetPos);
+        if (state.getBlock() == Blocks.AIR) {
+            return false;
+        }
+        return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, targetPos, facing, false);
+    }
+
+    protected boolean clickAir(BlockPos targetPos) {
+        if (clickType == 1) {
+            return false;
+        }
         ItemStack heldStack = getItemHandler().getStackInSlot(0);
         if (heldStack.isEmpty()) {
             return false;
         }
 
-        if (MachineActionHelper.canReplace(world, targetPos) && MachineActionHelper.canAttemptPlacement(heldStack)) {
-            return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, targetPos, facing, true);
+        FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, this);
+        fakePlayer.setSneaking(sneaking);
+        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
+        ActionResult<ItemStack> result = fakePlayer.getHeldItem(EnumHand.MAIN_HAND).getItem().onItemRightClick(world, fakePlayer, EnumHand.MAIN_HAND);
+        getItemHandler().setStackInSlot(0, result.getResult());
+        fakePlayer.setSneaking(false);
+        return result.getType() == EnumActionResult.SUCCESS;
+    }
+
+    protected boolean clickEntity(EntityLivingBase entity) {
+        ItemStack heldStack = getItemHandler().getStackInSlot(0);
+        FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, this);
+        MachineActionHelper.alignFakePlayer(fakePlayer, entity.getPosition(), MachineActionHelper.getFacing(this));
+        fakePlayer.setSneaking(sneaking);
+        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
+
+        boolean clicked;
+        if (clickType == 1) {
+            fakePlayer.attackTargetEntityWithCurrentItem(entity);
+            clicked = true;
+        } else {
+            clicked = fakePlayer.interactOn(entity, EnumHand.MAIN_HAND) == EnumActionResult.SUCCESS;
         }
 
+        getItemHandler().setStackInSlot(0, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+        fakePlayer.setSneaking(false);
+        return clicked;
+    }
+
+    protected List<BlockPos> findSpotsToClick() {
+        List<BlockPos> positions = new ArrayList<>();
+        BlockPos targetPos = MachineActionHelper.targetPos(this);
+        if (isBlockPosValidForClick(targetPos)) {
+            positions.add(targetPos);
+        }
+        return positions;
+    }
+
+    protected boolean isBlockPosValidForClick(BlockPos targetPos) {
         IBlockState state = world.getBlockState(targetPos);
-        if (state.getBlock() == Blocks.AIR) {
+        ClickTarget target = getClickTargetMode();
+        if (target == ClickTarget.BLOCK && state.getBlock() == Blocks.AIR) {
             return false;
         }
+        return target != ClickTarget.AIR || state.getBlock() == Blocks.AIR;
+    }
 
-        return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, targetPos, facing, false);
+    protected AxisAlignedBB getClickAABB() {
+        return new AxisAlignedBB(MachineActionHelper.targetPos(this));
+    }
+
+    protected List<EntityLivingBase> findEntitiesToClick(AxisAlignedBB area) {
+        List<EntityLivingBase> matches = new ArrayList<>();
+        for (EntityLivingBase entity : world.getEntitiesWithinAABB(EntityLivingBase.class, area)) {
+            if (isValidEntityForClick(entity)) {
+                matches.add(entity);
+            }
+        }
+        return matches;
+    }
+
+    protected boolean isValidEntityForClick(EntityLivingBase entity) {
+        ClickTarget target = getClickTargetMode();
+        switch (target) {
+            case HOSTILE:
+                return entity instanceof IMob;
+            case PASSIVE:
+                return entity instanceof EntityAnimal;
+            case ADULT:
+                return entity instanceof EntityAnimal && !((EntityAnimal) entity).isChild();
+            case CHILD:
+                return entity instanceof EntityAnimal && ((EntityAnimal) entity).isChild();
+            case PLAYER:
+                return entity instanceof EntityPlayer;
+            case LIVING:
+                return true;
+            case BLOCK:
+            case AIR:
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -84,6 +235,7 @@ public class TileClicker extends TileTimedMachineBase {
         compound.setInteger("ClickType", clickType);
         compound.setBoolean("Sneaking", sneaking);
         compound.setBoolean("ShowFakePlayer", showFakePlayer);
+        compound.setInteger("MaxHoldTicks", maxHoldTicks);
         return compound;
     }
 
@@ -93,13 +245,88 @@ public class TileClicker extends TileTimedMachineBase {
         setClickTarget(compound.getInteger("ClickTarget"));
         setClickType(compound.getInteger("ClickType"));
         sneaking = compound.getBoolean("Sneaking");
-        showFakePlayer = !compound.hasKey("ShowFakePlayer") || compound.getBoolean("ShowFakePlayer");
+        showFakePlayer = compound.getBoolean("ShowFakePlayer");
+        maxHoldTicks = compound.hasKey("MaxHoldTicks") ? Math.max(1, compound.getInteger("MaxHoldTicks")) : 1;
     }
 
     public static class T1 extends TileClicker {
     }
 
-    public static class T2 extends TileClicker {
-        // PARITY STUB: Upstream ClickerT2BE adds powered area/filter click targeting.
+    public static class T2 extends TileClicker implements TileAdvancedMachine {
+
+        private final FilterItemHandler filterHandler = new FilterItemHandler(ADVANCED_FILTER_SLOTS);
+
+        public T2() {
+            configureAdvancedMachine();
+        }
+
+        @Override
+        public FilterItemHandler getFilterHandler() {
+            return filterHandler;
+        }
+
+        @Override
+        public int getStandardEnergyCost() {
+            return 250;
+        }
+
+        @Override
+        protected void onServerTick() {
+            chargeItemStack(getItemHandler().getStackInSlot(0));
+        }
+
+        @Override
+        protected boolean performWork() {
+            if (!(world instanceof WorldServer)) {
+                return false;
+            }
+            if (!hasEnoughEnergy(getStandardEnergyCost())) {
+                return false;
+            }
+
+            boolean clicked = super.performWork();
+            if (clicked) {
+                consumeEnergy(getStandardEnergyCost(), false);
+            }
+            return clicked;
+        }
+
+        @Override
+        protected List<BlockPos> findSpotsToClick() {
+            List<BlockPos> positions = new ArrayList<>();
+            for (BlockPos targetPos : getAreaPositionsNearestFirst()) {
+                if (isBlockPosValidForClick(targetPos)) {
+                    positions.add(targetPos);
+                }
+            }
+            positions.sort(Comparator.comparingDouble(targetPos -> targetPos.distanceSq(pos)));
+            return positions;
+        }
+
+        @Override
+        protected boolean isBlockPosValidForClick(BlockPos targetPos) {
+            if (!super.isBlockPosValidForClick(targetPos)) {
+                return false;
+            }
+            IBlockState state = world.getBlockState(targetPos);
+            return state.getBlock() == Blocks.AIR || matchesBlockFilter(state, targetPos);
+        }
+
+        @Override
+        protected AxisAlignedBB getClickAABB() {
+            return getAreaState().createArea(pos);
+        }
+
+        @Override
+        public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+            super.writeToNBT(compound);
+            return writeAdvancedMachineToNbt(compound);
+        }
+
+        @Override
+        public void readFromNBT(NBTTagCompound compound) {
+            super.readFromNBT(compound);
+            readAdvancedMachineFromNbt(compound);
+        }
     }
 }

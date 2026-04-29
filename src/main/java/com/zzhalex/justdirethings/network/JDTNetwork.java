@@ -6,6 +6,8 @@ import com.zzhalex.justdirethings.network.message.MessageParadoxState;
 import com.zzhalex.justdirethings.network.message.MessagePortalGunLeftClick;
 import com.zzhalex.justdirethings.network.message.MessagePortalFavorite;
 import com.zzhalex.justdirethings.network.message.MessageSyncToolState;
+import com.zzhalex.justdirethings.network.message.MessageToolBindingSetting;
+import com.zzhalex.justdirethings.network.message.MessageToolSlotSetting;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -30,6 +32,8 @@ public final class JDTNetwork {
         CHANNEL.registerMessage(MessagePortalFavorite.Handler.class, MessagePortalFavorite.class, nextId++, Side.SERVER);
         CHANNEL.registerMessage(MessagePortalGunLeftClick.Handler.class, MessagePortalGunLeftClick.class, nextId++, Side.SERVER);
         CHANNEL.registerMessage(MessageParadoxState.Handler.class, MessageParadoxState.class, nextId++, Side.CLIENT);
+        CHANNEL.registerMessage(MessageToolSlotSetting.Handler.class, MessageToolSlotSetting.class, nextId++, Side.SERVER);
+        CHANNEL.registerMessage(MessageToolBindingSetting.Handler.class, MessageToolBindingSetting.class, nextId++, Side.SERVER);
         registered = true;
     }
 

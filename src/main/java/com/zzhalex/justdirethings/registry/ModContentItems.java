@@ -1,7 +1,13 @@
 package com.zzhalex.justdirethings.registry;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.item.ItemGooBlock;
+import com.zzhalex.justdirethings.common.item.ItemPolymorphicCatalyst;
 import com.zzhalex.justdirethings.common.item.ItemSimpleContent;
+import com.zzhalex.justdirethings.common.item.ItemTimeCrystal;
+import com.zzhalex.justdirethings.common.item.ItemUpgradeContent;
+import com.zzhalex.justdirethings.common.item.fuel.ItemDireCoal;
+import com.zzhalex.justdirethings.common.item.fuel.ItemDireFuelBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
@@ -41,13 +47,13 @@ public final class ModContentItems {
         registerResource("blazegold_ingot");
         registerResource("celestigem");
         registerResource("eclipsealloy_ingot");
-        registerResource("coal_t1");
-        registerResource("coal_t2");
-        registerResource("coal_t3");
-        registerResource("coal_t4");
-        registerResource("polymorphic_catalyst");
+        registerResource("coal_t1", new ItemDireCoal(4800, 2));
+        registerResource("coal_t2", new ItemDireCoal(14400, 4));
+        registerResource("coal_t3", new ItemDireCoal(43200, 8));
+        registerResource("coal_t4", new ItemDireCoal(129600, 16));
+        registerResource("polymorphic_catalyst", new ItemPolymorphicCatalyst());
         registerResource("portal_fluid_catalyst");
-        registerResource("time_crystal");
+        registerResource("time_crystal", new ItemTimeCrystal());
 
         registerTemplate("template_ferricore");
         registerTemplate("template_blazegold");
@@ -162,7 +168,7 @@ public final class ModContentItems {
     }
 
     private static void registerBlockItem(Block block) {
-        ItemBlock itemBlock = new ItemBlock(block);
+        ItemBlock itemBlock = createBlockItem(block);
         itemBlock.setRegistryName(block.getRegistryName());
         itemBlock.setCreativeTab(ModCreativeTabs.JUST_DIRE_THINGS);
         BLOCK_ITEMS.put(block.getRegistryName().getPath(), itemBlock);
@@ -172,18 +178,48 @@ public final class ModContentItems {
         RESOURCE_ITEMS.put(id, createItem(id));
     }
 
+    private static void registerResource(String id, Item item) {
+        RESOURCE_ITEMS.put(id, createItem(id, item));
+    }
+
     private static void registerTemplate(String id) {
         TEMPLATE_ITEMS.put(id, createItem(id));
     }
 
     private static void registerUpgrade(String id) {
-        UPGRADE_ITEMS.put(id, createItem(id));
+        UPGRADE_ITEMS.put(id, createItem(id, new ItemUpgradeContent()));
     }
 
     private static Item createItem(String id) {
-        Item item = new ItemSimpleContent();
+        return createItem(id, new ItemSimpleContent());
+    }
+
+    private static Item createItem(String id, Item item) {
         item.setRegistryName(Reference.MOD_ID, id);
         item.setTranslationKey(Reference.MOD_ID + "." + id);
         return item;
+    }
+
+    private static ItemBlock createBlockItem(Block block) {
+        String id = block.getRegistryName().getPath();
+        switch (id) {
+            case "coalblock_t1":
+                return new ItemDireFuelBlock(block, 48000, 2);
+            case "coalblock_t2":
+                return new ItemDireFuelBlock(block, 144000, 4);
+            case "coalblock_t3":
+                return new ItemDireFuelBlock(block, 432000, 8);
+            case "coalblock_t4":
+                return new ItemDireFuelBlock(block, 1296000, 16);
+            case "charcoal":
+                return new ItemDireFuelBlock(block, 16000, 1);
+            case "gooblock_tier1":
+            case "gooblock_tier2":
+            case "gooblock_tier3":
+            case "gooblock_tier4":
+                return new ItemGooBlock(block);
+            default:
+                return new ItemBlock(block);
+        }
     }
 }

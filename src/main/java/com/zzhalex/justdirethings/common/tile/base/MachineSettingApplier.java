@@ -42,12 +42,15 @@ public final class MachineSettingApplier {
                 return true;
             case MachineSettingKeys.X_RADIUS_TENTHS:
                 machine.getAreaState().setArea(value / 10.0D, machine.getAreaState().getYRadius(), machine.getAreaState().getZRadius());
+                syncBlockSwapperPartnerArea(machine);
                 return true;
             case MachineSettingKeys.Y_RADIUS_TENTHS:
                 machine.getAreaState().setArea(machine.getAreaState().getXRadius(), value / 10.0D, machine.getAreaState().getZRadius());
+                syncBlockSwapperPartnerArea(machine);
                 return true;
             case MachineSettingKeys.Z_RADIUS_TENTHS:
                 machine.getAreaState().setArea(machine.getAreaState().getXRadius(), machine.getAreaState().getYRadius(), value / 10.0D);
+                syncBlockSwapperPartnerArea(machine);
                 return true;
             case MachineSettingKeys.X_OFFSET:
                 machine.getAreaState().setOffset(value, machine.getAreaState().getYOffset(), machine.getAreaState().getZOffset());
@@ -263,6 +266,12 @@ public final class MachineSettingApplier {
             return true;
         }
         return false;
+    }
+
+    private static void syncBlockSwapperPartnerArea(TileMachineBase machine) {
+        if (machine instanceof TileBlockSwapper.T2) {
+            ((TileBlockSwapper.T2) machine).updatePartnerArea();
+        }
     }
 
     private static MachineRedstoneState.RedstoneMode redstoneMode(int ordinal) {

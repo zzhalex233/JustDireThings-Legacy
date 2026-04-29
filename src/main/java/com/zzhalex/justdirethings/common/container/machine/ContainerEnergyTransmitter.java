@@ -14,6 +14,7 @@ public class ContainerEnergyTransmitter extends ContainerMachineBase {
         super(playerInventory, tile, new InventoryBasic("energytransmitter", false, 1));
         this.tile = tile;
         addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), 0, 80, 35));
+        addFilterSlots(tile.getFilterHandler());
         addPlayerInventory(playerInventory, 8, 84);
     }
 

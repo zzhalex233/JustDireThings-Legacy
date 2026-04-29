@@ -2,8 +2,13 @@ package com.zzhalex.justdirethings.common.item.misc;
 
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.item.fuel.FuelBurnHelper;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModContainers;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -11,11 +16,16 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
 
 public class FuelCanisterItem extends Item {
 
-    public static final int MAX_FUEL = 64000;
+    public static final int MAX_FUEL = 10000000;
     public static final int MINIMUM_TICKS_CONSUMED = 200;
 
     public FuelCanisterItem() {
@@ -43,8 +53,31 @@ public class FuelCanisterItem extends Item {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        int fuelLevel = getFuelLevel(stack);
+        if (GuiScreen.isShiftKeyDown()) {
+            tooltip.add(TextFormatting.DARK_RED + I18n.format(
+                    "justdirethings.fuelcanisteramt",
+                    TooltipHelper.formatNumber(fuelLevel)
+            ));
+        } else {
+            tooltip.add(TextFormatting.DARK_RED + I18n.format(
+                    "justdirethings.fuelcanisteritemsamt",
+                    TooltipHelper.formatNumber(fuelLevel / (double) MINIMUM_TICKS_CONSUMED)
+            ));
+            TooltipHelper.appendShiftForInfo(stack, tooltip);
+        }
+    }
+
+    @Override
     public ItemStack getContainerItem(ItemStack itemStack) {
-        ItemStack copy = itemStack.copy();
+        ItemStack copy = new ItemStack(this);
+        NBTTagCompound tag = itemStack.getTagCompound();
+        if (tag != null) {
+            copy.setTagCompound(tag.copy());
+        }
         decrementFuel(copy);
         return copy;
     }
@@ -75,13 +108,14 @@ public class FuelCanisterItem extends Item {
     }
 
     public static void incrementFuel(ItemStack canister, ItemStack fuelStack) {
-        int fuelPerPiece = fuelStack.getItem().getItemBurnTime(fuelStack);
+        int fuelPerPiece = FuelBurnHelper.getBurnTime(fuelStack);
         if (fuelPerPiece <= 0) {
             return;
         }
 
         int currentFuel = getFuelLevel(canister);
         double currentBurnSpeed = getBurnSpeed(canister);
+        int fuelMultiplier = FuelBurnHelper.getBurnSpeedMultiplier(fuelStack);
         int totalAddedFuel = 0;
 
         while (!fuelStack.isEmpty() && currentFuel + totalAddedFuel + fuelPerPiece <= MAX_FUEL) {
@@ -94,7 +128,7 @@ public class FuelCanisterItem extends Item {
         }
 
         setFuelLevel(canister, currentFuel + totalAddedFuel);
-        setBurnSpeed(canister, PocketGeneratorMath.weightedBurnMultiplier(currentFuel, currentBurnSpeed, totalAddedFuel, 1.0D));
+        setBurnSpeed(canister, PocketGeneratorMath.weightedBurnMultiplier(currentFuel, currentBurnSpeed, totalAddedFuel, fuelMultiplier));
     }
 
     private static NBTTagCompound getOrCreateTag(ItemStack stack) {

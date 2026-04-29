@@ -1,10 +1,11 @@
 package com.zzhalex.justdirethings.common.item.misc;
 
+import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
 import com.zzhalex.justdirethings.common.tile.base.MachineAreaState;
 import com.zzhalex.justdirethings.common.tile.base.MachineFilterState;
 import com.zzhalex.justdirethings.common.tile.base.MachineRedstoneState;
+import com.zzhalex.justdirethings.common.tile.base.TileFilteredMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
-import com.zzhalex.justdirethings.common.tile.machine.TileItemCollector;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -177,8 +178,11 @@ public class ItemMachineSettingsCopier extends Item {
         tag.setBoolean(KEY_ALLOWLIST, filterState.isAllowList());
         tag.setBoolean(KEY_COMPARE_NBT, filterState.isCompareNbt());
         tag.setInteger(KEY_BLOCK_ITEM_FILTER, filterState.getBlockItemFilter());
-        if (machine instanceof TileItemCollector) {
-            tag.setTag(KEY_FILTERED_ITEMS, ((TileItemCollector) machine).getFilterHandler().serializeNBT());
+        if (machine instanceof TileFilteredMachine) {
+            FilterItemHandler filterHandler = ((TileFilteredMachine) machine).getFilterHandler();
+            if (filterHandler != null) {
+                tag.setTag(KEY_FILTERED_ITEMS, filterHandler.serializeNBT());
+            }
         }
     }
 
@@ -213,8 +217,11 @@ public class ItemMachineSettingsCopier extends Item {
         if (tag.hasKey(KEY_BLOCK_ITEM_FILTER)) {
             filterState.setBlockItemFilter(tag.getInteger(KEY_BLOCK_ITEM_FILTER));
         }
-        if (machine instanceof TileItemCollector && tag.hasKey(KEY_FILTERED_ITEMS, Constants.NBT.TAG_COMPOUND)) {
-            ((TileItemCollector) machine).getFilterHandler().deserializeNBT(tag.getCompoundTag(KEY_FILTERED_ITEMS));
+        if (machine instanceof TileFilteredMachine && tag.hasKey(KEY_FILTERED_ITEMS, Constants.NBT.TAG_COMPOUND)) {
+            FilterItemHandler filterHandler = ((TileFilteredMachine) machine).getFilterHandler();
+            if (filterHandler != null) {
+                filterHandler.deserializeNBT(tag.getCompoundTag(KEY_FILTERED_ITEMS));
+            }
         }
     }
 

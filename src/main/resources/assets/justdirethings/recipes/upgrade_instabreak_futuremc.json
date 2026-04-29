@@ -1,0 +1,31 @@
+﻿{
+    "conditions":  [
+                       {
+                           "type":  "minecraft:item_exists",
+                           "item":  "futuremc:netherite_pickaxe"
+                       }
+                   ],
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "aea",
+                    "fbf",
+                    "aea"
+                ],
+    "key":  {
+                "a":  {
+                          "item":  "justdirethings:time_crystal"
+                      },
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:nether_star"
+                      },
+                "f":  {
+                          "item":  "futuremc:netherite_pickaxe"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_instabreak"
+               }
+}

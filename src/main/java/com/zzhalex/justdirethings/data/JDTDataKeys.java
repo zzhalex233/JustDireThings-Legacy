@@ -33,6 +33,7 @@ public final class JDTDataKeys {
     public static final String PORTAL_GUN_FLUID = "PortalGunFluid";
     public static final String PORTAL_GUN_UUID = "PortalGunUuid";
     public static final String PORTAL_LINK_DATA = "PortalLinkData";
+    public static final String FORGE_ENERGY = "ForgeEnergy";
 
     private JDTDataKeys() {
     }

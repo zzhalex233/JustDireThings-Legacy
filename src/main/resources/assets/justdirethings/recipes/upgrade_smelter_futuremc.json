@@ -1,0 +1,28 @@
+﻿{
+    "conditions":  [
+                       {
+                           "type":  "minecraft:item_exists",
+                           "item":  "futuremc:blast_furnace"
+                       }
+                   ],
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    " e ",
+                    "fbf",
+                    " e "
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "minecraft:blaze_rod"
+                      },
+                "f":  {
+                          "item":  "futuremc:blast_furnace"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_smelter"
+               }
+}

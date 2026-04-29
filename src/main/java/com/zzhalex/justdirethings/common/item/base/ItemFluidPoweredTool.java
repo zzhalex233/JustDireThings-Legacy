@@ -10,7 +10,7 @@ public abstract class ItemFluidPoweredTool extends ItemPoweredTool implements Fl
     private final int fluidCapacity;
 
     protected ItemFluidPoweredTool() {
-        this(100000, 1000, 1000, 50, 4000);
+        this(100000, 100000, 100000, 50, 4000);
     }
 
     protected ItemFluidPoweredTool(int energyCapacity, int maxReceive, int maxExtract, int blockBreakFeCost, int fluidCapacity) {

@@ -38,7 +38,7 @@ class NoSilentPlaceholderTest {
             "ECLIPSEGATE"
     };
 
-    private static final String[][] T2_MACHINE_STUBS = {
+    private static final String[][] T2_MACHINE_PARTIALS = {
             {"TileBlockBreaker.java", "BlockBreakerT2BE"},
             {"TileBlockPlacer.java", "BlockPlacerT2BE"},
             {"TileBlockSwapper.java", "BlockSwapperT2BE"},
@@ -59,11 +59,14 @@ class NoSilentPlaceholderTest {
     };
 
     private static final String[] RECIPE_TYPE_STUBS = {
-            "goospreadrecipe",
-            "goospreadrecipe_tag",
-            "fluiddroprecipe",
             "abilityrecipe",
             "paxelrecipe"
+    };
+
+    private static final String[] RECIPE_TYPE_PARTIALS = {
+            "goospreadrecipe",
+            "goospreadrecipe_tag",
+            "fluiddroprecipe"
     };
 
     @Test
@@ -101,13 +104,13 @@ class NoSilentPlaceholderTest {
     }
 
     @Test
-    void t2MachineShellsAreExplicitlyDocumentedAsStubs() throws IOException {
+    void t2MachinePartialsUseSharedAdvancedContractAndAreDocumented() throws IOException {
         String matrix = read(MATRIX_PATH);
-        for (String[] stub : T2_MACHINE_STUBS) {
-            String source = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/" + stub[0]);
-            assertTrue(source.contains("PARITY STUB: Upstream " + stub[1]),
-                    stub[0] + " must point future workers to the missing upstream T2 implementation");
-            assertMatrixMentions(matrix, stub[1]);
+        for (String[] partial : T2_MACHINE_PARTIALS) {
+            String source = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/" + partial[0]);
+            assertTrue(source.contains("implements TileAdvancedMachine") || source.contains("extends TileAdvanced"),
+                    partial[0] + " should use the shared advanced-machine contract instead of remaining a silent T2 shell");
+            assertMatrixPartial(matrix, partial[1]);
         }
     }
 
@@ -145,6 +148,11 @@ class NoSilentPlaceholderTest {
                     "ModRecipes should keep the upstream recipe type visible for audit: " + recipeType);
             assertMatrixStub(matrix, recipeType);
         }
+        for (String recipeType : RECIPE_TYPE_PARTIALS) {
+            assertTrue(recipes.contains("\"" + recipeType + "\""),
+                    "ModRecipes should keep the upstream recipe type visible for audit: " + recipeType);
+            assertMatrixPartial(matrix, recipeType);
+        }
     }
 
     @Test
@@ -164,6 +172,11 @@ class NoSilentPlaceholderTest {
     private static void assertMatrixStub(String matrix, String id) {
         assertTrue(matrix.contains("`" + id + "`") && matrix.contains("| stub |"),
                 "Parity matrix should list " + id + " as a stub");
+    }
+
+    private static void assertMatrixPartial(String matrix, String id) {
+        assertTrue(matrix.contains("`" + id + "`") && matrix.contains("| partial |"),
+                "Parity matrix should list " + id + " as partial once data/factories exist but runtime behavior is pending");
     }
 
     private static void assertMatrixMentions(String matrix, String token) {

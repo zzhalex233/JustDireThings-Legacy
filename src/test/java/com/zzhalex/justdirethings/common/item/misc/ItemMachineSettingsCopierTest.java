@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings.common.item.misc;
 
 import com.zzhalex.justdirethings.common.tile.base.MachineRedstoneState;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
+import com.zzhalex.justdirethings.common.tile.machine.TileEnergyTransmitter;
 import com.zzhalex.justdirethings.common.tile.machine.TileItemCollector;
 import net.minecraft.init.Bootstrap;
 import net.minecraft.init.Items;
@@ -134,5 +135,21 @@ class ItemMachineSettingsCopierTest {
 
         assertEquals(Items.APPLE, target.getFilterHandler().getStackInSlot(0).getItem());
         assertEquals(2, target.getFilterHandler().getStackInSlot(0).getCount());
+    }
+
+    @Test
+    void copiesEnergyTransmitterFilterSlotsLikeOriginalFilterableMachines() {
+        ItemMachineSettingsCopier item = new ItemMachineSettingsCopier();
+        ItemStack stack = new ItemStack(item);
+        TileEnergyTransmitter source = new TileEnergyTransmitter();
+        source.getFilterHandler().setStackInSlot(0, new ItemStack(Items.REDSTONE, 3));
+
+        TileEnergyTransmitter target = new TileEnergyTransmitter();
+
+        item.saveSettings(source, stack);
+        item.loadSettings(target, stack);
+
+        assertEquals(Items.REDSTONE, target.getFilterHandler().getStackInSlot(0).getItem());
+        assertEquals(3, target.getFilterHandler().getStackInSlot(0).getCount());
     }
 }

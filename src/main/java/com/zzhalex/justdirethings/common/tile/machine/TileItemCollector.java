@@ -1,6 +1,8 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
 import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.tile.base.MachineFilterHelper;
+import com.zzhalex.justdirethings.common.tile.base.TileFilteredMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -15,7 +17,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.List;
 
-public class TileItemCollector extends TileMachineBase implements ITickable {
+public class TileItemCollector extends TileMachineBase implements ITickable, TileFilteredMachine {
 
     public static final int FILTER_SLOT_COUNT = 9;
 
@@ -82,25 +84,7 @@ public class TileItemCollector extends TileMachineBase implements ITickable {
         if (stack.isEmpty()) {
             return false;
         }
-
-        boolean allowList = getFilterState().isAllowList();
-        for (int slot = 0; slot < filterHandler.getSlots(); slot++) {
-            ItemStack filter = filterHandler.getStackInSlot(slot);
-            if (!filter.isEmpty() && matchesFilterStack(filter, stack)) {
-                return allowList;
-            }
-        }
-        return !allowList;
-    }
-
-    private boolean matchesFilterStack(ItemStack filter, ItemStack stack) {
-        if (filter.getItem() != stack.getItem()) {
-            return false;
-        }
-        if (filter.getMetadata() != stack.getMetadata()) {
-            return false;
-        }
-        return !getFilterState().isCompareNbt() || ItemStack.areItemStackTagsEqual(filter, stack);
+        return MachineFilterHelper.matchesFilter(filterHandler, getFilterState(), stack);
     }
 
     public boolean isRespectPickupDelay() {

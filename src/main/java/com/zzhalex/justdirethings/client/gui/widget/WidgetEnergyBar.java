@@ -3,7 +3,13 @@ package com.zzhalex.justdirethings.client.gui.widget;
 import com.zzhalex.justdirethings.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
+
+import java.text.NumberFormat;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 public class WidgetEnergyBar {
 
@@ -34,5 +40,23 @@ public class WidgetEnergyBar {
         if (filled > 0) {
             Gui.drawModalRectWithCustomSizedTexture(guiLeft + x + 1, guiTop + y + height - filled, 19, 71 - filled, width - 1, filled, 36, 72);
         }
+    }
+
+    public boolean contains(int guiLeft, int guiTop, int mouseX, int mouseY) {
+        int left = guiLeft + x;
+        int top = guiTop + y;
+        return mouseX >= left && mouseX < left + width && mouseY >= top && mouseY < top + height;
+    }
+
+    public List<String> getTooltipLines() {
+        return Collections.singletonList(I18n.format(
+                "justdirethings.screen.energy",
+                formatAmount(current),
+                formatAmount(max)
+        ));
+    }
+
+    private static String formatAmount(int amount) {
+        return NumberFormat.getIntegerInstance(Locale.ROOT).format(amount);
     }
 }

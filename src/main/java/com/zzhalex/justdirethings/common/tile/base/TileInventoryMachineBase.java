@@ -39,14 +39,14 @@ public abstract class TileInventoryMachineBase extends TileMachineBase {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return exposesItemHandler && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
+        return capability != null && exposesItemHandler && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
     }
 
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (exposesItemHandler && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        if (capability != null && exposesItemHandler && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return (T) itemHandler;
         }
         return super.getCapability(capability, facing);

@@ -46,12 +46,23 @@ class UpgradeStationRecipeIntegrationTest {
         ItemStack output = ModRecipes.getUpgradeStationOutput(
                 ItemStack.EMPTY,
                 stack(ModEquipmentItems.getItem("ferricore_sword")),
-                stack(ModContentItems.getItem("upgrade_flight"))
+                stack(ModContentItems.getItem("upgrade_mobscanner"))
         );
 
         assertFalse(output.isEmpty());
         assertEquals(ModEquipmentItems.getItem("ferricore_sword"), output.getItem());
-        assertTrue(readState(output).hasInstalledAbility("flight"));
+        assertTrue(readState(output).hasInstalledAbility("mobscanner"));
+    }
+
+    @Test
+    void abilityInstallRejectsUnsupportedBaseItem() {
+        ItemStack output = ModRecipes.getUpgradeStationOutput(
+                ItemStack.EMPTY,
+                stack(ModEquipmentItems.getItem("ferricore_sword")),
+                stack(ModContentItems.getItem("upgrade_flight"))
+        );
+
+        assertTrue(output.isEmpty(), "Original mod only allows flight on supported chestplates, not ferricore swords");
     }
 
     @Test

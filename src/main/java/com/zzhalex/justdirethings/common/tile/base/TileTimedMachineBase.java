@@ -13,9 +13,13 @@ public abstract class TileTimedMachineBase extends TileInventoryMachineBase impl
         if (world == null || world.isRemote) {
             return;
         }
+        onServerTick();
         if (shouldRunTimedMachine() && performWork()) {
             markDirtyClient();
         }
+    }
+
+    protected void onServerTick() {
     }
 
     protected abstract boolean performWork();

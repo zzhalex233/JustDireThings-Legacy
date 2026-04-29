@@ -1,12 +1,18 @@
 package com.zzhalex.justdirethings.common.container.base;
 
+import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.container.slot.SlotFilterItemHandler;
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineBase extends Container {
 
@@ -17,6 +23,9 @@ public class ContainerMachineBase extends Container {
 
     protected final TileMachineBase machine;
     protected final IInventory machineInventory;
+    private FilterItemHandler filterHandler;
+    private int filterSlotStart = -1;
+    private int filterSlotCount;
 
     public ContainerMachineBase(InventoryPlayer playerInventory, TileMachineBase machine, IInventory machineInventory) {
         this.machine = machine;
@@ -45,14 +54,86 @@ public class ContainerMachineBase extends Container {
         }
     }
 
+    protected int addSlotRange(IItemHandler handler, int index, int x, int y, int amount, int dx) {
+        for (int slot = 0; slot < amount; slot++) {
+            addSlotToContainer(new SlotItemHandler(handler, index + slot, x + slot * dx, y));
+        }
+        return index + amount;
+    }
+
+    protected int machineSlotY(TileMachineBase tile) {
+        return tile instanceof TileAdvancedMachine ? 35 : 13;
+    }
+
+    protected int addSlotBox(IItemHandler handler, int index, int x, int y, int columns, int dx, int rows, int dy) {
+        int current = index;
+        for (int row = 0; row < rows; row++) {
+            current = addSlotRange(handler, current, x, y + row * dy, columns, dx);
+        }
+        return current;
+    }
+
+    protected void addAdvancedFilterSlots(TileAdvancedMachine advancedMachine) {
+        if (advancedMachine == null || advancedMachine.getFilterHandler() == null) {
+            return;
+        }
+        addFilterSlots(advancedMachine.getFilterHandler());
+    }
+
+    protected void addFilterSlots(FilterItemHandler filterHandler) {
+        if (filterHandler == null) {
+            return;
+        }
+        this.filterHandler = filterHandler;
+        this.filterSlotStart = inventorySlots.size();
+        this.filterSlotCount = filterHandler.getSlots();
+        for (int slot = 0; slot < filterHandler.getSlots(); slot++) {
+            addSlotToContainer(new SlotFilterItemHandler(
+                    filterHandler,
+                    slot,
+                    8 + (slot % 9) * 18,
+                    54 + (slot / 9) * 18
+            ));
+        }
+    }
+
     @Override
     public boolean canInteractWith(EntityPlayer playerIn) {
         return machine == null || !machine.isInvalid() && playerIn.isEntityAlive();
     }
 
     @Override
+    public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
+        if (isFilterSlot(slotId)) {
+            return handleFilterSlotClick(slotId, dragType, clickTypeIn, player);
+        }
+        return super.slotClick(slotId, dragType, clickTypeIn, player);
+    }
+
+    protected ItemStack handleFilterSlotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
+        if (filterHandler == null || clickTypeIn != ClickType.PICKUP || player == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack held = player.inventory.getItemStack();
+        int filterIndex = slotId - filterSlotStart;
+        if (dragType == 1 || held.isEmpty()) {
+            filterHandler.setStackInSlot(filterIndex, ItemStack.EMPTY);
+        } else {
+            ItemStack filterStack = held.copy();
+            filterStack.setCount(1);
+            filterHandler.setStackInSlot(filterIndex, filterStack);
+        }
+        markFilterChanged();
+        return held;
+    }
+
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
         if (index < 0 || index >= inventorySlots.size()) {
+            return ItemStack.EMPTY;
+        }
+        if (isFilterSlot(index)) {
             return ItemStack.EMPTY;
         }
 
@@ -64,20 +145,50 @@ public class ContainerMachineBase extends Container {
         ItemStack stack = slot.getStack();
         ItemStack original = stack.copy();
         int machineSlotCount = getMachineSlotCount();
+        int playerSlotStart = getPlayerSlotStart(machineSlotCount);
 
-        boolean merged;
         if (index < machineSlotCount) {
-            merged = mergeItemStack(stack, machineSlotCount, inventorySlots.size(), true);
-        } else if (machineSlotCount > 0) {
-            merged = mergeItemStack(stack, 0, machineSlotCount, false);
-        } else {
-            return ItemStack.EMPTY;
+            if (!mergeItemStack(stack, playerSlotStart, inventorySlots.size(), true) || stack.getCount() == original.getCount()) {
+                return ItemStack.EMPTY;
+            }
+            updateTransferredSlot(playerIn, slot, stack);
+            return original;
         }
 
-        if (!merged || stack.getCount() == original.getCount()) {
-            return ItemStack.EMPTY;
+        if (index >= playerSlotStart) {
+            if (machineSlotCount > 0 && mergeItemStack(stack, 0, machineSlotCount, false) && stack.getCount() != original.getCount()) {
+                updateTransferredSlot(playerIn, slot, stack);
+                return original;
+            }
+            ItemStack filterStack = original.copy();
+            filterStack.setCount(1);
+            return addFilterCopy(filterStack) ? filterStack : ItemStack.EMPTY;
         }
 
+        return ItemStack.EMPTY;
+    }
+
+    protected boolean addFilterCopy(ItemStack filterStack) {
+        if (filterHandler == null || filterStack.isEmpty()) {
+            return false;
+        }
+        for (int slot = 0; slot < filterSlotCount; slot++) {
+            ItemStack existing = filterHandler.getStackInSlot(slot);
+            if (!existing.isEmpty() && ItemStack.areItemStacksEqual(existing, filterStack)) {
+                return false;
+            }
+        }
+        for (int slot = 0; slot < filterSlotCount; slot++) {
+            if (filterHandler.getStackInSlot(slot).isEmpty()) {
+                filterHandler.setStackInSlot(slot, filterStack);
+                markFilterChanged();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void updateTransferredSlot(EntityPlayer playerIn, Slot slot, ItemStack stack) {
         if (stack.isEmpty()) {
             slot.putStack(ItemStack.EMPTY);
         } else {
@@ -87,8 +198,6 @@ public class ContainerMachineBase extends Container {
         if (playerIn != null) {
             slot.onTake(playerIn, stack);
         }
-
-        return original;
     }
 
     private int getMachineSlotCount() {
@@ -96,5 +205,23 @@ public class ContainerMachineBase extends Container {
             return 0;
         }
         return Math.min(machineInventory.getSizeInventory(), inventorySlots.size());
+    }
+
+    private int getPlayerSlotStart(int machineSlotCount) {
+        if (filterSlotStart >= 0) {
+            return filterSlotStart + filterSlotCount;
+        }
+        return machineSlotCount;
+    }
+
+    private boolean isFilterSlot(int slotId) {
+        return filterSlotStart >= 0 && slotId >= filterSlotStart && slotId < filterSlotStart + filterSlotCount;
+    }
+
+    private void markFilterChanged() {
+        if (machine != null) {
+            machine.markDirtyClient();
+        }
+        detectAndSendChanges();
     }
 }

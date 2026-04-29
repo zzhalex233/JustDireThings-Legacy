@@ -4,10 +4,14 @@ import net.minecraft.util.ResourceLocation;
 
 public enum CompatContentKey {
     BAMBOO(null, "futuremc:bamboo", "minecraft:reeds"),
+    BLAST_FURNACE(null, "futuremc:blast_furnace", "minecraft:furnace"),
     HONEY_BOTTLE(null, "futuremc:honey_bottle", "minecraft:sugar"),
+    KELP(null, null, "minecraft:waterlily"),
     NETHERITE_PICKAXE(null, "futuremc:netherite_pickaxe", "minecraft:diamond_pickaxe"),
     NETHERITE_SCRAP(null, "futuremc:netherite_scrap", "minecraft:obsidian"),
     NETHERITE_BLOCK(null, "futuremc:netherite_block", "minecraft:obsidian"),
+    SHORT_GRASS(null, null, "minecraft:wheat_seeds"),
+    SMOKER(null, "futuremc:smoker", "minecraft:furnace"),
     AMETHYST_SHARD(null, null, "minecraft:quartz"),
     PHANTOM_MEMBRANE(null, null, "minecraft:ghast_tear"),
     TARGET(null, null, "minecraft:compass"),

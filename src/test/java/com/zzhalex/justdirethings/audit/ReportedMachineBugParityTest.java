@@ -28,6 +28,22 @@ class ReportedMachineBugParityTest {
     }
 
     @Test
+    void fluidPlacerMatchesUpstreamPartialDrainAndSourceValidation() throws IOException {
+        String contents = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/TileFluidPlacer.java");
+
+        assertTrue(contents.contains("handler.drain(Math.min(1000, room), false)"),
+                "Fluid Placer should simulate only the accepted tank room, matching upstream oversized-container handling");
+        assertTrue(contents.contains("handler.drain(accepted, true)"),
+                "Fluid Placer should execute-drain only the amount accepted by the machine tank instead of requiring the whole container to fit");
+        assertFalse(contents.contains("getFluidState().getAmount() + contained.amount > getFluidState().getCapacity()"),
+                "Fluid Placer must not reject oversized fluid containers just because their total contents exceed remaining capacity");
+        assertTrue(contents.contains("canPlaceFluidAt(targetPos)"),
+                "Fluid Placer should share the upstream source-fluid placement guard for T1 and T2 targets");
+        assertTrue(contents.contains("IFluidBlock") && contents.contains("BlockLiquid.LEVEL"),
+                "Fluid Placer should reject already-placed source fluids in both Forge-fluid and vanilla-liquid forms");
+    }
+
+    @Test
     void fluidBarsExposeOriginalHoverTooltip() throws IOException {
         String baseGui = read("src/main/java/com/zzhalex/justdirethings/client/gui/base/GuiMachineBase.java");
         String widget = read("src/main/java/com/zzhalex/justdirethings/client/gui/widget/WidgetFluidBar.java");
@@ -40,6 +56,21 @@ class ReportedMachineBugParityTest {
                 "Fluid bar widget should use the upstream fluid tooltip localization key");
         assertTrue(enUs.contains("justdirethings.screen.fluid="), "Missing English fluid tooltip localization");
         assertTrue(zhCn.contains("justdirethings.screen.fluid="), "Missing Chinese fluid tooltip localization");
+    }
+
+    @Test
+    void energyBarsExposeOriginalHoverTooltip() throws IOException {
+        String baseGui = read("src/main/java/com/zzhalex/justdirethings/client/gui/base/GuiMachineBase.java");
+        String widget = read("src/main/java/com/zzhalex/justdirethings/client/gui/widget/WidgetEnergyBar.java");
+        String enUs = read("src/main/resources/assets/justdirethings/lang/en_us.lang");
+        String zhCn = read("src/main/resources/assets/justdirethings/lang/zh_cn.lang");
+
+        assertTrue(baseGui.contains("drawEnergyBarTooltip"),
+                "Machine GUI base should ask energy bars to render the upstream hover tooltip");
+        assertTrue(widget.contains("justdirethings.screen.energy"),
+                "Energy bar widget should use the upstream energy tooltip localization key");
+        assertTrue(enUs.contains("justdirethings.screen.energy="), "Missing English energy tooltip localization");
+        assertTrue(zhCn.contains("justdirethings.screen.energy="), "Missing Chinese energy tooltip localization");
     }
 
     @Test
@@ -68,6 +99,33 @@ class ReportedMachineBugParityTest {
                 "Item Collector should default to denylist mode so empty filters collect everything like upstream");
         assertTrue(tile.contains("matchesFilter"),
                 "Item Collector should apply its GUI filter slots before collecting item entities");
+    }
+
+    @Test
+    void energyTransmitterUsesOriginalFilterSlotsForChargeTargets() throws IOException {
+        String tile = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/TileEnergyTransmitter.java");
+        String container = read("src/main/java/com/zzhalex/justdirethings/common/container/machine/ContainerEnergyTransmitter.java");
+
+        assertTrue(tile.contains("new FilterItemHandler(9)"),
+                "Energy Transmitter should expose the upstream 9-slot basic filter handler");
+        assertTrue(tile.contains("getFilterState().setAllowList(false)"),
+                "Energy Transmitter should default to denylist mode like upstream FilterData");
+        assertTrue(tile.contains("matchesFilter(blockStack)"),
+                "Energy Transmitter should apply its filter before adding charge targets/transmitters");
+        assertTrue(container.contains("addFilterSlots(tile.getFilterHandler())"),
+                "Energy Transmitter container should expose the upstream ghost filter slots");
+    }
+
+    @Test
+    void energyTransmitterTransfersEveryTickAndUsesTickSpeedOnlyForSourceScanCadence() throws IOException {
+        String tile = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/TileEnergyTransmitter.java");
+
+        assertTrue(tile.contains("setTickSpeed(50)"),
+                "Energy Transmitter should use the upstream 50-tick scan cadence");
+        assertFalse(tile.contains("!shouldRunTimedMachine()"),
+                "Energy Transmitter must not gate every FE transfer behind the timed machine cadence");
+        assertTrue(tile.contains("evaluateRedstoneControl()") && tile.contains("!isRedstoneActive()"),
+                "Energy Transmitter should still obey redstone modes while allowing per-tick FE transfer");
     }
 
     @Test
@@ -115,27 +173,43 @@ class ReportedMachineBugParityTest {
     void itemCollectorRenderAreaUsesOriginalWorldOverlayRenderer() throws IOException {
         String clientRegistration = read("src/main/java/com/zzhalex/justdirethings/client/ClientRegistration.java");
         String renderer = read("src/main/java/com/zzhalex/justdirethings/client/render/tile/RenderMachineArea.java");
+        String eventHandler = read("src/main/java/com/zzhalex/justdirethings/client/event/MachineAreaRenderHandler.java");
         String areaState = read("src/main/java/com/zzhalex/justdirethings/common/tile/base/MachineAreaState.java");
 
         assertFalse(clientRegistration.contains("RenderItemCollectorArea"),
                 "Render-area overlays must not be hard-wired to Item Collector only");
-        assertTrue(clientRegistration.contains("registerAreaRenderer(TileMachineBase.class"),
-                "Render-area overlays should bind once to TileMachineBase so future area-capable machines inherit the same renderer");
-        assertFalse(clientRegistration.contains("registerAreaRenderer(TileItemCollector.class"),
-                "Render-area overlays should not be registered one machine at a time");
-        assertFalse(clientRegistration.contains("registerAreaRenderer(TileEnergyTransmitter.class"),
-                "Energy Transmitter should inherit the shared machine renderer instead of requiring its own binding");
-        assertTrue(renderer.contains("extends TileEntitySpecialRenderer<TileMachineBase>"),
-                "Render-area overlay should be a shared 1.12 tile entity special renderer");
+        assertFalse(clientRegistration.contains("bindTileEntitySpecialRenderer"),
+                "Area overlays should not be registered as per-tile TESRs; that path caused duplicated one-off render behavior and renderer conflicts");
+        assertTrue(clientRegistration.contains("MachineAreaRenderHandler.INSTANCE"),
+                "Client setup should register one shared world render event for every area-capable machine");
+        assertTrue(eventHandler.contains("RenderWorldLastEvent"),
+                "Area overlays should render from the shared 1.12 world-last event instead of per-machine TESRs");
+        assertTrue(eventHandler.contains("loadedTileEntityList") && eventHandler.contains("instanceof TileMachineBase"),
+                "The shared event should scan loaded machine tiles and reuse the same overlay renderer for T1 area machines, T2 machines, and special machines");
+        assertFalse(renderer.contains("extends TileEntitySpecialRenderer"),
+                "RenderMachineArea should be a reusable drawing helper, not another tile-class renderer");
         assertTrue(renderer.contains("isRenderArea()"),
                 "Render-area overlay should obey the GUI Render Area toggle");
-        assertTrue(renderer.contains("RenderGlobal.drawSelectionBoundingBox"),
-                "Render-area overlay should draw the original wireframe boxes");
+        assertFalse(renderer.contains("RenderGlobal.drawSelectionBoundingBox"),
+                "Render-area overlay should not delegate wire colors to RenderGlobal because it can inherit black GL state");
+        assertTrue(renderer.contains("drawWireBox") && renderer.contains("GL11.GL_LINES"),
+                "Render-area overlay should draw the original wireframe boxes through the shared 1.12 color-controlled helper");
         assertTrue(renderer.contains("drawSolidBox"),
                 "Render-area overlay should draw the original translucent filled boxes");
-        assertTrue(renderer.contains("1.0F, 0.0F, 0.0F, 0.125F")
-                        && renderer.contains("0.0F, 0.0F, 1.0F, 0.125F"),
+        assertTrue(renderer.indexOf("drawSolidBox(area") < renderer.indexOf("drawWireBox(area"),
+                "Render-area overlay should draw translucent fill first and wireframe last so original colors stay visible");
+        assertTrue(renderer.contains("GlStateManager.tryBlendFuncSeparate") && renderer.contains("GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL"),
+                "Render-area overlay should use explicit translucent GL state and polygon offset to reduce z-fighting where it overlaps blocks");
+        assertTrue(renderer.contains("PRIMARY_FILL_RED = 255")
+                        && renderer.contains("OFFSET_FILL_BLUE = 255"),
                 "Render-area overlay should use the original red main area and blue offset area fills");
+        assertTrue(renderer.contains("PRIMARY_LINE_GREEN = 255")
+                        && renderer.contains("OFFSET_LINE_RED = 255")
+                        && renderer.contains("OFFSET_LINE_GREEN = 255")
+                        && renderer.contains("OFFSET_LINE_BLUE = 255"),
+                "Render-area overlay should use the original green main area and white offset wireframe colors");
+        assertTrue(renderer.contains(".color(red, green, blue, alpha)"),
+                "Render-area overlay should write integer RGBA values directly to the buffer so GL color state cannot turn advanced ranges black");
         assertTrue(areaState.contains("createOffsetOnlyArea"),
                 "Area state should expose the original offset-only helper box for the renderer");
     }

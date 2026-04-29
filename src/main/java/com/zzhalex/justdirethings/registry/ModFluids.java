@@ -30,19 +30,19 @@ public final class ModFluids {
 
     private static final ResourceLocation STILL = new ResourceLocation(Reference.MOD_ID, "block/fluid_source");
     private static final ResourceLocation FLOWING = new ResourceLocation(Reference.MOD_ID, "block/fluid_flowing");
-    private static final ModelResourceLocation FLUID_MODEL = new ModelResourceLocation(new ResourceLocation(Reference.MOD_ID, "fluid_block"), "fluid");
+    private static final ResourceLocation OVERLAY = new ResourceLocation(Reference.MOD_ID, "block/fluid_overlay");
     private static final List<JDTFluidDefinition> DEFINITIONS = ImmutableList.of(
-        new JDTFluidDefinition("polymorphic_fluid", 0xFF7D5DFF, 10, 1200, 1800, 320),
-        new JDTFluidDefinition("portal_fluid", 0xFF55D8FF, 12, 1100, 1600, 320),
-        new JDTFluidDefinition("time_fluid", 0xFF5EFFF3, 13, 1050, 1400, 280),
-        new JDTFluidDefinition("unstable_portal_fluid", 0xFFE39CFF, 15, 950, 900, 340),
-        new JDTFluidDefinition("unrefined_t2_fluid", 0xFFB96022, 8, 1400, 2200, 360),
-        new JDTFluidDefinition("refined_t2_fluid", 0xFFFF8A34, 10, 1200, 1800, 360),
-        new JDTFluidDefinition("unrefined_t3_fluid", 0xFF8D2BE7, 10, 1450, 2400, 420),
-        new JDTFluidDefinition("refined_t3_fluid", 0xFFC55CFF, 12, 1250, 2000, 420),
-        new JDTFluidDefinition("unrefined_t4_fluid", 0xFF1D5774, 11, 1450, 2200, 300),
-        new JDTFluidDefinition("refined_t4_fluid", 0xFF2FB6E8, 14, 1200, 1700, 300),
-        new JDTFluidDefinition("xp_fluid", 0xFF6DFF5D, 14, 1000, 1000, 295)
+        new JDTFluidDefinition("polymorphic_fluid", 0xFFFFFFFF, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("portal_fluid", 0xFF00DD00, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("time_fluid", 0x7700FF00, 0, 1000, 250, -200),
+        new JDTFluidDefinition("unstable_portal_fluid", 0xFF9400D3, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("unrefined_t2_fluid", 0xFF8B4500, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("refined_t2_fluid", 0xFF8B0000, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("unrefined_t3_fluid", 0xFF64D5AD, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("refined_t3_fluid", 0xFF40C7C7, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("unrefined_t4_fluid", 0xFF36484A, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("refined_t4_fluid", 0xFF1B2027, 0, 1000, 1000, 300),
+        new JDTFluidDefinition("xp_fluid", 0xFF32CD32, 0, 1000, 1000, 300)
     );
     private static final Map<String, Fluid> FLUIDS = new LinkedHashMap<>();
     private static final Map<String, Block> FLUID_BLOCKS = new LinkedHashMap<>();
@@ -60,7 +60,7 @@ public final class ModFluids {
         for (JDTFluidDefinition definition : DEFINITIONS) {
             Fluid fluid = FluidRegistry.getFluid(definition.getId());
             if (fluid == null) {
-                fluid = new JDTFluid(definition, STILL, FLOWING);
+                fluid = new JDTFluid(definition, STILL, FLOWING, OVERLAY);
                 FluidRegistry.registerFluid(fluid);
             }
             FluidRegistry.addBucketForFluid(fluid);
@@ -100,7 +100,7 @@ public final class ModFluids {
             ModelLoader.setCustomStateMapper(block, new StateMapperBase() {
                 @Override
                 protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                    return FLUID_MODEL;
+                    return new ModelResourceLocation(block.getRegistryName(), "fluid");
                 }
             });
         }

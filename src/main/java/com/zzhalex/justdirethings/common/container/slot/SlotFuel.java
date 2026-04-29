@@ -1,7 +1,7 @@
 package com.zzhalex.justdirethings.common.container.slot;
 
+import com.zzhalex.justdirethings.common.item.fuel.FuelBurnHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -13,6 +13,6 @@ public class SlotFuel extends SlotItemHandler {
 
     @Override
     public boolean isItemValid(ItemStack stack) {
-        return !stack.isEmpty() && TileEntityFurnace.getItemBurnTime(stack) > 0;
+        return FuelBurnHelper.getBurnTime(stack) > 0;
     }
 }

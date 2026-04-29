@@ -1,0 +1,32 @@
+﻿{
+    "conditions":  [
+                       {
+                           "type":  "minecraft:item_exists",
+                           "item":  "futuremc:blast_furnace"
+                       }
+                   ],
+    "type":  "minecraft:crafting_shaped",
+    "group":  "justdirethings",
+    "pattern":  [
+                    "iri",
+                    "cfc",
+                    "iri"
+                ],
+    "key":  {
+                "c":  {
+                          "item":  "minecraft:coal"
+                      },
+                "f":  {
+                          "item":  "futuremc:blast_furnace"
+                      },
+                "i":  {
+                          "item":  "justdirethings:ferricore_ingot"
+                      },
+                "r":  {
+                          "item":  "minecraft:redstone"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:generatort1"
+               }
+}

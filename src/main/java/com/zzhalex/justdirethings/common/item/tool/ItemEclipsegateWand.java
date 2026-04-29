@@ -12,7 +12,7 @@ public class ItemEclipsegateWand extends ItemPoweredTool {
     public static final int ENERGY_CAPACITY = 100_000;
 
     public ItemEclipsegateWand() {
-        super(ENERGY_CAPACITY, 1_000, 1_000, 50);
+        super(ENERGY_CAPACITY, ENERGY_CAPACITY, ENERGY_CAPACITY, 50);
         setMaxDamage(DURABILITY);
         addSupportedAbilities(Ability.AIRBURST, Ability.VOIDSHIFT, Ability.ECLIPSEGATE);
     }

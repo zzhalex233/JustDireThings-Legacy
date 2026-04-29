@@ -1,16 +1,16 @@
 package com.zzhalex.justdirethings.client.gui;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.client.gui.base.GuiTooltipContainer;
 import com.zzhalex.justdirethings.common.container.ContainerUpgradeStation;
 import com.zzhalex.justdirethings.common.tile.TileUpgradeStation;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 
-public class GuiUpgradeStation extends GuiContainer {
+public class GuiUpgradeStation extends GuiTooltipContainer {
 
     private static final ResourceLocation BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/sprites/background.png");
     private static final ResourceLocation SLOT_BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/justslot.png");

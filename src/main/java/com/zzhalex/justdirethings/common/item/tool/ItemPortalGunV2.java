@@ -2,11 +2,15 @@ package com.zzhalex.justdirethings.common.item.tool;
 
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.entity.EntityPortalProjectile;
+import com.zzhalex.justdirethings.common.item.base.FluidPickupHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemFluidPoweredTool;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.common.portal.PortalLinkData;
 import com.zzhalex.justdirethings.config.JDTConfig;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModFluids;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
@@ -15,11 +19,15 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ItemPortalGunV2 extends ItemFluidPoweredTool {
@@ -29,17 +37,31 @@ public class ItemPortalGunV2 extends ItemFluidPoweredTool {
     public static final String FAVORITE_STAY_OPEN = "StayOpen";
 
     public ItemPortalGunV2() {
-        super(100_000, 1_000, 1_000, 0, FLUID_CAPACITY);
+        super(1_000_000, 1_000_000, 1_000_000, 0, FLUID_CAPACITY);
         setTranslationKey(Reference.MOD_ID + ".portal_gun_v2");
     }
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
+        if (FluidPickupHelper.pickupSourceFluid(world, player, stack, rayTrace(world, player, true), getContainedFluid(stack))) {
+            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        }
         if (!world.isRemote) {
             spawnProjectile(world, player, stack);
         }
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        tooltip.add(TextFormatting.DARK_AQUA + I18n.format(
+                "justdirethings.portalfluidamt",
+                TooltipHelper.formatNumber(getStoredFluid(stack)),
+                TooltipHelper.formatNumber(getFluidCapacity())
+        ));
     }
 
     public boolean spawnProjectile(World world, EntityPlayer player, ItemStack stack) {
@@ -138,6 +160,21 @@ public class ItemPortalGunV2 extends ItemFluidPoweredTool {
 
     public void setStoredEnergy(ItemStack stack, int storedEnergy) {
         getOrCreateTag(stack).setInteger(JDTDataKeys.PORTAL_GUN_ENERGY, Math.max(0, Math.min(JDTConfig.portalGunV2RfCapacity, storedEnergy)));
+    }
+
+    @Override
+    public int getEnergyCapacity(ItemStack stack) {
+        return JDTConfig.portalGunV2RfCapacity;
+    }
+
+    @Override
+    public int getMaxReceive(ItemStack stack) {
+        return getEnergyCapacity(stack);
+    }
+
+    @Override
+    public int getMaxExtract(ItemStack stack) {
+        return getEnergyCapacity(stack);
     }
 
     public int getStoredFluid(ItemStack stack) {

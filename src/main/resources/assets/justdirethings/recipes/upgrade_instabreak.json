@@ -1,4 +1,13 @@
 ﻿{
+    "conditions":  [
+                       {
+                           "type":  "forge:not",
+                           "value":  {
+                                         "type":  "minecraft:item_exists",
+                                         "item":  "futuremc:netherite_pickaxe"
+                                     }
+                       }
+                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     "aea",
@@ -16,7 +25,7 @@
                           "item":  "minecraft:nether_star"
                       },
                 "f":  {
-                          "item":  "minecraft:netherite_pickaxe"
+                          "item":  "minecraft:diamond_pickaxe"
                       }
             },
     "result":  {

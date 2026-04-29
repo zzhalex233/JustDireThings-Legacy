@@ -14,7 +14,7 @@ public class GuiParadoxMachine extends GuiMachineBase {
     public GuiParadoxMachine(ContainerParadoxMachine container) {
         super(container);
         this.container = container;
-        ySize = 176;
+        baseYSize = 176;
     }
 
     @Override
@@ -36,6 +36,6 @@ public class GuiParadoxMachine extends GuiMachineBase {
 
         mc.getTextureManager().bindTexture(PARADOX_BAR);
         int height = Math.min(72, (int) (tile.getParadoxEnergy() / 100.0F * 72.0F));
-        drawTexturedModalRect(guiLeft + 152, guiTop + 13 + 72 - height, 0, 72 - height, 18, height);
+        drawTexturedModalRect(getBaseGuiLeft() + 152, getBaseGuiTop() + 13 + 72 - height, 0, 72 - height, 18, height);
     }
 }

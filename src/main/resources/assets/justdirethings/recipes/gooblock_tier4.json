@@ -8,16 +8,16 @@
                 ],
     "key":  {
                 "b":  {
-                          "item":  "minecraft:sculk"
+                          "item":  "minecraft:obsidian"
                       },
                 "g":  {
                           "item":  "justdirethings:gooblock_tier3"
                       },
                 "r":  {
-                          "item":  "minecraft:sculk_shrieker"
+                          "item":  "minecraft:dragon_breath"
                       },
                 "w":  {
-                          "item":  "minecraft:echo_shard"
+                          "item":  "minecraft:popped_chorus_fruit"
                       }
             },
     "result":  {

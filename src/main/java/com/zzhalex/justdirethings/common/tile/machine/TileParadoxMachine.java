@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings.common.tile.machine;
 import com.zzhalex.justdirethings.common.paradox.ParadoxRuntimePlan;
 import com.zzhalex.justdirethings.common.paradox.ParadoxSnapshot;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
+import com.zzhalex.justdirethings.config.JDTConfig;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.BlockPos;
@@ -39,6 +40,13 @@ public class TileParadoxMachine extends TileMachineBase {
     private float paradoxEnergy;
     private final List<BlockPos> restoringBlocks = new ArrayList<>();
     private final List<Vec3d> restoringEntities = new ArrayList<>();
+
+    public TileParadoxMachine() {
+        getEnergyState().setCapacity(JDTConfig.paradoxRfCapacity);
+        getEnergyState().setMaxReceive(JDTConfig.paradoxRfCapacity);
+        getEnergyState().setMaxExtract(JDTConfig.paradoxRfCapacity);
+        getFluidState().setCapacity(JDTConfig.paradoxFluidCapacity);
+    }
 
     public ParadoxSnapshot getSnapshot() {
         return snapshot;
@@ -103,9 +111,25 @@ public class TileParadoxMachine extends TileMachineBase {
         return paradoxEnergy;
     }
 
+    public float getParadoxEnergyPerBlock() {
+        return (float) JDTConfig.paradoxEnergyPerBlock;
+    }
+
+    public float getParadoxEnergyPerEntity() {
+        return (float) JDTConfig.paradoxEnergyPerEntity;
+    }
+
+    public float getMaxParadoxEnergy() {
+        return (float) JDTConfig.paradoxEnergyMax;
+    }
+
     public void setParadoxEnergy(float paradoxEnergy) {
-        this.paradoxEnergy = Math.max(0.0F, paradoxEnergy);
+        this.paradoxEnergy = Math.max(0.0F, Math.min(getMaxParadoxEnergy(), paradoxEnergy));
         markDirtyClient();
+    }
+
+    public void addParadoxEnergy(float amount) {
+        setParadoxEnergy(paradoxEnergy + Math.max(0.0F, amount));
     }
 
     public List<BlockPos> getRestoringBlocks() {
@@ -134,6 +158,65 @@ public class TileParadoxMachine extends TileMachineBase {
 
     public int getRunTime() {
         return ParadoxRuntimePlan.runtimeTicksFor(restoringBlocks.size(), restoringEntities.size());
+    }
+
+    public int getEnergyCost(int blocks, int entities) {
+        return Math.max(0, blocks) * JDTConfig.paradoxRfPerBlock
+                + Math.max(0, entities) * JDTConfig.paradoxRfPerEntity;
+    }
+
+    public int getFluidCost(int blocks, int entities) {
+        return Math.max(0, blocks) * JDTConfig.paradoxFluidPerBlock
+                + Math.max(0, entities) * JDTConfig.paradoxFluidPerEntity;
+    }
+
+    public int getEnergyCostPerTick(int totalEnergyCost) {
+        return getCostPerTick(totalEnergyCost);
+    }
+
+    public int getFluidCostPerTick(int totalFluidCost) {
+        return getCostPerTick(totalFluidCost);
+    }
+
+    private int getCostPerTick(int totalCost) {
+        int runTime = getRunTime();
+        return runTime <= 0 ? 0 : (int) Math.floor((double) totalCost / runTime);
+    }
+
+    public boolean canConsumeRuntimeTick() {
+        return running
+                && getEnergyState().extractEnergy(fePerTick, true) == fePerTick
+                && getFluidState().getAmount() >= fluidPerTick;
+    }
+
+    public boolean consumeRuntimeTick() {
+        if (!running) {
+            return false;
+        }
+        if (!canConsumeRuntimeTick()) {
+            stopRunning(false);
+            return false;
+        }
+
+        getEnergyState().extractEnergy(fePerTick, false);
+        getFluidState().setAmount(getFluidState().getAmount() - fluidPerTick);
+        timeRunning++;
+        markDirtyClient();
+        return true;
+    }
+
+    public void stopRunning(boolean success) {
+        if (success) {
+            addParadoxEnergy(getParadoxEnergyPerBlock() * restoringBlocks.size());
+            addParadoxEnergy(getParadoxEnergyPerEntity() * restoringEntities.size());
+        }
+        running = false;
+        timeRunning = 0;
+        fePerTick = 0;
+        fluidPerTick = 0;
+        restoringBlocks.clear();
+        restoringEntities.clear();
+        markDirtyClient();
     }
 
     @Override

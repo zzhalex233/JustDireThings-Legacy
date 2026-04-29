@@ -1,0 +1,31 @@
+﻿{
+    "conditions":  [
+                       {
+                           "type":  "minecraft:item_exists",
+                           "item":  "futuremc:honey_bottle"
+                       }
+                   ],
+    "type":  "minecraft:crafting_shaped",
+    "pattern":  [
+                    "mem",
+                    "fbf",
+                    "mem"
+                ],
+    "key":  {
+                "b":  {
+                          "item":  "justdirethings:upgrade_blank"
+                      },
+                "e":  {
+                          "item":  "futuremc:honey_bottle"
+                      },
+                "f":  {
+                          "item":  "minecraft:golden_apple"
+                      },
+                "m":  {
+                          "item":  "minecraft:milk_bucket"
+                      }
+            },
+    "result":  {
+                   "item":  "justdirethings:upgrade_debuffremover"
+               }
+}

@@ -2,36 +2,66 @@ package com.zzhalex.justdirethings.common.item.tool;
 
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.entity.EntityTimeWand;
+import com.zzhalex.justdirethings.common.item.base.FluidPickupHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemFluidPoweredTool;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.common.util.TickAccelerationRules;
 import com.zzhalex.justdirethings.config.JDTConfig;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModFluids;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
 public class ItemTimeWand extends ItemFluidPoweredTool {
 
     public ItemTimeWand() {
-        super(100_000, 1_000, 1_000, 50, 8_000);
+        super(100_000, 100_000, 100_000, 50, 8_000);
         setTranslationKey(Reference.MOD_ID + ".time_wand");
+    }
+
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        RayTraceResult hit = rayTrace(world, player, true);
+        if (FluidPickupHelper.pickupSourceFluid(world, player, stack, hit, getContainedFluid(stack))) {
+            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        }
+        return new ActionResult<>(EnumActionResult.PASS, stack);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        tooltip.add(TextFormatting.DARK_AQUA + I18n.format(
+                "justdirethings.timefluidamt",
+                TooltipHelper.formatNumber(getStoredFluid(stack)),
+                TooltipHelper.formatNumber(getFluidCapacity())
+        ));
     }
 
     @Override
@@ -87,6 +117,21 @@ public class ItemTimeWand extends ItemFluidPoweredTool {
 
     public void setStoredEnergy(ItemStack stack, int storedEnergy) {
         getOrCreateTag(stack).setInteger(JDTDataKeys.TIME_WAND_ENERGY, Math.max(0, Math.min(JDTConfig.timeWandRfCapacity, storedEnergy)));
+    }
+
+    @Override
+    public int getEnergyCapacity(ItemStack stack) {
+        return JDTConfig.timeWandRfCapacity;
+    }
+
+    @Override
+    public int getMaxReceive(ItemStack stack) {
+        return getEnergyCapacity(stack);
+    }
+
+    @Override
+    public int getMaxExtract(ItemStack stack) {
+        return getEnergyCapacity(stack);
     }
 
     public int getStoredFluid(ItemStack stack) {

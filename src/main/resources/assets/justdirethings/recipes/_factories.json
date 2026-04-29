@@ -1,0 +1,7 @@
+{
+  "recipes": {
+    "goospread": "com.zzhalex.justdirethings.common.recipe.custom.GooSpreadDataRecipe$Factory",
+    "goospread_tag": "com.zzhalex.justdirethings.common.recipe.custom.GooSpreadTagDataRecipe$Factory",
+    "fluiddrop": "com.zzhalex.justdirethings.common.recipe.custom.FluidDropDataRecipe$Factory"
+  }
+}

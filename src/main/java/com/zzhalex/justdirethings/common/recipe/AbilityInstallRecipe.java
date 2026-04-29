@@ -1,5 +1,7 @@
 package com.zzhalex.justdirethings.common.recipe;
 
+import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -32,10 +34,14 @@ public class AbilityInstallRecipe extends UpgradeStationRecipe {
 
     @Override
     public boolean matches(ItemStack template, ItemStack base, ItemStack addition) {
+        Ability ability = Ability.byId(abilityId);
         return template.isEmpty()
                 && !base.isEmpty()
                 && allowedBaseItems.contains(base.getItem())
-                && sameItem(addition, upgradeItem);
+                && sameItem(addition, upgradeItem)
+                && base.getItem() instanceof ToggleableTool
+                && ((ToggleableTool) base.getItem()).supportsAbility(ability)
+                && !((ToggleableTool) base.getItem()).hasInstalledAbility(base, ability);
     }
 
     @Override

@@ -1,14 +1,24 @@
 package com.zzhalex.justdirethings.client.gui;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.client.gui.base.GuiTooltipContainer;
 import com.zzhalex.justdirethings.common.container.ContainerFuelCanister;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import com.zzhalex.justdirethings.common.item.fuel.FuelBurnHelper;
+import com.zzhalex.justdirethings.common.item.misc.FuelCanisterItem;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.ResourceLocation;
 
-public class GuiFuelCanister extends GuiContainer {
+import java.util.List;
+import java.util.Locale;
+
+public class GuiFuelCanister extends GuiTooltipContainer {
 
     private static final ResourceLocation BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/fuelcanister.png");
 
@@ -25,13 +35,10 @@ public class GuiFuelCanister extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        String title = I18n.format("item.justdirethings.fuel_canister.name");
-        String itemsLine = I18n.format("justdirethings.gui.items", container.getFuelItemsEquivalent());
-        String fuelLine = I18n.format("justdirethings.gui.fuel", container.getFuelLevel());
-        fontRenderer.drawString(title, xSize / 2 - fontRenderer.getStringWidth(title) / 2, 6, 4210752);
-        fontRenderer.drawString(itemsLine, xSize / 2 - fontRenderer.getStringWidth(itemsLine) / 2, 16, 4210752);
-        fontRenderer.drawString(fuelLine, xSize / 2 - fontRenderer.getStringWidth(fuelLine) / 2, 26, 4210752);
-        fontRenderer.drawString(I18n.format("justdirethings.gui.player_inventory"), 8, ySize - 96 + 2, 4210752);
+        String itemsLine = I18n.format("justdirethings.fuelcanisteritemsamt", formatNumber(container.getFuelLevel() / (double) FuelCanisterItem.MINIMUM_TICKS_CONSUMED));
+        String fuelLine = I18n.format("justdirethings.fuelcanisteramt", formatNumber(container.getFuelLevel()));
+        fontRenderer.drawString(itemsLine, xSize / 2 - fontRenderer.getStringWidth(itemsLine) / 2, 5, 4210752);
+        fontRenderer.drawString(fuelLine, xSize / 2 - fontRenderer.getStringWidth(fuelLine) / 2, 15, 4210752);
     }
 
     @Override
@@ -41,5 +48,65 @@ public class GuiFuelCanister extends GuiContainer {
         int left = (width - xSize) / 2;
         int top = (height - ySize) / 2;
         drawTexturedModalRect(left, top, 0, 0, xSize, ySize);
+    }
+
+    @Override
+    protected void drawAfterContainerBeforeTooltips(int mouseX, int mouseY, float partialTicks) {
+        drawInvalidSlotOverlays();
+    }
+
+    private void drawInvalidSlotOverlays() {
+        for (Slot slot : inventorySlots.inventorySlots) {
+            if (slot.getHasStack() && !slot.isItemValid(slot.getStack())) {
+                drawRect(guiLeft + slot.xPos, guiTop + slot.yPos, guiLeft + slot.xPos + 16, guiTop + slot.yPos + 16, 0x7FFF0000);
+            }
+        }
+    }
+
+    @Override
+    protected void renderHoveredToolTip(int mouseX, int mouseY) {
+        if (mc.player.inventory.getItemStack().isEmpty()) {
+            Slot hovered = getSlotUnderMouse();
+            if (hovered != null && hovered.getHasStack()) {
+                ItemStack stack = hovered.getStack();
+                List<String> tooltip = stack.getTooltip(mc.player, mc.gameSettings.advancedItemTooltips
+                        ? ITooltipFlag.TooltipFlags.ADVANCED
+                        : ITooltipFlag.TooltipFlags.NORMAL);
+                appendFuelTooltip(stack, tooltip);
+                drawHoveringText(tooltip, mouseX, mouseY);
+                return;
+            }
+        }
+        super.renderHoveredToolTip(mouseX, mouseY);
+    }
+
+    private static void appendFuelTooltip(ItemStack stack, List<String> tooltip) {
+        if (!isFuelCanisterInput(stack)) {
+            return;
+        }
+
+        int fuelPerPiece = FuelBurnHelper.getBurnTime(stack);
+        if (GuiScreen.isShiftKeyDown()) {
+            tooltip.add(TextFormatting.AQUA + I18n.format("justdirethings.fuelcanisteramt", fuelPerPiece));
+            tooltip.add(TextFormatting.AQUA + I18n.format("justdirethings.fuelcanisteramtstack", fuelPerPiece * stack.getCount()));
+        } else {
+            tooltip.add(TextFormatting.AQUA + I18n.format("justdirethings.fuelcanisteritemsamt", formatNumber(fuelPerPiece / (double) FuelCanisterItem.MINIMUM_TICKS_CONSUMED)));
+            tooltip.add(TextFormatting.AQUA + I18n.format("justdirethings.fuelcanisteritemsamtstack", formatNumber((fuelPerPiece * stack.getCount()) / (double) FuelCanisterItem.MINIMUM_TICKS_CONSUMED)));
+        }
+    }
+
+    private static boolean isFuelCanisterInput(ItemStack stack) {
+        return !stack.isEmpty()
+                && !(stack.getItem() instanceof FuelCanisterItem)
+                && FuelBurnHelper.getBurnTime(stack) > 0
+                && !FuelBurnHelper.hasContainerRemainder(stack);
+    }
+
+    private static String formatNumber(double value) {
+        long rounded = Math.round(value);
+        if (Math.abs(value - rounded) < 0.001D) {
+            return Long.toString(rounded);
+        }
+        return String.format(Locale.ROOT, "%.1f", value);
     }
 }

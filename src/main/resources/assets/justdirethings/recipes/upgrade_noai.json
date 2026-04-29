@@ -7,7 +7,7 @@
                 ],
     "key":  {
                 "a":  {
-                          "item":  "minecraft:calibrated_sculk_sensor"
+                          "item":  "minecraft:observer"
                       },
                 "b":  {
                           "item":  "justdirethings:upgrade_blank"

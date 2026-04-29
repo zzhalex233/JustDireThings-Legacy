@@ -1,4 +1,13 @@
 ﻿{
+    "conditions":  [
+                       {
+                           "type":  "forge:not",
+                           "value":  {
+                                         "type":  "minecraft:item_exists",
+                                         "item":  "futuremc:honey_bottle"
+                                     }
+                       }
+                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     "mem",
@@ -10,7 +19,7 @@
                           "item":  "justdirethings:upgrade_blank"
                       },
                 "e":  {
-                          "item":  "minecraft:honey_bottle"
+                          "item":  "minecraft:sugar"
                       },
                 "f":  {
                           "item":  "minecraft:golden_apple"

@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.common.container.machine;
 
 import com.zzhalex.justdirethings.common.container.base.ContainerMachineBase;
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockSwapper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.InventoryBasic;
@@ -13,6 +14,7 @@ public class ContainerBlockSwapper extends ContainerMachineBase {
         super(playerInventory, tile, new InventoryBasic("blockswappert1", false, 0));
         this.tile = tile;
 
+        addAdvancedFilterSlots(tile instanceof TileAdvancedMachine ? (TileAdvancedMachine) tile : null);
         addPlayerInventory(playerInventory, 8, 84);
     }
 

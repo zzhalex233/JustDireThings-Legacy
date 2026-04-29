@@ -13,10 +13,10 @@
                           "item":  "justdirethings:upgrade_blank"
                       },
                 "e":  {
-                          "item":  "minecraft:calibrated_sculk_sensor"
+                          "item":  "minecraft:observer"
                       },
                 "f":  {
-                          "item":  "minecraft:sculk_shrieker"
+                          "item":  "minecraft:dragon_breath"
                       }
             },
     "result":  {

@@ -1,4 +1,13 @@
 ﻿{
+    "conditions":  [
+                       {
+                           "type":  "forge:not",
+                           "value":  {
+                                         "type":  "minecraft:item_exists",
+                                         "item":  "futuremc:netherite_scrap"
+                                     }
+                       }
+                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     "aea",
@@ -7,7 +16,7 @@
                 ],
     "key":  {
                 "a":  {
-                          "item":  "minecraft:netherite_scrap"
+                          "item":  "minecraft:obsidian"
                       },
                 "b":  {
                           "item":  "justdirethings:upgrade_blank"

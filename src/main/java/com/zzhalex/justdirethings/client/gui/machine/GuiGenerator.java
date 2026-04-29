@@ -34,9 +34,9 @@ public class GuiGenerator extends GuiMachineBase {
             return;
         }
         int height = Math.max(1, (int) (13.0F * remaining / maxBurn));
-        int left = guiLeft + 80;
-        int top = guiTop + 30 + (13 - height);
-        drawRect(left, guiTop + 30, left + 14, guiTop + 43, 0xFF5A3518);
-        drawRect(left, top, left + 14, guiTop + 43, 0xFFFFA000);
+        int left = getBaseGuiLeft() + 80;
+        int top = getBaseGuiTop() + 30 + (13 - height);
+        drawRect(left, getBaseGuiTop() + 30, left + 14, getBaseGuiTop() + 43, 0xFF5A3518);
+        drawRect(left, top, left + 14, getBaseGuiTop() + 43, 0xFFFFA000);
     }
 }

@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.common.entity.EntityCreatureCatcher;
 import com.zzhalex.justdirethings.registry.ModItems;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
@@ -13,6 +14,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
@@ -106,7 +108,19 @@ public class ItemCreatureCatcher extends Item {
             tooltip.add(TextFormatting.DARK_GRAY
                     + I18n.format("justdirethings.creature")
                     + TextFormatting.GREEN
-                    + getCapturedEntityId(stack));
+                    + getCapturedEntityName(stack));
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static String getCapturedEntityName(ItemStack stack) {
+        String entityId = getCapturedEntityId(stack);
+        if (entityId.isEmpty()) {
+            return entityId;
+        }
+
+        ResourceLocation key = new ResourceLocation(entityId);
+        String translationKey = EntityList.getTranslationName(key);
+        return translationKey == null ? entityId : I18n.format(translationKey);
     }
 }

@@ -2,9 +2,13 @@ package com.zzhalex.justdirethings.common.item.misc;
 
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModContainers;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.init.PotionTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPotion;
@@ -16,7 +20,12 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
 
 public class PotionCanisterItem extends Item {
 
@@ -34,6 +43,24 @@ public class PotionCanisterItem extends Item {
             player.openGui(JustDireThingsLegacy.INSTANCE, ModContainers.GUI_POTION_CANISTER, world, 0, 0, 0);
         }
         return new ActionResult<>(EnumActionResult.SUCCESS, heldStack);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        PotionType potionType = getPotionType(stack);
+        int amount = getPotionAmount(stack);
+        tooltip.add(TextFormatting.DARK_AQUA
+                + I18n.format("justdirethings.fluidamt")
+                + TextFormatting.GREEN
+                + TooltipHelper.formatNumber(amount)
+                + "/"
+                + TooltipHelper.formatNumber(MAX_MB));
+        if (potionType != PotionTypes.EMPTY && amount > 0) {
+            ItemStack potionStack = PotionUtils.addPotionToItemStack(new ItemStack(Items.POTIONITEM), potionType);
+            PotionUtils.addPotionTooltip(potionStack, tooltip, 1.0F);
+        }
     }
 
     public static PotionType getPotionType(ItemStack stack) {

@@ -1,7 +1,6 @@
 {
   "variants": {
-    "normal": {
-      "model": "justdirethings:gooblock_tier4"
-    }
+    "alive=false": { "model": "justdirethings:gooblock_tier4_dead" },
+    "alive=true": { "model": "justdirethings:gooblock_tier4" }
   }
 }

@@ -1,8 +1,9 @@
 package com.zzhalex.justdirethings.common.tile.base;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.energy.IEnergyStorage;
 
-public class MachineEnergyState {
+public class MachineEnergyState implements IEnergyStorage {
 
     private int capacity;
     private int storedEnergy;
@@ -50,10 +51,65 @@ public class MachineEnergyState {
         return tag;
     }
 
+    public int forceReceiveEnergy(int maxReceive, boolean simulate) {
+        if (maxReceive <= 0) {
+            return 0;
+        }
+        int received = Math.min(capacity - storedEnergy, maxReceive);
+        if (!simulate) {
+            storedEnergy += received;
+        }
+        return received;
+    }
+
     public void readFromNbt(NBTTagCompound tag) {
         setCapacity(tag.getInteger("Capacity"));
         setStoredEnergy(tag.getInteger("StoredEnergy"));
         setMaxReceive(tag.getInteger("MaxReceive"));
         setMaxExtract(tag.getInteger("MaxExtract"));
+    }
+
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        if (!canReceive() || maxReceive <= 0) {
+            return 0;
+        }
+        int received = Math.min(capacity - storedEnergy, Math.min(this.maxReceive, maxReceive));
+        if (!simulate) {
+            storedEnergy += received;
+        }
+        return received;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        if (!canExtract() || maxExtract <= 0) {
+            return 0;
+        }
+        int extracted = Math.min(storedEnergy, Math.min(this.maxExtract, maxExtract));
+        if (!simulate) {
+            storedEnergy -= extracted;
+        }
+        return extracted;
+    }
+
+    @Override
+    public int getEnergyStored() {
+        return storedEnergy;
+    }
+
+    @Override
+    public int getMaxEnergyStored() {
+        return capacity;
+    }
+
+    @Override
+    public boolean canExtract() {
+        return maxExtract > 0;
+    }
+
+    @Override
+    public boolean canReceive() {
+        return maxReceive > 0;
     }
 }

@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.client.gui.GuiFuelCanister;
 import com.zzhalex.justdirethings.client.gui.GuiPocketGenerator;
 import com.zzhalex.justdirethings.client.gui.GuiPotionCanister;
+import com.zzhalex.justdirethings.client.gui.GuiToolSettings;
 import com.zzhalex.justdirethings.client.gui.GuiUpgradeStation;
 import com.zzhalex.justdirethings.client.gui.machine.GuiBlockBreaker;
 import com.zzhalex.justdirethings.client.gui.machine.GuiBlockPlacer;
@@ -24,6 +25,7 @@ import com.zzhalex.justdirethings.client.gui.machine.GuiSensor;
 import com.zzhalex.justdirethings.common.container.ContainerFuelCanister;
 import com.zzhalex.justdirethings.common.container.ContainerPocketGenerator;
 import com.zzhalex.justdirethings.common.container.ContainerPotionCanister;
+import com.zzhalex.justdirethings.common.container.ContainerToolSettings;
 import com.zzhalex.justdirethings.common.container.ContainerUpgradeStation;
 import com.zzhalex.justdirethings.common.container.machine.ContainerBlockBreaker;
 import com.zzhalex.justdirethings.common.container.machine.ContainerBlockPlacer;
@@ -89,6 +91,7 @@ public final class ModContainers {
     public static final int GUI_FUEL_CANISTER = 17;
     public static final int GUI_POTION_CANISTER = 18;
     public static final int GUI_PARADOX_MACHINE = 19;
+    public static final int GUI_TOOL_SETTINGS = 20;
     private static final IGuiHandler GUI_HANDLER = new Handler();
 
     private ModContainers() {
@@ -127,6 +130,10 @@ public final class ModContainers {
             if (id == GUI_POTION_CANISTER) {
                 ItemStack potionCanister = findHeldItem(player, PotionCanisterItem.class);
                 return potionCanister.isEmpty() ? null : new ContainerPotionCanister(player.inventory, potionCanister);
+            }
+
+            if (id == GUI_TOOL_SETTINGS) {
+                return new ContainerToolSettings(player.inventory);
             }
 
             if (id == GUI_GENERATOR) {
@@ -239,6 +246,10 @@ public final class ModContainers {
             if (id == GUI_POTION_CANISTER) {
                 ItemStack potionCanister = findHeldItem(player, PotionCanisterItem.class);
                 return potionCanister.isEmpty() ? null : new GuiPotionCanister(player.inventory, new ContainerPotionCanister(player.inventory, potionCanister));
+            }
+
+            if (id == GUI_TOOL_SETTINGS) {
+                return new GuiToolSettings(player.inventory, new ContainerToolSettings(player.inventory));
             }
 
             if (id == GUI_GENERATOR) {

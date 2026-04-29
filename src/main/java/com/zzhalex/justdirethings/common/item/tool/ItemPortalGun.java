@@ -23,7 +23,7 @@ import java.util.UUID;
 public class ItemPortalGun extends ItemPoweredTool {
 
     public ItemPortalGun() {
-        super(JDTConfig.portalGunV1RfCapacity, 1_000, 1_000, 0);
+        super(JDTConfig.portalGunV1RfCapacity, JDTConfig.portalGunV1RfCapacity, JDTConfig.portalGunV1RfCapacity, 0);
     }
 
     @Override
@@ -115,6 +115,16 @@ public class ItemPortalGun extends ItemPoweredTool {
     @Override
     public int getEnergyCapacity(ItemStack stack) {
         return JDTConfig.portalGunV1RfCapacity;
+    }
+
+    @Override
+    public int getMaxReceive(ItemStack stack) {
+        return getEnergyCapacity(stack);
+    }
+
+    @Override
+    public int getMaxExtract(ItemStack stack) {
+        return getEnergyCapacity(stack);
     }
 
     private static NBTTagCompound getOrCreateTag(ItemStack stack) {

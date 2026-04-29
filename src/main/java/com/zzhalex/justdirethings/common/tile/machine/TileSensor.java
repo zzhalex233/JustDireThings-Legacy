@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileInventoryMachineBase;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -35,6 +36,10 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable {
             return;
         }
         if (world.getTotalWorldTime() % Math.max(1, getTickSpeed()) != 0L) {
+            return;
+        }
+
+        if (!canSense()) {
             return;
         }
 
@@ -84,7 +89,11 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable {
         this.equality = Math.max(0, Math.min(2, equality));
     }
 
-    private int countTargets(BlockPos targetPos) {
+    protected boolean canSense() {
+        return true;
+    }
+
+    protected int countTargets(BlockPos targetPos) {
         if (senseTarget == 0 || senseTarget == 1) {
             boolean air = world.isAirBlock(targetPos);
             if (senseTarget == 1) {
@@ -106,7 +115,7 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable {
         return count;
     }
 
-    private boolean matchesFilter(IBlockState state) {
+    protected boolean matchesFilter(IBlockState state) {
         ItemStack filter = getItemHandler().getStackInSlot(0);
         if (filter.isEmpty()) {
             return true;
@@ -121,7 +130,7 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable {
         return filter.getItem() == blockStack.getItem() && filter.getMetadata() == blockStack.getMetadata();
     }
 
-    private boolean matchesEntityTarget(Entity entity) {
+    protected boolean matchesEntityTarget(Entity entity) {
         switch (senseTarget) {
             case 2:
                 return entity instanceof IMob;
@@ -142,7 +151,7 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable {
         }
     }
 
-    private boolean passesComparison(int matches) {
+    protected boolean passesComparison(int matches) {
         if (senseAmount <= 0) {
             return matches > 0;
         }
@@ -181,7 +190,51 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable {
     public static class T1 extends TileSensor {
     }
 
-    public static class T2 extends TileSensor {
-        // PARITY STUB: Upstream SensorT2BE adds powered area sensing.
+    public static class T2 extends TileSensor implements TileAdvancedMachine {
+
+        public T2() {
+            configureAdvancedMachine();
+        }
+
+        @Override
+        public int getStandardEnergyCost() {
+            return 2;
+        }
+
+        @Override
+        protected boolean canSense() {
+            int cost = getEnergyCost();
+            return consumeEnergy(cost, false) >= cost;
+        }
+
+        public int getEnergyCost() {
+            return Math.max(1, getAreaPositionsNearestFirst().size()) * getStandardEnergyCost();
+        }
+
+        @Override
+        protected int countTargets(BlockPos targetPos) {
+            if (getSenseTarget() == 0 || getSenseTarget() == 1) {
+                int count = 0;
+                for (BlockPos pos : getAreaPositionsNearestFirst()) {
+                    boolean air = world.isAirBlock(pos);
+                    if (getSenseTarget() == 1) {
+                        if (air) {
+                            count++;
+                        }
+                    } else if (!air && matchesFilter(world.getBlockState(pos))) {
+                        count++;
+                    }
+                }
+                return count;
+            }
+
+            int count = 0;
+            for (Entity entity : world.getEntitiesWithinAABB(Entity.class, getAreaState().createArea(pos))) {
+                if (matchesEntityTarget(entity)) {
+                    count++;
+                }
+            }
+            return count;
+        }
     }
 }

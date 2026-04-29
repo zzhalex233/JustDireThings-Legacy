@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.container.base;
 
+import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
 import net.minecraft.init.Bootstrap;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
@@ -48,6 +49,41 @@ class ContainerMachineBaseShiftClickTest {
         assertEquals(5, countItems(player));
     }
 
+    @Test
+    void shiftClickCopiesPlayerStackIntoAdvancedFilterWhenMachineCannotAcceptIt() {
+        InventoryBasic machine = new InventoryBasic("machine", false, 1);
+        InventoryBasic player = new InventoryBasic("player", false, 1);
+        FilterItemHandler filters = new FilterItemHandler(2);
+        HarnessFilterContainer container = new HarnessFilterContainer(machine, filters, player);
+        machine.setInventorySlotContents(0, new ItemStack(Items.STICK, 64));
+        player.setInventorySlotContents(0, new ItemStack(Items.APPLE, 3));
+
+        ItemStack copied = container.transferStackInSlot(null, 3);
+
+        assertFalse(copied.isEmpty());
+        assertEquals(1, copied.getCount());
+        assertEquals(1, filters.getStackInSlot(0).getCount());
+        assertEquals(Items.APPLE, filters.getStackInSlot(0).getItem());
+        assertEquals(3, player.getStackInSlot(0).getCount());
+    }
+
+    @Test
+    void shiftClickDoesNotDuplicateExistingFilterEntries() {
+        InventoryBasic machine = new InventoryBasic("machine", false, 1);
+        InventoryBasic player = new InventoryBasic("player", false, 1);
+        FilterItemHandler filters = new FilterItemHandler(2);
+        HarnessFilterContainer container = new HarnessFilterContainer(machine, filters, player);
+        machine.setInventorySlotContents(0, new ItemStack(Items.STICK, 64));
+        filters.setStackInSlot(0, new ItemStack(Items.APPLE));
+        player.setInventorySlotContents(0, new ItemStack(Items.APPLE, 3));
+
+        ItemStack copied = container.transferStackInSlot(null, 3);
+
+        assertTrue(copied.isEmpty());
+        assertTrue(filters.getStackInSlot(1).isEmpty());
+        assertEquals(3, player.getStackInSlot(0).getCount());
+    }
+
     private static int countItems(IInventory inventory) {
         int count = 0;
         for (int slot = 0; slot < inventory.getSizeInventory(); slot++) {
@@ -64,6 +100,18 @@ class ContainerMachineBaseShiftClickTest {
         private HarnessContainer(IInventory machineInventory, IInventory playerInventory) {
             super(null, null, machineInventory);
             addSlotToContainer(new Slot(machineInventory, 0, 0, 0));
+            for (int slot = 0; slot < playerInventory.getSizeInventory(); slot++) {
+                addSlotToContainer(new Slot(playerInventory, slot, 0, 0));
+            }
+        }
+    }
+
+    private static final class HarnessFilterContainer extends ContainerMachineBase {
+
+        private HarnessFilterContainer(IInventory machineInventory, FilterItemHandler filters, IInventory playerInventory) {
+            super(null, null, machineInventory);
+            addSlotToContainer(new Slot(machineInventory, 0, 0, 0));
+            addFilterSlots(filters);
             for (int slot = 0; slot < playerInventory.getSizeInventory(); slot++) {
                 addSlotToContainer(new Slot(playerInventory, slot, 0, 0));
             }

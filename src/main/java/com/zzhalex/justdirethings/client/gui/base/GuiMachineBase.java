@@ -9,6 +9,7 @@ import com.zzhalex.justdirethings.client.gui.widget.WidgetEnergyBar;
 import com.zzhalex.justdirethings.client.gui.widget.WidgetFluidBar;
 import com.zzhalex.justdirethings.common.container.base.ContainerMachineBase;
 import com.zzhalex.justdirethings.common.tile.base.MachineSettingKeys;
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockBreaker;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockPlacer;
@@ -28,7 +29,6 @@ import com.zzhalex.justdirethings.common.tile.machine.TileSensor;
 import com.zzhalex.justdirethings.network.JDTNetwork;
 import com.zzhalex.justdirethings.network.message.MessageMachineSetting;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.io.IOException;
 
-public class GuiMachineBase extends GuiContainer {
+public class GuiMachineBase extends GuiTooltipContainer {
 
     private static final String CLICK_TARGET = MachineSettingKeys.CLICK_TARGET;
     private static final String CLICK_TYPE = MachineSettingKeys.CLICK_TYPE;
@@ -48,21 +48,26 @@ public class GuiMachineBase extends GuiContainer {
 
     private static final ResourceLocation DEFAULT_BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/sprites/background.png");
     private static final ResourceLocation SLOT_BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/justslot.png");
+    protected static final int BASE_X_SIZE = 176;
 
     private final List<WidgetEnergyBar> energyBars = new ArrayList<>();
     private final List<WidgetFluidBar> fluidBars = new ArrayList<>();
     private final List<MachineGuiButton> machineButtons = new ArrayList<>();
+    private final WidgetEnergyBar advancedEnergyBar = new WidgetEnergyBar(5, 5, 18, 72);
     protected int topSectionLeft;
     protected int topSectionTop;
     protected int topSectionWidth;
     protected int topSectionHeight;
     protected int extraWidth;
     protected int extraHeight;
+    protected int baseYSize = 166;
+    private int slotDisplayOffsetX;
+    private int slotDisplayOffsetY;
 
     public GuiMachineBase(Container inventorySlotsIn) {
         super(inventorySlotsIn);
-        this.xSize = 176;
-        this.ySize = 166;
+        this.xSize = BASE_X_SIZE;
+        this.ySize = baseYSize;
     }
 
     protected void addEnergyBar(WidgetEnergyBar widget) {
@@ -79,23 +84,58 @@ public class GuiMachineBase extends GuiContainer {
 
     @Override
     public void initGui() {
-        super.initGui();
         setTopSection();
+        this.xSize = BASE_X_SIZE + extraWidth;
+        this.ySize = baseYSize;
+        super.initGui();
+        applySlotDisplayOffset(extraWidth / 2, 0);
         calculateTopSection();
+        syncAdvancedEnergyBar();
         machineButtons.clear();
         addMachineButtons();
     }
 
     protected void setTopSection() {
-        extraWidth = getMachineTile() instanceof TileItemCollector ? 20 : 0;
+        TileMachineBase machine = getMachineTile();
+        if (machine instanceof TileAdvancedMachine || machine instanceof TileEnergyTransmitter) {
+            extraWidth = 60;
+        } else if (machine instanceof TileItemCollector) {
+            extraWidth = 20;
+        } else {
+            extraWidth = 0;
+        }
         extraHeight = 0;
     }
 
+    private void syncAdvancedEnergyBar() {
+        boolean needsAdvancedBar = getMachineTile() instanceof TileAdvancedMachine;
+        if (needsAdvancedBar && !energyBars.contains(advancedEnergyBar)) {
+            energyBars.add(advancedEnergyBar);
+        } else if (!needsAdvancedBar) {
+            energyBars.remove(advancedEnergyBar);
+        }
+    }
+
     protected void calculateTopSection() {
-        topSectionWidth = xSize + extraWidth;
-        topSectionHeight = ySize + extraHeight - 64;
-        topSectionLeft = guiLeft - extraWidth / 2;
+        topSectionWidth = BASE_X_SIZE + extraWidth;
+        topSectionHeight = baseYSize + extraHeight - 64;
+        topSectionLeft = guiLeft;
         topSectionTop = guiTop - extraHeight - 26;
+    }
+
+    protected int getEnergyBarOffset() {
+        return 5;
+    }
+
+    protected int getFluidBarOffset() {
+        TileMachineBase machine = getMachineTile();
+        if (machine instanceof TileAdvancedMachine) {
+            return 204;
+        }
+        if (machine != null && machine.getEnergyState().getCapacity() > 0) {
+            return 24;
+        }
+        return getEnergyBarOffset();
     }
 
     protected void addMachineButtons() {
@@ -131,48 +171,86 @@ public class GuiMachineBase extends GuiContainer {
 
         if (machine instanceof TileClicker) {
             TileClicker clicker = (TileClicker) machine;
-            addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
-            addMachineButton(MachineButtonFactory.directionButton(122, 38, machine.getDirection()));
-            addMachineButton(MachineButtonFactory.clickTargetButton(56, 38, clicker.getClickTarget()));
-            addMachineButton(MachineButtonFactory.clickTypeButton(38, 38, clicker.getClickType()));
-            addMachineButton(MachineButtonFactory.sneakClickButton(20, 38, clicker.isSneaking()));
-            addMachineButton(MachineButtonFactory.showFakePlayerButton(2, 38, clicker.isShowFakePlayer()));
-            addMachineButton(MachineButtonFactory.redstoneButton(104, 38, machine.getRedstoneState().getMode().ordinal()));
+            if (machine instanceof TileAdvancedMachine) {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.redstoneButton(134, 62, machine.getRedstoneState().getMode().ordinal()));
+                addAdvancedMachineButtons((TileAdvancedMachine) machine);
+                addMachineButton(MachineButtonFactory.directionButton(116, 62, machine.getDirection()));
+                addMachineButton(MachineButtonFactory.clickTargetButton(44, 62, clicker.getClickTarget()));
+                addMachineButton(MachineButtonFactory.clickTypeButton(44, 44, clicker.getClickType()));
+                addMachineButton(MachineButtonFactory.sneakClickButton(26, 44, clicker.isSneaking()));
+                addMachineButton(MachineButtonFactory.showFakePlayerButton(8, 44, clicker.isShowFakePlayer()));
+            } else {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.directionButton(122, 38, machine.getDirection()));
+                addMachineButton(MachineButtonFactory.clickTargetButton(56, 38, clicker.getClickTarget()));
+                addMachineButton(MachineButtonFactory.clickTypeButton(38, 38, clicker.getClickType()));
+                addMachineButton(MachineButtonFactory.sneakClickButton(20, 38, clicker.isSneaking()));
+                addMachineButton(MachineButtonFactory.showFakePlayerButton(2, 38, clicker.isShowFakePlayer()));
+                addMachineButton(MachineButtonFactory.redstoneButton(104, 38, machine.getRedstoneState().getMode().ordinal()));
+            }
             return;
         }
 
         if (machine instanceof TileDropper) {
             TileDropper dropper = (TileDropper) machine;
-            addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
-            addMachineButton(MachineButtonFactory.directionButton(122, 38, machine.getDirection()));
-            addMachineButton(MachineButtonFactory.dropCountButton(50, 41, dropper.getDropCount()));
-            addMachineButton(MachineButtonFactory.pickupDelayButton(50, 27, dropper.getPickupDelay()));
-            addMachineButton(MachineButtonFactory.redstoneButton(104, 38, machine.getRedstoneState().getMode().ordinal()));
+            if (machine instanceof TileAdvancedMachine) {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.redstoneButton(134, 62, machine.getRedstoneState().getMode().ordinal()));
+                addDropperAdvancedMachineButtons((TileAdvancedMachine) machine);
+                addMachineButton(MachineButtonFactory.directionButton(122, 38, machine.getDirection()));
+                addMachineButton(MachineButtonFactory.dropCountButton(20, 41, dropper.getDropCount()));
+                addMachineButton(MachineButtonFactory.pickupDelayButton(20, 27, dropper.getPickupDelay()));
+            } else {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.directionButton(122, 38, machine.getDirection()));
+                addMachineButton(MachineButtonFactory.dropCountButton(50, 41, dropper.getDropCount()));
+                addMachineButton(MachineButtonFactory.pickupDelayButton(50, 27, dropper.getPickupDelay()));
+                addMachineButton(MachineButtonFactory.redstoneButton(104, 38, machine.getRedstoneState().getMode().ordinal()));
+            }
             return;
         }
 
         if (machine instanceof TileBlockPlacer) {
-            addMachineButtons(MachineButtonFactory.compactTimedDirectionalMachineButtons(
-                    machine.getTickSpeed(),
-                    machine.getRedstoneState().getMode().ordinal(),
-                    machine.getDirection()
-            ));
+            if (machine instanceof TileAdvancedMachine) {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.redstoneButton(134, 62, machine.getRedstoneState().getMode().ordinal()));
+                addAdvancedMachineButtons((TileAdvancedMachine) machine);
+                addMachineButton(MachineButtonFactory.directionButton(116, 62, machine.getDirection()));
+            } else {
+                addMachineButtons(MachineButtonFactory.compactTimedDirectionalMachineButtons(
+                        machine.getTickSpeed(),
+                        machine.getRedstoneState().getMode().ordinal(),
+                        machine.getDirection()
+                ));
+            }
             return;
         }
 
         if (machine instanceof TileBlockBreaker) {
             TileBlockBreaker blockBreaker = (TileBlockBreaker) machine;
-            addMachineButtons(MachineButtonFactory.compactTimedMachineButtons(
-                    machine.getTickSpeed(),
-                    machine.getRedstoneState().getMode().ordinal()
-            ));
-            addMachineButton(MachineButtonFactory.sneakClickButton(56, 38, blockBreaker.isSneaking()));
+            if (machine instanceof TileAdvancedMachine) {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.redstoneButton(134, 62, machine.getRedstoneState().getMode().ordinal()));
+                addAdvancedMachineButtons((TileAdvancedMachine) machine);
+                addMachineButton(MachineButtonFactory.directionButton(116, 62, machine.getDirection()));
+                addMachineButton(MachineButtonFactory.sneakClickButton(8, 44, blockBreaker.isSneaking()));
+            } else {
+                addMachineButtons(MachineButtonFactory.compactTimedMachineButtons(
+                        machine.getTickSpeed(),
+                        machine.getRedstoneState().getMode().ordinal()
+                ));
+                addMachineButton(MachineButtonFactory.sneakClickButton(56, 38, blockBreaker.isSneaking()));
+            }
             return;
         }
 
         if (machine instanceof TileBlockSwapper) {
             addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
             addMachineButton(MachineButtonFactory.redstoneButton(124, 38, machine.getRedstoneState().getMode().ordinal()));
+            if (machine instanceof TileAdvancedMachine) {
+                addAdvancedMachineButtons((TileAdvancedMachine) machine);
+            }
             return;
         }
 
@@ -182,10 +260,19 @@ public class GuiMachineBase extends GuiContainer {
         }
 
         if (machine instanceof TileFluidCollector || machine instanceof TileFluidPlacer) {
-            addMachineButtons(MachineButtonFactory.wideTimedMachineButtons(
-                    machine.getTickSpeed(),
-                    machine.getRedstoneState().getMode().ordinal()
-            ));
+            if (machine instanceof TileAdvancedMachine) {
+                addMachineButton(MachineButtonFactory.tickSpeedButton(machine.getTickSpeed()));
+                addMachineButton(MachineButtonFactory.redstoneButton(134, 62, machine.getRedstoneState().getMode().ordinal()));
+                addAdvancedMachineButtons((TileAdvancedMachine) machine);
+                if (machine instanceof TileFluidPlacer) {
+                    addMachineButton(MachineButtonFactory.directionButton(116, 62, machine.getDirection()));
+                }
+            } else {
+                addMachineButtons(MachineButtonFactory.wideTimedMachineButtons(
+                        machine.getTickSpeed(),
+                        machine.getRedstoneState().getMode().ordinal()
+                ));
+            }
             return;
         }
 
@@ -210,6 +297,39 @@ public class GuiMachineBase extends GuiContainer {
         }
     }
 
+    protected void addAdvancedMachineButtons(TileAdvancedMachine advancedMachine) {
+        TileMachineBase machine = advancedMachine.getMachine();
+        addMachineButtons(MachineButtonFactory.areaButtons(
+                machine.getAreaState().isRenderArea(),
+                machine.getAreaState().getXRadius(),
+                machine.getAreaState().getYRadius(),
+                machine.getAreaState().getZRadius(),
+                machine.getAreaState().getXOffset(),
+                machine.getAreaState().getYOffset(),
+                machine.getAreaState().getZOffset()
+        ));
+        if (advancedMachine.getFilterHandler() != null) {
+            addMachineButtons(MachineButtonFactory.filterButtons(
+                    machine.getFilterState().isAllowList(),
+                    machine.getFilterState().isCompareNbt(),
+                    machine.getFilterState().getBlockItemFilter()
+            ));
+        }
+    }
+
+    protected void addDropperAdvancedMachineButtons(TileAdvancedMachine advancedMachine) {
+        TileMachineBase machine = advancedMachine.getMachine();
+        addMachineButtons(MachineButtonFactory.offsetOnlyAreaButtons(
+                machine.getAreaState().isRenderArea(),
+                machine.getAreaState().getXOffset(),
+                machine.getAreaState().getYOffset(),
+                machine.getAreaState().getZOffset()
+        ));
+        if (advancedMachine.getFilterHandler() != null) {
+            addMachineButton(MachineButtonFactory.compareNbtFilterButton(8, 62, machine.getFilterState().isCompareNbt()));
+        }
+    }
+
     protected void addMachineButton(ButtonDefinition definition) {
         MachineGuiButton button = new MachineGuiButton(buttonList.size(), getButtonBaseLeft(), topSectionTop, definition);
         machineButtons.add(button);
@@ -217,7 +337,29 @@ public class GuiMachineBase extends GuiContainer {
     }
 
     protected int getButtonBaseLeft() {
-        return guiLeft;
+        return getBaseGuiLeft();
+    }
+
+    protected int getBaseGuiLeft() {
+        return guiLeft + extraWidth / 2;
+    }
+
+    protected int getBaseGuiTop() {
+        return guiTop;
+    }
+
+    private void applySlotDisplayOffset(int offsetX, int offsetY) {
+        int deltaX = offsetX - slotDisplayOffsetX;
+        int deltaY = offsetY - slotDisplayOffsetY;
+        if (deltaX == 0 && deltaY == 0) {
+            return;
+        }
+        for (Slot slot : inventorySlots.inventorySlots) {
+            slot.xPos += deltaX;
+            slot.yPos += deltaY;
+        }
+        slotDisplayOffsetX = offsetX;
+        slotDisplayOffsetY = offsetY;
     }
 
     protected TileMachineBase getMachineTile() {
@@ -234,13 +376,13 @@ public class GuiMachineBase extends GuiContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         calculateTopSection();
-        int left = guiLeft;
-        int top = guiTop;
+        int left = getBaseGuiLeft();
+        int top = getBaseGuiTop();
         drawBackgroundPanel(topSectionLeft + 20, topSectionTop - 20, topSectionWidth - 40, 20);
         drawBackgroundPanel(topSectionLeft, topSectionTop, topSectionWidth, topSectionHeight);
-        drawBackgroundPanel(left, top + 75, xSize, ySize - 73);
+        drawBackgroundPanel(left, top + 75, BASE_X_SIZE, baseYSize - 73);
 
-        drawSlotBackgrounds(left, top);
+        drawSlotBackgrounds(guiLeft, guiTop);
 
         for (WidgetEnergyBar widget : energyBars) {
             widget.draw(topSectionLeft, topSectionTop);
@@ -253,8 +395,16 @@ public class GuiMachineBase extends GuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         calculateTopSection();
+        updateAdvancedEnergyBar();
         drawMachineTitle();
         drawAreaControlLabels();
+    }
+
+    private void updateAdvancedEnergyBar() {
+        TileMachineBase machine = getMachineTile();
+        if (machine instanceof TileAdvancedMachine) {
+            advancedEnergyBar.setValue(machine.getEnergyState().getStoredEnergy(), machine.getEnergyState().getCapacity());
+        }
     }
 
     protected void drawMachineTitle() {
@@ -272,7 +422,11 @@ public class GuiMachineBase extends GuiContainer {
 
     protected void drawAreaControlLabels() {
         TileMachineBase machine = getMachineTile();
-        if (!(machine instanceof TileItemCollector) && !(machine instanceof TileEnergyTransmitter)) {
+        if (!(machine instanceof TileItemCollector) && !(machine instanceof TileEnergyTransmitter) && !(machine instanceof TileAdvancedMachine)) {
+            return;
+        }
+        if (machine instanceof TileDropper && machine instanceof TileAdvancedMachine) {
+            drawOffsetOnlyAreaControlLabels(machine);
             return;
         }
 
@@ -293,6 +447,20 @@ public class GuiMachineBase extends GuiContainer {
         drawCenteredAreaValue(Integer.toString(machine.getAreaState().getZOffset()), 125, 27);
     }
 
+    private void drawOffsetOnlyAreaControlLabels(TileMachineBase machine) {
+        int areaWidth = 158;
+        int xStart = topSectionLeft + topSectionWidth / 2 - areaWidth / 2 - guiLeft;
+        int top = topSectionTop - guiTop;
+        drawMachineText("Off", xStart - 4, top + 14, 4210752);
+        drawMachineText("X", xStart + 35, top + 4, 4210752);
+        drawMachineText("Y", xStart + 85, top + 4, 4210752);
+        drawMachineText("Z", xStart + 135, top + 4, 4210752);
+
+        drawCenteredAreaValue(Integer.toString(machine.getAreaState().getXOffset()), 25, 12);
+        drawCenteredAreaValue(Integer.toString(machine.getAreaState().getYOffset()), 75, 12);
+        drawCenteredAreaValue(Integer.toString(machine.getAreaState().getZOffset()), 125, 12);
+    }
+
     private void drawCenteredAreaValue(String text, int x, int y) {
         int valueLeft = getAreaButtonBaseLeft() + x + 12;
         int valueWidth = 18;
@@ -300,7 +468,7 @@ public class GuiMachineBase extends GuiContainer {
     }
 
     protected int getAreaButtonBaseLeft() {
-        return 0;
+        return extraWidth / 2;
     }
 
     private static String formatRadius(double radius) {
@@ -370,6 +538,9 @@ public class GuiMachineBase extends GuiContainer {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
+        if (drawEnergyBarTooltip(mouseX, mouseY)) {
+            return;
+        }
         if (drawFluidBarTooltip(mouseX, mouseY)) {
             return;
         }
@@ -382,6 +553,25 @@ public class GuiMachineBase extends GuiContainer {
                 break;
             }
         }
+    }
+
+    @Override
+    protected boolean hasClickedOutside(int mouseX, int mouseY, int guiLeftIn, int guiTopIn) {
+        if (mouseX >= topSectionLeft && mouseX < topSectionLeft + topSectionWidth
+                && mouseY >= topSectionTop && mouseY < topSectionTop + topSectionHeight) {
+            return false;
+        }
+        return super.hasClickedOutside(mouseX, mouseY, guiLeftIn, guiTopIn);
+    }
+
+    protected boolean drawEnergyBarTooltip(int mouseX, int mouseY) {
+        for (WidgetEnergyBar widget : energyBars) {
+            if (widget.contains(topSectionLeft, topSectionTop, mouseX, mouseY)) {
+                drawHoveringText(widget.getTooltipLines(), mouseX, mouseY, fontRenderer);
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean drawFluidBarTooltip(int mouseX, int mouseY) {

@@ -14,8 +14,7 @@ public class GuiPlayerAccessor extends GuiMachineBase {
     public GuiPlayerAccessor(ContainerPlayerAccessor container) {
         super(container);
         this.container = container;
-        this.xSize = 176;
-        this.ySize = 222;
+        this.baseYSize = 222;
     }
 
     @Override

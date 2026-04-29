@@ -1,6 +1,9 @@
 package com.zzhalex.justdirethings.registry;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.block.goo.BlockGooBlock;
+import com.zzhalex.justdirethings.common.block.goo.BlockGooPattern;
+import com.zzhalex.justdirethings.common.block.goo.BlockGooSoil;
 import com.zzhalex.justdirethings.common.block.BlockRawOre;
 import com.zzhalex.justdirethings.common.block.BlockSimpleContent;
 import com.zzhalex.justdirethings.common.block.BlockTimeCrystalBudding;
@@ -33,15 +36,15 @@ public final class ModContentBlocks {
     public static final Block COALBLOCK_T3 = registerSimple("coalblock_t3", Material.ROCK, SoundType.STONE, 5.0F, 8.0F, 2);
     public static final Block COALBLOCK_T4 = registerSimple("coalblock_t4", Material.ROCK, SoundType.STONE, 6.0F, 8.0F, 3);
     public static final Block CHARCOAL = registerSimple("charcoal", Material.ROCK, SoundType.STONE, 4.0F, 8.0F, 1);
-    public static final Block GOO_BLOCK_TIER1 = registerSimple("gooblock_tier1", Material.CLAY, SoundType.SLIME, 0.6F, 0.6F, 0);
-    public static final Block GOO_BLOCK_TIER2 = registerSimple("gooblock_tier2", Material.CLAY, SoundType.SLIME, 0.7F, 0.7F, 0);
-    public static final Block GOO_BLOCK_TIER3 = registerSimple("gooblock_tier3", Material.CLAY, SoundType.SLIME, 0.8F, 0.8F, 0);
-    public static final Block GOO_BLOCK_TIER4 = registerSimple("gooblock_tier4", Material.CLAY, SoundType.SLIME, 0.9F, 0.9F, 0);
-    public static final Block GOO_PATTERN_BLOCK = registerSimple("goopatternblock", Material.CLAY, SoundType.SLIME, 0.6F, 0.6F, 0);
-    public static final Block GOO_SOIL_TIER1 = registerSimple("goosoil_tier1", Material.GROUND, SoundType.GROUND, 0.6F, 0.6F, 0);
-    public static final Block GOO_SOIL_TIER2 = registerSimple("goosoil_tier2", Material.GROUND, SoundType.GROUND, 0.6F, 0.6F, 0);
-    public static final Block GOO_SOIL_TIER3 = registerSimple("goosoil_tier3", Material.GROUND, SoundType.GROUND, 0.6F, 0.6F, 0);
-    public static final Block GOO_SOIL_TIER4 = registerSimple("goosoil_tier4", Material.GROUND, SoundType.GROUND, 0.6F, 0.6F, 0);
+    public static final Block GOO_BLOCK_TIER1 = register(new BlockGooBlock("gooblock_tier1", 1));
+    public static final Block GOO_BLOCK_TIER2 = register(new BlockGooBlock("gooblock_tier2", 2));
+    public static final Block GOO_BLOCK_TIER3 = register(new BlockGooBlock("gooblock_tier3", 3));
+    public static final Block GOO_BLOCK_TIER4 = register(new BlockGooBlock("gooblock_tier4", 4));
+    public static final Block GOO_PATTERN_BLOCK = register(new BlockGooPattern("goopatternblock"));
+    public static final Block GOO_SOIL_TIER1 = register(new BlockGooSoil("goosoil_tier1", 1));
+    public static final Block GOO_SOIL_TIER2 = register(new BlockGooSoil("goosoil_tier2", 2));
+    public static final Block GOO_SOIL_TIER3 = register(new BlockGooSoil("goosoil_tier3", 3));
+    public static final Block GOO_SOIL_TIER4 = register(new BlockGooSoil("goosoil_tier4", 4));
     public static final Block ECLIPSE_GATE_BLOCK = registerSimple("eclipsegateblock", Material.ROCK, SoundType.STONE, 4.0F, 8.0F, 2);
 
     public static final Block RAW_FERRICORE_ORE = registerRawOre("raw_ferricore_ore", Material.ROCK, SoundType.STONE, 3.0F, 5.0F, 1);

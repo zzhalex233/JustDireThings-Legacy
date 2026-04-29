@@ -21,8 +21,8 @@ public final class ModRecipes {
     }
 
     public static void register() {
-        // PARITY STUB: upstream recipe IDs are cataloged, but 1.12 loaders/data are not ported yet.
-        // Upgrade Station recipe registration is implemented incrementally as more item tiers land.
+        // PARITY STUB: ability/paxel/smithing loaders are still bridged in memory rather than data-driven.
+        // Goo spread and fluid drop now have 1.12 recipe factories/data; runtime consumers are implemented later.
     }
 
     public static List<String> coreRecipeTypeIds() {

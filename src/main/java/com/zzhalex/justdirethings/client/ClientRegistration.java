@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings.client;
 
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.client.event.ClientPortalGunInputHandler;
+import com.zzhalex.justdirethings.client.event.MachineAreaRenderHandler;
 import com.zzhalex.justdirethings.client.overlay.AbilityCooldownOverlay;
 import com.zzhalex.justdirethings.client.render.CreatureCatcherModelBakeHandler;
 import com.zzhalex.justdirethings.client.render.RenderCreatureCatcher;
@@ -10,11 +11,11 @@ import com.zzhalex.justdirethings.client.render.RenderDecoy;
 import com.zzhalex.justdirethings.client.render.RenderPortal;
 import com.zzhalex.justdirethings.client.render.RenderPortalProjectile;
 import com.zzhalex.justdirethings.client.render.RenderTimeWand;
+import com.zzhalex.justdirethings.client.render.tile.RenderGooBlock;
 import com.zzhalex.justdirethings.common.entity.EntityCreatureCatcher;
 import com.zzhalex.justdirethings.common.entity.EntityDecoy;
 import com.zzhalex.justdirethings.common.entity.EntityJustDireAreaEffectCloud;
 import com.zzhalex.justdirethings.common.entity.EntityJustDireArrow;
-import com.zzhalex.justdirethings.client.render.tile.RenderMachineArea;
 import com.zzhalex.justdirethings.common.entity.EntityPortal;
 import com.zzhalex.justdirethings.common.entity.EntityPortalProjectile;
 import com.zzhalex.justdirethings.common.entity.EntityTimeWand;
@@ -22,15 +23,15 @@ import com.zzhalex.justdirethings.common.item.misc.FluidCanisterItem;
 import com.zzhalex.justdirethings.common.item.misc.PocketGeneratorItem;
 import com.zzhalex.justdirethings.common.item.misc.PotionCanisterItem;
 import com.zzhalex.justdirethings.common.item.tool.ItemPortalGunV2;
-import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
+import com.zzhalex.justdirethings.common.tile.goo.TileGooBlock;
 import com.zzhalex.justdirethings.registry.ModItems;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.client.renderer.entity.RenderAreaEffectCloud;
 import net.minecraft.client.renderer.entity.RenderTippedArrow;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -60,6 +61,7 @@ public final class ClientRegistration {
         MinecraftForge.EVENT_BUS.register(CreatureCatcherModelBakeHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(AbilityCooldownOverlay.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ClientPortalGunInputHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(MachineAreaRenderHandler.INSTANCE);
     }
 
     private static void registerEntityRenderers() {
@@ -73,11 +75,10 @@ public final class ClientRegistration {
     }
 
     private static void registerTileEntityRenderers() {
-        registerAreaRenderer(TileMachineBase.class);
-    }
-
-    private static <T extends TileMachineBase> void registerAreaRenderer(Class<T> tileClass) {
-        ClientRegistry.bindTileEntitySpecialRenderer(tileClass, new RenderMachineArea());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier1.class, new RenderGooBlock());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier2.class, new RenderGooBlock());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier3.class, new RenderGooBlock());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier4.class, new RenderGooBlock());
     }
 
     private static void registerItemStackRenderers() {

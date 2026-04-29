@@ -1,23 +1,33 @@
 package com.zzhalex.justdirethings.common.item.base;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import com.zzhalex.justdirethings.data.tool.ToolStateIO;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class ItemToggleableTool extends Item {
+public abstract class ItemToggleableTool extends Item implements ToggleableTool {
 
     private final EnumSet<Ability> supportedAbilities = EnumSet.noneOf(Ability.class);
+    private final Map<Ability, AbilityParams> abilityParams = new EnumMap<>(Ability.class);
 
     protected ItemToggleableTool() {
         setMaxStackSize(1);
@@ -28,6 +38,11 @@ public abstract class ItemToggleableTool extends Item {
             return Collections.emptySet();
         }
         return Collections.unmodifiableSet(EnumSet.copyOf(supportedAbilities));
+    }
+
+    @Override
+    public Map<Ability, AbilityParams> getAbilityParamsMap() {
+        return Collections.unmodifiableMap(abilityParams);
     }
 
     public boolean supportsAbility(Ability ability) {
@@ -110,11 +125,33 @@ public abstract class ItemToggleableTool extends Item {
         }
     }
 
+    protected final void addSupportedAbility(Ability ability, AbilityParams params) {
+        addSupportedAbility(ability);
+        if (ability != null && params != null) {
+            abilityParams.put(ability, params);
+        }
+    }
+
     protected final void addSupportedAbilities(Ability... abilities) {
         supportedAbilities.addAll(Arrays.asList(abilities));
     }
 
     protected ToolState createDefaultToolState() {
         return new ToolState();
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        if (getSupportedAbilities().isEmpty()) {
+            return;
+        }
+        TooltipHelper.appendToolEnabled(stack, tooltip);
+        if (GuiScreen.isShiftKeyDown()) {
+            TooltipHelper.appendAbilityList(stack, tooltip);
+        } else {
+            TooltipHelper.appendShiftForInfo(stack, tooltip);
+        }
     }
 }

@@ -7,8 +7,8 @@ public class JDTFluid extends Fluid {
 
     private final JDTFluidDefinition definition;
 
-    public JDTFluid(JDTFluidDefinition definition, ResourceLocation still, ResourceLocation flowing) {
-        super(definition.getId(), still, flowing);
+    public JDTFluid(JDTFluidDefinition definition, ResourceLocation still, ResourceLocation flowing, ResourceLocation overlay) {
+        super(definition.getId(), still, flowing, overlay);
         this.definition = definition;
         setColor(definition.getColor());
         setLuminosity(definition.getLuminosity());

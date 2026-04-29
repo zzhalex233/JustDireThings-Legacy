@@ -1,4 +1,13 @@
 ﻿{
+    "conditions":  [
+                       {
+                           "type":  "forge:not",
+                           "value":  {
+                                         "type":  "minecraft:item_exists",
+                                         "item":  "futuremc:smoker"
+                                     }
+                       }
+                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     " e ",
@@ -13,7 +22,7 @@
                           "item":  "minecraft:blaze_rod"
                       },
                 "f":  {
-                          "item":  "minecraft:smoker"
+                          "item":  "minecraft:furnace"
                       }
             },
     "result":  {

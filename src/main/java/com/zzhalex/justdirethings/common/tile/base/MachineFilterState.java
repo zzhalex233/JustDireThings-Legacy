@@ -4,7 +4,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public class MachineFilterState {
 
-    private boolean allowList = true;
+    private boolean allowList = false;
     private boolean compareNbt;
     private int blockItemFilter = -1;
 
@@ -40,7 +40,7 @@ public class MachineFilterState {
     }
 
     public void readFromNbt(NBTTagCompound tag) {
-        allowList = !tag.hasKey("AllowList") || tag.getBoolean("AllowList");
+        allowList = tag.hasKey("AllowList") && tag.getBoolean("AllowList");
         compareNbt = tag.getBoolean("CompareNbt");
         blockItemFilter = tag.hasKey("BlockItemFilter") ? tag.getInteger("BlockItemFilter") : -1;
     }

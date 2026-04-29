@@ -1,7 +1,16 @@
 {
   "variants": {
-    "normal": {
-      "model": "justdirethings:goopatternblock"
-    }
+    "goostage=0": { "model": "justdirethings:goopatternblock0" },
+    "goostage=1": { "model": "justdirethings:goopatternblock1" },
+    "goostage=2": { "model": "justdirethings:goopatternblock2" },
+    "goostage=3": { "model": "justdirethings:goopatternblock3" },
+    "goostage=4": { "model": "justdirethings:goopatternblock4" },
+    "goostage=5": { "model": "justdirethings:goopatternblock5" },
+    "goostage=6": { "model": "justdirethings:goopatternblock6" },
+    "goostage=7": { "model": "justdirethings:goopatternblock7" },
+    "goostage=8": { "model": "justdirethings:goopatternblock8" },
+    "goostage=9": { "model": "justdirethings:goopatternblock9" },
+    "goostage=10": { "model": "justdirethings:goopatternblock10" },
+    "goostage=11": { "model": "justdirethings:goopatternblock11" }
   }
 }

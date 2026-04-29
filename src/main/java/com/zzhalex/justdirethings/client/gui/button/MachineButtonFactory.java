@@ -156,24 +156,41 @@ public final class MachineButtonFactory {
     public static List<ButtonDefinition> filterButtons(boolean allowList, boolean compareNbt, int blockItemFilter) {
         List<ButtonDefinition> buttons = new ArrayList<>();
         buttons.add(ButtonDefinition.toggle(8, 62, MachineSettingKeys.FILTER_ALLOWLIST, allowList ? 1 : 0, ALLOW_LIST_STATES));
-        buttons.add(ButtonDefinition.grayscale(26, 62, MachineSettingKeys.FILTER_COMPARE_NBT, compareNbt,
-                state("matchnbttrue.png", "justdirethings.screen.comparenbt")));
+        buttons.add(compareNbtFilterButton(26, 62, compareNbt));
         if (blockItemFilter != -1) {
             buttons.add(ButtonDefinition.toggle(44, 62, MachineSettingKeys.FILTER_BLOCK_ITEM, blockItemFilter, BLOCK_ITEM_FILTER_STATES));
         }
         return Collections.unmodifiableList(buttons);
     }
 
+    public static ButtonDefinition compareNbtFilterButton(int x, int y, boolean compareNbt) {
+        return ButtonDefinition.grayscale(x, y, MachineSettingKeys.FILTER_COMPARE_NBT, compareNbt,
+                state("matchnbttrue.png", "justdirethings.screen.comparenbt"));
+    }
+
     public static List<ButtonDefinition> areaButtons(boolean renderArea, double xRadius, double yRadius, double zRadius, int xOffset, int yOffset, int zOffset) {
         List<ButtonDefinition> buttons = new ArrayList<>();
-        buttons.add(ButtonDefinition.grayscale(152, 62, MachineSettingKeys.RENDER_AREA, renderArea,
-                state("area.png", "justdirethings.screen.renderarea")));
+        buttons.add(renderAreaButton(renderArea));
         buttons.addAll(areaValueButtons(25, 12, MachineSettingKeys.X_RADIUS_TENTHS, (int) Math.round(xRadius * 10.0D), 0, 50, 5, "justdirethings.screen.radiusx"));
         buttons.addAll(areaValueButtons(75, 12, MachineSettingKeys.Y_RADIUS_TENTHS, (int) Math.round(yRadius * 10.0D), 0, 50, 5, "justdirethings.screen.radiusy"));
         buttons.addAll(areaValueButtons(125, 12, MachineSettingKeys.Z_RADIUS_TENTHS, (int) Math.round(zRadius * 10.0D), 0, 50, 5, "justdirethings.screen.radiusz"));
         buttons.addAll(areaValueButtons(25, 27, MachineSettingKeys.X_OFFSET, xOffset, -9, 9, 1, "justdirethings.screen.offsetx"));
         buttons.addAll(areaValueButtons(75, 27, MachineSettingKeys.Y_OFFSET, yOffset, -9, 9, 1, "justdirethings.screen.offsety"));
         buttons.addAll(areaValueButtons(125, 27, MachineSettingKeys.Z_OFFSET, zOffset, -9, 9, 1, "justdirethings.screen.offsetz"));
+        return Collections.unmodifiableList(buttons);
+    }
+
+    public static ButtonDefinition renderAreaButton(boolean renderArea) {
+        return ButtonDefinition.grayscale(152, 62, MachineSettingKeys.RENDER_AREA, renderArea,
+                state("area.png", "justdirethings.screen.renderarea"));
+    }
+
+    public static List<ButtonDefinition> offsetOnlyAreaButtons(boolean renderArea, int xOffset, int yOffset, int zOffset) {
+        List<ButtonDefinition> buttons = new ArrayList<>();
+        buttons.add(renderAreaButton(renderArea));
+        buttons.addAll(areaValueButtons(25, 12, MachineSettingKeys.X_OFFSET, xOffset, -9, 9, 1, "justdirethings.screen.offsetx"));
+        buttons.addAll(areaValueButtons(75, 12, MachineSettingKeys.Y_OFFSET, yOffset, -9, 9, 1, "justdirethings.screen.offsety"));
+        buttons.addAll(areaValueButtons(125, 12, MachineSettingKeys.Z_OFFSET, zOffset, -9, 9, 1, "justdirethings.screen.offsetz"));
         return Collections.unmodifiableList(buttons);
     }
 

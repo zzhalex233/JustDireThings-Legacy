@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.common.container.machine;
 
 import com.zzhalex.justdirethings.common.container.base.ContainerMachineBase;
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.machine.TileDropper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.InventoryBasic;
@@ -11,10 +12,15 @@ public class ContainerDropper extends ContainerMachineBase {
     private final TileDropper tile;
 
     public ContainerDropper(InventoryPlayer playerInventory, TileDropper tile) {
-        super(playerInventory, tile, new InventoryBasic("droppert1", false, 1));
+        super(playerInventory, tile, new InventoryBasic("droppert1", false, tile.getItemHandler().getSlots()));
         this.tile = tile;
 
-        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), 0, 80, 13));
+        if (tile instanceof TileDropper.T2) {
+            addSlotBox(tile.getItemHandler(), 0, 62, -1, 3, 18, 3, 18);
+        } else {
+            addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), 0, 80, 13));
+        }
+        addAdvancedFilterSlots(tile instanceof TileAdvancedMachine ? (TileAdvancedMachine) tile : null);
         addPlayerInventory(playerInventory, 8, 84);
     }
 

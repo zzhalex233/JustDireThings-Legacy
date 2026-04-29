@@ -17,7 +17,7 @@ public class GuiInventoryHolder extends GuiMachineBase {
     public GuiInventoryHolder(ContainerInventoryHolder container) {
         super(container);
         this.container = container;
-        this.ySize = 208;
+        this.baseYSize = 208;
     }
 
     @Override

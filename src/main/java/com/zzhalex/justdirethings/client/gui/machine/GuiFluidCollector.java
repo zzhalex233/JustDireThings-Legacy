@@ -7,11 +7,12 @@ import com.zzhalex.justdirethings.common.container.machine.ContainerFluidCollect
 public class GuiFluidCollector extends GuiMachineBase {
 
     private final ContainerFluidCollector container;
-    private final WidgetFluidBar fluidBar = new WidgetFluidBar(5, 5, 18, 72);
+    private final WidgetFluidBar fluidBar;
 
     public GuiFluidCollector(ContainerFluidCollector container) {
         super(container);
         this.container = container;
+        this.fluidBar = new WidgetFluidBar(getFluidBarOffset(), 5, 18, 72);
         addFluidBar(fluidBar);
     }
 

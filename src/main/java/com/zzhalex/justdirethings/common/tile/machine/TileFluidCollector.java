@@ -1,5 +1,7 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
+import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileTimedMachineBase;
 import com.zzhalex.justdirethings.common.util.WorldInteractionRules;
 import net.minecraft.block.Block;
@@ -7,6 +9,7 @@ import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
@@ -56,7 +59,7 @@ public class TileFluidCollector extends TileTimedMachineBase {
         return true;
     }
 
-    private boolean fillFluidContainer() {
+    protected boolean fillFluidContainer() {
         if (getFluidState().getAmount() <= 0 || getFluidState().getFluidName().isEmpty()) {
             return false;
         }
@@ -90,7 +93,7 @@ public class TileFluidCollector extends TileTimedMachineBase {
         return true;
     }
 
-    private boolean isInfiniteWaterSource(BlockPos targetPos, IBlockState state) {
+    protected boolean isInfiniteWaterSource(BlockPos targetPos, IBlockState state) {
         if ((state.getBlock() != Blocks.WATER && state.getBlock() != Blocks.FLOWING_WATER) || state.getValue(BlockLiquid.LEVEL) != 0) {
             return false;
         }
@@ -106,7 +109,7 @@ public class TileFluidCollector extends TileTimedMachineBase {
         return WorldInteractionRules.isInfiniteWaterSource(true, sourceNeighbors);
     }
 
-    private Fluid resolveFluid(IBlockState state, BlockPos targetPos) {
+    protected Fluid resolveFluid(IBlockState state, BlockPos targetPos) {
         Block block = state.getBlock();
         if (block == Blocks.WATER && state.getValue(BlockLiquid.LEVEL) == 0) {
             return FluidRegistry.WATER;
@@ -124,7 +127,83 @@ public class TileFluidCollector extends TileTimedMachineBase {
     public static class T1 extends TileFluidCollector {
     }
 
-    public static class T2 extends TileFluidCollector {
-        // PARITY STUB: Upstream FluidCollectorT2BE adds powered area/filter collection.
+    public static class T2 extends TileFluidCollector implements TileAdvancedMachine {
+
+        private final FilterItemHandler filterHandler = new FilterItemHandler(ADVANCED_FILTER_SLOTS);
+
+        public T2() {
+            configureAdvancedMachine();
+            getFluidState().setCapacity(32000);
+        }
+
+        @Override
+        public FilterItemHandler getFilterHandler() {
+            return filterHandler;
+        }
+
+        @Override
+        public int getStandardEnergyCost() {
+            return 500;
+        }
+
+        @Override
+        protected boolean performWork() {
+            boolean changed = fillFluidContainer();
+            if (!hasEnoughEnergy(getStandardEnergyCost())) {
+                return changed;
+            }
+
+            for (BlockPos targetPos : getAreaPositionsNearestFirst()) {
+                IBlockState state = world.getBlockState(targetPos);
+                Fluid fluid = resolveFluid(state, targetPos);
+                if (fluid == null || !matchesFluidFilter(fluid)) {
+                    continue;
+                }
+                if (getFluidState().getAmount() + 1000 > getFluidState().getCapacity()) {
+                    return changed;
+                }
+                if (!getFluidState().getFluidName().isEmpty() && !getFluidState().getFluidName().equals(fluid.getName())) {
+                    continue;
+                }
+                if (collectFluidAt(targetPos, state, fluid)) {
+                    consumeEnergy(getStandardEnergyCost(), false);
+                    return true;
+                }
+            }
+            return changed;
+        }
+
+        private boolean collectFluidAt(BlockPos targetPos, IBlockState state, Fluid fluid) {
+            if (isInfiniteWaterSource(targetPos, state)) {
+                getFluidState().setFluidName(fluid.getName());
+                getFluidState().setAmount(getFluidState().getAmount() + 1000);
+                return true;
+            }
+
+            if (state.getBlock() instanceof IFluidBlock) {
+                IFluidBlock fluidBlock = (IFluidBlock) state.getBlock();
+                if (fluidBlock.drain(world, targetPos, true) == null) {
+                    return false;
+                }
+            } else {
+                world.setBlockToAir(targetPos);
+            }
+
+            getFluidState().setFluidName(fluid.getName());
+            getFluidState().setAmount(getFluidState().getAmount() + 1000);
+            return true;
+        }
+
+        @Override
+        public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+            super.writeToNBT(compound);
+            return writeAdvancedMachineToNbt(compound);
+        }
+
+        @Override
+        public void readFromNBT(NBTTagCompound compound) {
+            super.readFromNBT(compound);
+            readAdvancedMachineFromNbt(compound);
+        }
     }
 }

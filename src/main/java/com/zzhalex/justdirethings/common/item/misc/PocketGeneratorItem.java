@@ -3,17 +3,19 @@ package com.zzhalex.justdirethings.common.item.misc;
 import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
-import com.zzhalex.justdirethings.compat.accessory.AccessoryInventoryBridge;
+import com.zzhalex.justdirethings.common.item.fuel.FuelBurnHelper;
 import com.zzhalex.justdirethings.common.item.base.EnergyBackedItem;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
+import com.zzhalex.justdirethings.compat.accessory.AccessoryInventoryBridge;
 import com.zzhalex.justdirethings.config.JDTConfig;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModContainers;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -21,11 +23,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
 
 public class PocketGeneratorItem extends Item implements EnergyBackedItem {
-
-    private static final int FE_PER_FUEL_TICK = 10;
-    private static final int BASE_BURN_MULTIPLIER = 1;
 
     public PocketGeneratorItem() {
         setMaxStackSize(1);
@@ -42,6 +45,16 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        TooltipHelper.appendFEText(stack, tooltip);
+        TooltipHelper.appendToolEnabled(isEnabled(stack), tooltip);
+        TooltipHelper.appendGeneratorDetails(stack, this, tooltip);
+        TooltipHelper.appendShiftForInfo(stack, tooltip);
+    }
+
+    @Override
     public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
         if (world.isRemote || !(entity instanceof EntityPlayer) || !isEnabled(stack)) {
             return;
@@ -50,7 +63,7 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
         EntityPlayer player = (EntityPlayer) entity;
         tryBurn(stack);
 
-        if (getStoredEnergy(stack) < Math.max(1, getFePerTick(stack) / 10)) {
+        if (getStoredEnergy(stack) < Math.max(1, getTransferRate() / 10)) {
             return;
         }
 
@@ -142,7 +155,7 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
     }
 
     public int getFePerTick(ItemStack stack) {
-        return PocketGeneratorMath.fePerTick(FE_PER_FUEL_TICK, getBurnSpeedMultiplier(stack));
+        return PocketGeneratorMath.fePerTick(JDTConfig.pocketGeneratorFePerFuelTick, getBurnSpeedMultiplier(stack));
     }
 
     public int getMaxEnergy() {
@@ -156,16 +169,20 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
 
     @Override
     public int getMaxReceive(ItemStack stack) {
-        return FE_PER_FUEL_TICK;
+        return 0;
     }
 
     @Override
     public int getMaxExtract(ItemStack stack) {
-        return FE_PER_FUEL_TICK;
+        return getTransferRate();
     }
 
     public int getBurnSpeedMultiplier(ItemStack stack) {
-        return BASE_BURN_MULTIPLIER * getFuelMultiplier(stack);
+        return Math.max(1, JDTConfig.pocketGeneratorBurnSpeedMultiplier) * getFuelMultiplier(stack);
+    }
+
+    public int getTransferRate() {
+        return Math.max(1, JDTConfig.pocketGeneratorFePerTick);
     }
 
     public void tryBurn(ItemStack stack) {
@@ -205,15 +222,12 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
             return false;
         }
 
-        int burnTime = TileEntityFurnace.getItemBurnTime(fuelStack);
+        int burnTime = FuelBurnHelper.getBurnTime(fuelStack);
         if (burnTime <= 0) {
             return false;
         }
 
-        int fuelMultiplier = fuelStack.getItem() instanceof FuelCanisterItem
-                ? FuelCanisterItem.getBurnSpeedMultiplier(fuelStack)
-                : 1;
-        setFuelMultiplier(stack, fuelMultiplier);
+        setFuelMultiplier(stack, FuelBurnHelper.getBurnSpeedMultiplier(fuelStack));
 
         if (fuelStack.getItem().hasContainerItem(fuelStack)) {
             setFuelStack(stack, fuelStack.getItem().getContainerItem(fuelStack));
@@ -247,7 +261,7 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
             return;
         }
 
-        int maxTransfer = Math.min(availableEnergy, getFePerTick(sourceStack));
+        int maxTransfer = Math.min(availableEnergy, getTransferRate());
         int accepted = targetStorage.receiveEnergy(maxTransfer, true);
         if (accepted <= 0) {
             return;

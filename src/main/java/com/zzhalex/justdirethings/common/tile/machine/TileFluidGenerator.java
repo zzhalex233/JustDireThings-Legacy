@@ -1,12 +1,17 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
 import com.zzhalex.justdirethings.capability.inventory.InternalItemHandler;
+import com.zzhalex.justdirethings.common.tile.base.EnergyTransferHelper;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
+import com.zzhalex.justdirethings.config.JDTConfig;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
@@ -17,14 +22,13 @@ import javax.annotation.Nullable;
 
 public class TileFluidGenerator extends TileMachineBase implements ITickable {
 
-    private static final int MAX_ENERGY = 100000;
     private static final int MAX_FLUID = 4000;
 
     private final InternalItemHandler itemHandler = new InternalItemHandler(1);
 
     public TileFluidGenerator() {
-        getEnergyState().setCapacity(MAX_ENERGY);
-        getEnergyState().setMaxExtract(1000);
+        getEnergyState().setCapacity(JDTConfig.generatorFluidT1MaxFe);
+        getEnergyState().setMaxExtract(JDTConfig.generatorFluidT1MaxFe);
         getFluidState().setCapacity(MAX_FLUID);
     }
 
@@ -38,6 +42,9 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
         evaluateRedstoneControl();
         if (isRedstoneActive()) {
             generateFromFluid();
+        }
+        if (providePowerAdjacent() > 0) {
+            markDirtyClient();
         }
     }
 
@@ -55,10 +62,14 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
         if (contained == null || contained.amount <= 0) {
             return;
         }
+        if (getFePerFuelTick(contained.getFluid().getName()) <= 0) {
+            return;
+        }
         if (!getFluidState().getFluidName().isEmpty() && !getFluidState().getFluidName().equals(contained.getFluid().getName())) {
             return;
         }
-        if (getFluidState().getAmount() + contained.amount > getFluidState().getCapacity()) {
+        int room = getFluidState().getCapacity() - getFluidState().getAmount();
+        if (room <= 0) {
             return;
         }
 
@@ -67,7 +78,7 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
             return;
         }
 
-        FluidStack drained = handler.drain(contained.amount, true);
+        FluidStack drained = handler.drain(Math.min(contained.amount, room), true);
         if (drained == null || drained.amount <= 0) {
             return;
         }
@@ -79,23 +90,61 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
     }
 
     private void generateFromFluid() {
-        int fePerMb = getFePerMb();
-        if (fePerMb <= 0 || getFluidState().getAmount() <= 0) {
-            return;
+        if (generateOneFluidTick()) {
+            markDirtyClient();
         }
-
-        int inserted = GeneratorMath.energyToInsert(getEnergyState().getStoredEnergy(), getEnergyState().getCapacity(), fePerMb);
-        if (inserted <= 0) {
-            return;
-        }
-
-        getFluidState().setAmount(getFluidState().getAmount() - 1);
-        getEnergyState().setStoredEnergy(getEnergyState().getStoredEnergy() + inserted);
-        markDirtyClient();
     }
 
-    private int getFePerMb() {
-        return FluidRegistry.LAVA != null && FluidRegistry.LAVA.getName().equals(getFluidState().getFluidName()) ? 40 : 0;
+    boolean generateOneFluidTick() {
+        int fePerMb = getFePerFuelTick(getFluidState().getFluidName());
+        if (fePerMb <= 0 || getFluidState().getAmount() <= 0) {
+            return false;
+        }
+
+        if (getEnergyState().forceReceiveEnergy(fePerMb, true) != fePerMb) {
+            return false;
+        }
+
+        getEnergyState().forceReceiveEnergy(fePerMb, false);
+        getFluidState().setAmount(getFluidState().getAmount() - 1);
+        return true;
+    }
+
+    int getFePerFuelTick(String fluidName) {
+        if ("refined_t2_fluid".equals(fluidName)) {
+            return JDTConfig.fuelTier2FePerMb;
+        }
+        if ("refined_t3_fluid".equals(fluidName)) {
+            return JDTConfig.fuelTier3FePerMb;
+        }
+        if ("refined_t4_fluid".equals(fluidName)) {
+            return JDTConfig.fuelTier4FePerMb;
+        }
+        return 0;
+    }
+
+    private int providePowerAdjacent() {
+        int sent = 0;
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            if (getEnergyState().getEnergyStored() <= 0) {
+                break;
+            }
+            IEnergyStorage receiver = getEnergyReceiver(pos.offset(facing), facing.getOpposite());
+            if (receiver == null || !receiver.canReceive()) {
+                continue;
+            }
+            sent += EnergyTransferHelper.transmitPower(getEnergyState(), receiver, JDTConfig.generatorFluidT1FePerTick * 10);
+        }
+        return sent;
+    }
+
+    @Nullable
+    private IEnergyStorage getEnergyReceiver(BlockPos targetPos, EnumFacing side) {
+        TileEntity tileEntity = world.getTileEntity(targetPos);
+        if (tileEntity == null || !tileEntity.hasCapability(CapabilityEnergy.ENERGY, side)) {
+            return null;
+        }
+        return tileEntity.getCapability(CapabilityEnergy.ENERGY, side);
     }
 
     @Override
