@@ -67,12 +67,12 @@ class GooFluidJeiParityTest {
                 "getOffsetPositionForSide",
                 "applyRotationForSide",
                 "renderTextures",
-                "renderOverlay",
-                "addFaceQuad",
+                "renderTexturePattern",
+                "renderPatternDepthOnly",
+                "renderTargetDepthEqual",
+                "renderModelQuads",
+                "tintQuadColor",
                 "applyDirectionRotation",
-                "TextureAtlasSprite",
-                "getAtlasSprite",
-                "FACE_OFFSET",
                 "BlockGooPattern.GOOSTAGE",
                 "getRemainingTimeFor",
                 "getCraftingDuration"
@@ -81,21 +81,45 @@ class GooFluidJeiParityTest {
         }
         assertTrue(renderer.contains("isGlobalRenderer(TileGooBlock"),
                 "Goo TESR should opt out of the local block-bound culling because infection previews render on neighboring blocks");
-        assertTrue(renderer.contains("GlStateManager.alphaFunc(GL11.GL_GREATER"),
-                "Goo infection overlay should use alpha test to discard transparent pattern pixels");
-        assertTrue(renderer.contains("depthMask(false)") && renderer.contains("enableBlend"),
-                "Goo infection overlay should blend on top without writing depth");
-        assertTrue(renderer.contains("applyDirectionRotation") && renderer.contains("TEX_TOP"),
-                "Goo infection overlay should rotate the pattern cube per direction like upstream direction.getRotation()");
-        assertTrue(renderer.contains("tierOffset") && renderer.contains("tierScale") && renderer.contains("getTier()"),
-                "Goo infection overlay should apply tier-based offset and scale like upstream to prevent z-fighting");
-        assertTrue(renderer.contains("gooSprite") && renderer.contains("getParticleTexture"),
-                "Goo infection overlay should reference goo block particle texture for color");
-        assertTrue(renderer.contains("POSITION_TEX") && renderer.contains("getMinU()"),
-                "Goo infection overlay should draw textured face quads from the block atlas");
-        assertTrue(!renderer.contains("renderModelState") && !renderer.contains("renderAllModelQuads")
-                        && !renderer.contains("visibleFace = direction.getOpposite()"),
-                "Goo infection preview should not regress to whole-model fade or one hidden contact face rendering");
+        assertTrue(renderer.contains("colorMask(false, false, false, false)") && renderer.contains("depthMask(true)")
+                        && renderer.contains("GlStateManager.depthFunc(GL11.GL_LEQUAL)"),
+                "Goo pattern pass should mirror upstream GooPattern: alpha-tested pattern model writes depth only");
+        assertTrue(renderer.contains("GlStateManager.depthFunc(GL11.GL_EQUAL)") && renderer.contains("depthMask(false)")
+                        && renderer.contains("enableBlend"),
+                "Goo target pass should mirror upstream RenderBlockBackface: blended target model draws only where pattern wrote depth");
+        assertTrue(renderer.contains("getBlockRendererDispatcher().getModelForState(pattern)")
+                        && renderer.contains("getBlockRendererDispatcher().getModelForState(renderState)")
+                        && renderer.contains("model.getQuads(state, face, 0L)")
+                        && renderer.contains("model.getQuads(state, null, 0L)"),
+                "Goo renderer should render baked pattern and goo models, not handmade decal quads");
+        assertTrue(renderer.contains("blockentity.getWorld().getBlockState(blockentity.getPos())")
+                        && !renderer.contains("IBlockState renderState = blockentity.getRenderStateFor(direction)"),
+                "Upstream renders the goo block through the pattern mask; target block colors must not drive the vine preview");
+        assertTrue(renderer.contains("getBlockColors()") && renderer.contains("colorMultiplier")
+                        && renderer.contains("quad.getTintIndex()"),
+                "Goo target pass should keep upstream goo block tint and alpha");
+        assertTrue(renderer.contains("GlStateManager.translate(-translateF, -translateF, -translateF)")
+                        && renderer.contains("GlStateManager.scale(1.0F + scaleF, 1.0F + scaleF, 1.0F + scaleF)"),
+                "Goo infection renderer should apply upstream tier-based inflate transform");
+        assertTrue(renderer.contains("applyDirectionRotation") && renderer.contains("getAoDirection"),
+                "Goo infection renderer should rotate the shared pattern/target model and remap AO directions like upstream");
+        for (String token : Arrays.asList(
+                "case DOWN:",
+                "GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);",
+                "case NORTH:",
+                "GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);",
+                "GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);",
+                "case SOUTH:",
+                "case WEST:",
+                "GlStateManager.rotate(90.0F, 0.0F, 0.0F, 1.0F);",
+                "case EAST:",
+                "GlStateManager.rotate(-90.0F, 0.0F, 0.0F, 1.0F);"
+        )) {
+            assertTrue(renderer.contains(token), "Goo renderer should mirror Direction#getRotation in 1.12 GL calls: " + token);
+        }
+        assertTrue(!renderer.contains("renderOverlay") && !renderer.contains("addFaceQuad")
+                        && !renderer.contains("POSITION_TEX") && !renderer.contains("TEX_TOP"),
+                "Goo infection preview should not regress to the handmade six-face goo texture decal");
         assertTrue(clientRegistration.contains("ClientRegistry.bindTileEntitySpecialRenderer")
                         && clientRegistration.contains("TileGooBlock.Tier1")
                         && clientRegistration.contains("TileGooBlock.Tier4")
