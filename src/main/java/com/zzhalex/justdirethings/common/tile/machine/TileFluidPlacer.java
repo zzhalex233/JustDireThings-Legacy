@@ -146,7 +146,7 @@ public class TileFluidPlacer extends TileTimedMachineBase implements ITickable {
         }
 
         if (canRun()) {
-            BlockPos blockPos = positionsToPlace.removeFirst();
+            BlockPos blockPos = positionsToPlace.remove(0);
             if (placeFluid(placeStack, blockPos)) {
                 return true;
             }

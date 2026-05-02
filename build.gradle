@@ -177,7 +177,8 @@ if (!propertyBool('enable_shadow')) {
 }
 
 compileJava {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+    options.release.set(8)
 }
 
 jar {
@@ -191,7 +192,9 @@ jar {
     doFirst {
         manifest {
             def attribute_map = [:]
-            attribute_map['ModType'] = "CRL"
+            // Keep the release jar as a standard Forge/FML mod. Cleanroom can
+            // load regular Forge mods, but legacy Forge does not understand
+            // Cleanroom-only jar metadata.
             if (configurations.contain.size() > 0) {
                 attribute_map['ContainedDeps'] = configurations.contain.collect { it.name }.join(' ')
                 attribute_map['NonModDeps'] = true
