@@ -14,12 +14,16 @@ public abstract class TileTimedMachineBase extends TileInventoryMachineBase impl
             return;
         }
         onServerTick();
-        if (shouldRunTimedMachine() && performWork()) {
+        if (shouldRunTimedMachine() && canRun() && performWork()) {
             markDirtyClient();
         }
     }
 
     protected void onServerTick() {
+    }
+
+    protected boolean canRun() {
+        return true;
     }
 
     protected abstract boolean performWork();

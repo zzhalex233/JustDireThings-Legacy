@@ -14,7 +14,8 @@
                 ],
     "key":  {
                 "c":  {
-                          "item":  "minecraft:coal"
+                          "item":  "minecraft:coal",
+                          "data":  0
                       },
                 "f":  {
                           "item":  "futuremc:blast_furnace"

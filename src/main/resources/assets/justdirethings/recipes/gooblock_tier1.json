@@ -11,7 +11,8 @@
                           "item":  "minecraft:clay_ball"
                       },
                 "d":  {
-                          "item":  "minecraft:dirt"
+                          "item":  "minecraft:dirt",
+                          "data":  0
                       },
                 "f":  {
                           "item":  "minecraft:rotten_flesh"

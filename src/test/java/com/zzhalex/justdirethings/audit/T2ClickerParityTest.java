@@ -28,6 +28,10 @@ class T2ClickerParityTest {
                 "Clicker should expose the T1/T2 target AABB hook");
         assertTrue(contents.contains("getAreaState().createArea(pos)"),
                 "Clicker T2 should scan entities/blocks over the configured advanced area");
+        assertTrue(contents.contains("positionsToClick") && contents.contains("entitiesToClick"),
+                "Clicker should keep the upstream queued block/entity traversal lists");
+        assertTrue(contents.contains("remove(0)") || contents.contains("removeFirst()"),
+                "Clicker should advance through queued targets instead of re-clicking the first valid target forever");
     }
 
     @Test
@@ -42,6 +46,8 @@ class T2ClickerParityTest {
                 "The per-server-tick hook should run before timed/redstone work gating, matching upstream T2 charging");
         assertTrue(clicker.contains("protected void onServerTick()") && clicker.contains("chargeItemStack(getItemHandler().getStackInSlot(0))"),
                 "Clicker T2 should charge its held item every server tick like upstream");
+        assertTrue(clicker.contains("protected boolean canRun()") && clicker.contains("clickType == 2") && clicker.contains("isHandActive()"),
+                "Clicker should keep the upstream long-hold click exception so channeling-style interactions keep running");
         assertTrue(breaker.contains("protected void onServerTick()") && breaker.contains("chargeItemStack(getItemHandler().getStackInSlot(0))"),
                 "Block Breaker T2 should charge its tool every server tick like upstream");
     }

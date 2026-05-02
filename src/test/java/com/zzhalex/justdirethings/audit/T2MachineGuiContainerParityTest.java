@@ -105,10 +105,31 @@ class T2MachineGuiContainerParityTest {
 
         assertTrue(sensor.contains("sensorTargetButton(26, 62") && sensor.contains("strongWeakRedstoneButton(44, 62"),
                 "Sensor T2 should use upstream target and strong/weak redstone positions");
+        assertTrue(sensor.contains("allowListButton(8, 62"),
+                "Sensor T2 should keep the upstream allowlist button above the lower 9 filter slots");
         assertTrue(sensor.contains("equalityButton(104, 62") && sensor.contains("senseAmountButton(122, 64"),
                 "Sensor T2 should keep the original comparison controls on the right side");
-        assertTrue(sensor.indexOf("if (tile instanceof TileAdvancedMachine)") < sensor.indexOf("sensorTargetButton(26, 62"),
-                "Sensor T2 controls should be inside the advanced-machine branch, separate from the T1 positions");
+        assertTrue(sensor.indexOf("if (tile instanceof TileSensor.T2)") < sensor.indexOf("sensorTargetButton(26, 62"),
+                "Sensor T2 controls should be inside the T2 branch, separate from the T1 positions");
+        assertFalse(sensor.contains("addAdvancedMachineButtons((TileSensor.T2) tile)"),
+                "Sensor T2 must not reuse the generic advanced filter button row because upstream omits compare-NBT here");
+        assertFalse(sensor.contains("redstoneButton("),
+                "Sensor screens should not expose the RedstoneControlledBE ignore/low/high/pulse button from generic machines");
+    }
+
+    @Test
+    void sensorContainersUseOriginalFilterSlotPositionsAndSensorOnlyRightClickSettings() throws IOException {
+        String sensor = read("src/main/java/com/zzhalex/justdirethings/common/container/machine/ContainerSensor.java");
+        String base = read("src/main/java/com/zzhalex/justdirethings/common/container/base/ContainerMachineBase.java");
+
+        assertTrue(sensor.contains("tile instanceof TileSensor.T2 ? 8 : 80"),
+                "Sensor T1 should keep upstream filter slots at x=80 while T2 keeps the shared advanced-machine x=8 row");
+        assertTrue(sensor.contains("tile instanceof TileSensor.T2 ? 54 : 13"),
+                "Sensor T1 should keep upstream filter slots at y=13 while T2 keeps the shared advanced-machine y=54 row");
+        assertTrue(sensor.contains("slotId >= 0 && slotId < TileSensor.FILTER_SLOT_COUNT && dragType == 1"),
+                "Only Sensor filter slots should reserve right-click for the block-state settings panel");
+        assertFalse(base.contains("if (dragType == 1) {\r\n                return ItemStack.EMPTY;\r\n            }"),
+                "ContainerMachineBase should not globally steal right-click clearing from every other machine filter slot");
     }
 
     private static String read(String path) throws IOException {

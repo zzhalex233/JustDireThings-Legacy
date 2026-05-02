@@ -19,7 +19,8 @@
                           "item":  "futuremc:honey_bottle"
                       },
                 "f":  {
-                          "item":  "minecraft:golden_apple"
+                          "item":  "minecraft:golden_apple",
+                          "data":  0
                       },
                 "m":  {
                           "item":  "minecraft:milk_bucket"

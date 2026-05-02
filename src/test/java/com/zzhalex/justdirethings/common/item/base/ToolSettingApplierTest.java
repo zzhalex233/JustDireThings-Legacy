@@ -54,4 +54,17 @@ class ToolSettingApplierTest {
         ToolSettingApplier.applyBinding(sword, "mobscanner", 0, -1, false, true);
         assertFalse(LeftClickableTool.getLeftClickList(sword).contains(Ability.MOBSCANNER));
     }
+
+    @Test
+    void preservesCustomBindingWhenOnlyRequireEquippedChanges() {
+        ItemStack sword = new ItemStack(ModEquipmentItems.getItem("ferricore_sword"));
+
+        ToolSettingApplier.applyBinding(sword, "mobscanner", 2, 42, false, true);
+        ToolSettingApplier.applyBinding(sword, "mobscanner", 2, -1, false, false);
+
+        AbilityBinding binding = LeftClickableTool.getAbilityBinding(sword, Ability.MOBSCANNER);
+        assertEquals(42, binding.getKeyCode());
+        assertFalse(binding.isMouseBinding());
+        assertFalse(binding.isRequireEquipped());
+    }
 }

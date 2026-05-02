@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings.common.item.equipment;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
+import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.material.JDTArmorMaterial;
 import net.minecraft.client.util.ITooltipFlag;
@@ -40,7 +41,11 @@ public class ItemJDTArmor extends ItemArmor implements ToggleableTool, LeftClick
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
         ActionResult<ItemStack> opened = EquipmentItemSupport.openSettingsIfSneaking(this, worldIn, playerIn, handIn);
-        return opened != null ? opened : super.onItemRightClick(worldIn, playerIn, handIn);
+        if (opened != null) {
+            return opened;
+        }
+        ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(worldIn, playerIn, handIn);
+        return abilityResult != null ? abilityResult : super.onItemRightClick(worldIn, playerIn, handIn);
     }
 
     @Override

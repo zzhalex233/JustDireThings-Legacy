@@ -29,6 +29,7 @@ import com.zzhalex.justdirethings.common.tile.machine.TileSensor;
 import com.zzhalex.justdirethings.network.JDTNetwork;
 import com.zzhalex.justdirethings.network.message.MessageMachineSetting;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
@@ -99,7 +100,7 @@ public class GuiMachineBase extends GuiTooltipContainer {
         TileMachineBase machine = getMachineTile();
         if (machine instanceof TileAdvancedMachine || machine instanceof TileEnergyTransmitter) {
             extraWidth = 60;
-        } else if (machine instanceof TileItemCollector) {
+        } else if (machine instanceof TileItemCollector || machine instanceof TileExperienceHolder) {
             extraWidth = 20;
         } else {
             extraWidth = 0;
@@ -369,6 +370,22 @@ public class GuiMachineBase extends GuiTooltipContainer {
         return null;
     }
 
+    public int getGuiLeftValue() {
+        return guiLeft;
+    }
+
+    public int getGuiTopValue() {
+        return guiTop;
+    }
+
+    public List<Slot> getSlots() {
+        return inventorySlots.inventorySlots;
+    }
+
+    public int getWindowId() {
+        return inventorySlots.windowId;
+    }
+
     protected List<MachineGuiButton> getMachineButtons() {
         return Collections.unmodifiableList(machineButtons);
     }
@@ -381,6 +398,7 @@ public class GuiMachineBase extends GuiTooltipContainer {
         drawBackgroundPanel(topSectionLeft + 20, topSectionTop - 20, topSectionWidth - 40, 20);
         drawBackgroundPanel(topSectionLeft, topSectionTop, topSectionWidth, topSectionHeight);
         drawBackgroundPanel(left, top + 75, BASE_X_SIZE, baseYSize - 73);
+        drawAdditionalBackgroundLayer(partialTicks, mouseX, mouseY);
 
         drawSlotBackgrounds(guiLeft, guiTop);
 
@@ -390,6 +408,9 @@ public class GuiMachineBase extends GuiTooltipContainer {
         for (WidgetFluidBar widget : fluidBars) {
             widget.draw(topSectionLeft, topSectionTop);
         }
+    }
+
+    protected void drawAdditionalBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
     }
 
     @Override
@@ -587,6 +608,22 @@ public class GuiMachineBase extends GuiTooltipContainer {
     protected void drawBackgroundPanel(int left, int top, int panelWidth, int panelHeight) {
         mc.getTextureManager().bindTexture(getBackgroundTexture());
         GuiNineSlice.draw(left, top, panelWidth, panelHeight);
+    }
+
+    protected void drawStretchedBackgroundPanel(int left, int top, int panelWidth, int panelHeight) {
+        mc.getTextureManager().bindTexture(getBackgroundTexture());
+        Gui.drawScaledCustomSizeModalRect(
+                left,
+                top,
+                0,
+                0,
+                GuiNineSlice.TEXTURE_WIDTH,
+                GuiNineSlice.TEXTURE_HEIGHT,
+                panelWidth,
+                panelHeight,
+                GuiNineSlice.TEXTURE_WIDTH,
+                GuiNineSlice.TEXTURE_HEIGHT
+        );
     }
 
     protected void drawSlotBackgrounds(int left, int top) {

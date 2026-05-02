@@ -1,8 +1,8 @@
 package com.zzhalex.justdirethings.common.tile.base;
 
-import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 public interface TileFilteredMachine {
 
-    FilterItemHandler getFilterHandler();
+    ItemStackHandler getFilterHandler();
 }

@@ -14,6 +14,7 @@ import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,7 +32,7 @@ public interface TileAdvancedMachine extends TileFilteredMachine {
 
     int getStandardEnergyCost();
 
-    default FilterItemHandler getFilterHandler() {
+    default ItemStackHandler getFilterHandler() {
         return null;
     }
 
@@ -141,7 +142,7 @@ public interface TileAdvancedMachine extends TileFilteredMachine {
     }
 
     default NBTTagCompound writeAdvancedMachineToNbt(NBTTagCompound compound) {
-        FilterItemHandler filterHandler = getFilterHandler();
+        ItemStackHandler filterHandler = getFilterHandler();
         if (filterHandler != null) {
             compound.setTag("AdvancedFilters", filterHandler.serializeNBT());
         }
@@ -149,7 +150,7 @@ public interface TileAdvancedMachine extends TileFilteredMachine {
     }
 
     default void readAdvancedMachineFromNbt(NBTTagCompound compound) {
-        FilterItemHandler filterHandler = getFilterHandler();
+        ItemStackHandler filterHandler = getFilterHandler();
         if (filterHandler != null && compound.hasKey("AdvancedFilters")) {
             filterHandler.deserializeNBT(compound.getCompoundTag("AdvancedFilters"));
         }

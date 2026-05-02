@@ -74,6 +74,61 @@ class ReportedMachineBugParityTest {
     }
 
     @Test
+    void machineFilterSlotsSupportOriginalJeiGhostDragging() throws IOException {
+        String jeiPlugin = read("src/main/java/com/zzhalex/justdirethings/client/jei/JDTJeiPlugin.java");
+        String ghostHandler = read("src/main/java/com/zzhalex/justdirethings/client/jei/GhostFilterBasic.java");
+        String network = read("src/main/java/com/zzhalex/justdirethings/network/JDTNetwork.java");
+        String message = read("src/main/java/com/zzhalex/justdirethings/network/message/MessageGhostSlot.java");
+        String container = read("src/main/java/com/zzhalex/justdirethings/common/container/base/ContainerMachineBase.java");
+
+        assertTrue(jeiPlugin.contains("addGhostIngredientHandler(GuiMachineBase.class, new GhostFilterBasic())"),
+                "JEI plugin should register one shared ghost-ingredient handler for machine filter slots");
+        assertTrue(ghostHandler.contains("SlotFilterItemHandler") && ghostHandler.contains("MessageGhostSlot"),
+                "Ghost ingredient handler should target filter slots and forward the marked stack to the server");
+        assertTrue(network.contains("MessageGhostSlot.Handler.class"),
+                "Network registration should expose the shared ghost-slot sync packet");
+        assertTrue(message.contains("applyGhostSlot") && container.contains("applyGhostSlot"),
+                "Ghost slot packets should land in ContainerMachineBase so every machine filter slot shares the same server-side path");
+    }
+
+    @Test
+    void sensorBlockStatePanelMatchesOriginalFixedGrayScrollablePanel() throws IOException {
+        String gui = read("src/main/java/com/zzhalex/justdirethings/client/gui/machine/GuiSensor.java");
+        String list = read("src/main/java/com/zzhalex/justdirethings/client/gui/widget/SensorBlockStateScrollList.java");
+        String layout = read("src/main/java/com/zzhalex/justdirethings/client/gui/SensorBlockStatePanelLayout.java");
+        String message = read("src/main/java/com/zzhalex/justdirethings/network/message/MessageBlockStateFilter.java");
+
+        assertTrue(gui.contains("topSectionLeft - SensorBlockStatePanelLayout.PANEL_WIDTH") && gui.contains("topSectionTop"),
+                "Sensor block-state panel should open at the upstream left-side gray panel position");
+        assertTrue(layout.contains("PANEL_CLICK_LEFT_OFFSET = -101"),
+                "Sensor block-state panel outside-click bounds should preserve the upstream one-pixel left tolerance");
+        assertTrue(list.contains("Gui.drawRect(listLeft, top, listLeft + listWidth, bottom, 0xD0101010)"),
+                "Sensor block-state list should draw the original dark gray list background rather than dirt/slot textures");
+        assertTrue(list.contains("getScrollBarX()") && list.contains("listLeft + listWidth - SensorBlockStatePanelLayout.SCROLLBAR_RIGHT_PADDING"),
+                "Sensor block-state list should keep the upstream fixed scrollbar position");
+        assertTrue(list.contains("trimToPixelWidth"),
+                "Sensor block-state list should clip long property/value labels inside the fixed panel width");
+        assertTrue(gui.contains("justdirethings.screen.rightclicksettings"),
+                "Sensor filter slots should expose the upstream right-click settings tooltip");
+        assertTrue(gui.contains("MessageBlockStateFilter(getWindowId(), slot, \"\", \"\")"),
+                "Changing a marked filter stack should clear stale block-state settings on the server");
+        assertTrue(message.contains("message.propertyName.isEmpty()") && message.contains("sensor.clearSensorProperties(message.slot)"),
+                "The block-state settings packet should support clearing all properties for a slot");
+    }
+
+    @Test
+    void sensorEntityFiltersSupportOriginalSpawnEggAndCreatureCatcherPaths() throws IOException {
+        String sensor = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/TileSensor.java");
+
+        assertTrue(sensor.contains("ItemMonsterPlacer") && sensor.contains("ItemMonsterPlacer.getNamedIdFrom(filter)"),
+                "Sensor entity filters should support vanilla 1.12 spawn eggs like upstream SpawnEggItem filters");
+        assertTrue(sensor.contains("ItemCreatureCatcher") && sensor.contains("EntityCreatureCatcher.createCapturedEntity"),
+                "Sensor entity filters should keep the upstream Creature Catcher matching path");
+        assertTrue(sensor.contains("normalizedEntityTag(captured)") && sensor.contains("normalizedEntityTag(entity)"),
+                "Creature Catcher compare-NBT mode should compare normalized entity tags like upstream");
+    }
+
+    @Test
     void itemCollectorBlockstatesUseUpstreamAttachmentRotation() throws IOException {
         String upstream = read("src/main/resources/assets/justdirethings/blockstates/itemcollector.json");
 
@@ -178,8 +233,12 @@ class ReportedMachineBugParityTest {
 
         assertFalse(clientRegistration.contains("RenderItemCollectorArea"),
                 "Render-area overlays must not be hard-wired to Item Collector only");
-        assertFalse(clientRegistration.contains("bindTileEntitySpecialRenderer"),
-                "Area overlays should not be registered as per-tile TESRs; that path caused duplicated one-off render behavior and renderer conflicts");
+        assertFalse(clientRegistration.contains("bindTileEntitySpecialRenderer(TileItemCollector")
+                        || clientRegistration.contains("bindTileEntitySpecialRenderer(TileMachine")
+                        || clientRegistration.contains("RenderMachineArea"),
+                "Area overlays should not be registered as per-machine TESRs; that path caused duplicated one-off render behavior and renderer conflicts");
+        assertTrue(clientRegistration.contains("bindTileEntitySpecialRenderer(TileGooBlock.Tier1.class, new RenderGooBlock())"),
+                "Non-area dynamic tile renderers such as Goo blocks should still be allowed to use TESRs");
         assertTrue(clientRegistration.contains("MachineAreaRenderHandler.INSTANCE"),
                 "Client setup should register one shared world render event for every area-capable machine");
         assertTrue(eventHandler.contains("RenderWorldLastEvent"),

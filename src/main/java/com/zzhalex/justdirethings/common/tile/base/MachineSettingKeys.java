@@ -48,6 +48,8 @@ public final class MachineSettingKeys {
     public static final String STRONG_WEAK_REDSTONE = "strong_weak_redstone";
     public static final String SENSE_AMOUNT = "sense_amount";
     public static final String EQUALITY = "equality";
+    public static final String RENDER_PARADOX = "render_paradox";
+    public static final String PARADOX_TARGET_TYPE = "paradox_target_type";
 
     private MachineSettingKeys() {
     }

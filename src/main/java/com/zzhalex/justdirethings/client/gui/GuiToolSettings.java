@@ -10,6 +10,7 @@ import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.data.tool.AbilityBinding;
 import com.zzhalex.justdirethings.network.JDTNetwork;
 import com.zzhalex.justdirethings.network.message.MessageToolBindingSetting;
+import com.zzhalex.justdirethings.network.message.MessageToolRefreshSlots;
 import com.zzhalex.justdirethings.network.message.MessageToolSlotSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -46,6 +47,7 @@ public class GuiToolSettings extends GuiTooltipContainer {
     private final Map<AbilityButton, RequireEquippedButton> requireEquippedButtons = new HashMap<>();
     private boolean bindingEnabled;
     private AbilityButton bindingTarget;
+    private final Map<Ability, Boolean> pendingRequireEquipped = new HashMap<>();
     private int nextOptionButtonId;
 
     public GuiToolSettings(InventoryPlayer playerInventory, ContainerToolSettings container) {
@@ -59,6 +61,7 @@ public class GuiToolSettings extends GuiTooltipContainer {
     @Override
     public void initGui() {
         super.initGui();
+        refreshDynamicSlots();
         rebuildAbilityButtons();
     }
 
@@ -70,6 +73,7 @@ public class GuiToolSettings extends GuiTooltipContainer {
         bindingButtons.clear();
         customSettingsButtons.clear();
         requireEquippedButtons.clear();
+        pendingRequireEquipped.clear();
         shownAbilityButton = null;
         bindingEnabled = false;
         bindingTarget = null;
@@ -183,6 +187,7 @@ public class GuiToolSettings extends GuiTooltipContainer {
         Slot hovered = getSlotAt(mouseX, mouseY);
         if (hovered != null && hovered.getHasStack() && hovered.getStack().getItem() instanceof ToggleableTool) {
             selectedSlotIndex = hovered.getSlotIndex();
+            refreshDynamicSlots();
             rebuildAbilityButtons();
         }
     }
@@ -262,14 +267,8 @@ public class GuiToolSettings extends GuiTooltipContainer {
         int value = -1;
         if (ability.getSettingType() == Ability.SettingType.CYCLE) {
             mode = 1;
-        } else if (ability.getSettingType() == Ability.SettingType.SLIDER && rightClick) {
-            mode = 2;
-            ToggleableTool tool = (ToggleableTool) selectedToolStack().getItem();
-            value = tool.getToolValue(selectedToolStack(), ability) - tool.getAbilityParams(ability).increment;
         } else if (ability.getSettingType() == Ability.SettingType.SLIDER) {
-            mode = 2;
-            ToggleableTool tool = (ToggleableTool) selectedToolStack().getItem();
-            value = tool.getToolValue(selectedToolStack(), ability) + tool.getAbilityParams(ability).increment;
+            mode = 0;
         } else {
             mode = 0;
         }
@@ -316,6 +315,10 @@ public class GuiToolSettings extends GuiTooltipContainer {
         button.toggle();
         AbilityBinding binding = LeftClickableTool.getAbilityBinding(selectedToolStack(), button.ability);
         sendBinding(button.ability, 2, binding == null ? -1 : binding.getKeyCode(), binding != null && binding.isMouseBinding(), button.requiresEquipped());
+        pendingRequireEquipped.put(button.ability, button.requiresEquipped());
+        if (binding != null) {
+            LeftClickableTool.addToCustomBindingList(selectedToolStack(), new AbilityBinding(button.ability.getId(), binding.getKeyCode(), binding.isMouseBinding(), button.requiresEquipped()));
+        }
     }
 
     private void activateCustomSettingButton(CustomSettingButton button) {
@@ -350,6 +353,9 @@ public class GuiToolSettings extends GuiTooltipContainer {
     }
 
     private boolean requireEquipped(Ability ability) {
+        if (pendingRequireEquipped.containsKey(ability)) {
+            return pendingRequireEquipped.get(ability);
+        }
         AbilityBinding binding = LeftClickableTool.getAbilityBinding(selectedToolStack(), ability);
         return binding == null || binding.isRequireEquipped();
     }
@@ -391,6 +397,13 @@ public class GuiToolSettings extends GuiTooltipContainer {
         return playerInventory.getStackInSlot(selectedSlotIndex);
     }
 
+    private void refreshDynamicSlots() {
+        if (inventorySlots instanceof ContainerToolSettings) {
+            ((ContainerToolSettings) inventorySlots).refreshSlots(selectedToolStack());
+        }
+        JDTNetwork.getChannel().sendToServer(new MessageToolRefreshSlots(selectedSlotIndex));
+    }
+
     private static int findInitialToolSlot(InventoryPlayer inventory) {
         ItemStack mainHand = inventory.getCurrentItem();
         if (!mainHand.isEmpty() && mainHand.getItem() instanceof ToggleableTool) {
@@ -411,9 +424,6 @@ public class GuiToolSettings extends GuiTooltipContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        fontRenderer.drawString(I18n.format("justdirethings.gui.tool_settings"), 26, 7, 4210752);
-        fontRenderer.drawString(I18n.format("justdirethings.gui.player_inventory"), 8, ySize - 96 + 2, 4210752);
-
         ItemStack stack = selectedToolStack();
         if (!stack.isEmpty()) {
             itemRender.renderItemAndEffectIntoGUI(stack, 5, 5);
@@ -425,11 +435,10 @@ public class GuiToolSettings extends GuiTooltipContainer {
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         mc.getTextureManager().bindTexture(BACKGROUND);
-        GuiNineSlice.draw(guiLeft, guiTop, xSize, ySize);
-
+        drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
         mc.getTextureManager().bindTexture(SLOT_BACKGROUND);
-        for (Slot slot : inventorySlots.inventorySlots) {
-            drawTexturedModalRect(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 0, 0, 18, 18);
+        for (Slot slot : ((ContainerToolSettings) inventorySlots).getDynamicSlots()) {
+            drawModalRectWithCustomSizedTexture(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 0, 0, 18, 18, 18, 18);
         }
     }
 

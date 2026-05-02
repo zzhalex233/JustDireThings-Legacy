@@ -16,27 +16,7 @@ class NoSilentPlaceholderTest {
 
     private static final String[] SIMPLE_CONTENT_SPECIAL_ITEMS = {};
 
-    private static final String[] NOT_IMPLEMENTED_ABILITIES = {
-            "MOBSCANNER",
-            "ORESCANNER",
-            "LAWNMOWER",
-            "INVULNERABILITY",
-            "CAUTERIZEWOUNDS",
-            "AIRBURST",
-            "GROUNDSTOMP",
-            "STUPEFY",
-            "POLYMORPH_RANDOM",
-            "VOIDSHIFT",
-            "OREXRAY",
-            "GLOWING",
-            "DEBUFFREMOVER",
-            "EARTHQUAKE",
-            "NOAI",
-            "POLYMORPH_TARGET",
-            "EPICARROW",
-            "LEAFBREAKER",
-            "ECLIPSEGATE"
-    };
+    private static final String[] NOT_IMPLEMENTED_ABILITIES = {};
 
     private static final String[][] T2_MACHINE_PARTIALS = {
             {"TileBlockBreaker.java", "BlockBreakerT2BE"},
@@ -94,9 +74,9 @@ class NoSilentPlaceholderTest {
         String abilityMethods = read("src/main/java/com/zzhalex/justdirethings/common/item/ability/AbilityMethods.java");
         String matrix = read(MATRIX_PATH);
 
-        assertTrue(abilityMethods.contains("PARITY STUB"),
-                "AbilityMethods placeholder actions must carry a parity-stub marker");
         for (String ability : NOT_IMPLEMENTED_ABILITIES) {
+            assertTrue(abilityMethods.contains("PARITY STUB"),
+                    "AbilityMethods placeholder actions must carry a parity-stub marker");
             assertTrue(abilityMethods.contains("Ability." + ability),
                     "AbilityMethods should keep " + ability + " visible until the real upstream behavior is ported");
             assertMatrixMentions(matrix, ability);

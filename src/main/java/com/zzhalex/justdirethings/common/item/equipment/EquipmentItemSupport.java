@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings.common.item.equipment;
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
+import com.zzhalex.justdirethings.capability.item.StackItemInventoryHandler;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.EnergyBackedItem;
@@ -90,6 +91,11 @@ final class EquipmentItemSupport {
     static ICapabilityProvider initEnergyCapabilities(Item item, ItemStack stack) {
         int capacity = getEnergyCapacity(item);
         return capacity <= 0 ? null : new StackItemCapabilityProvider(stack, new EquipmentEnergy(item), null);
+    }
+
+    static ICapabilityProvider initBowCapabilities(Item item, ItemStack stack) {
+        EnergyBackedItem energyItem = getEnergyCapacity(item) <= 0 ? null : new EquipmentEnergy(item);
+        return new StackItemCapabilityProvider(stack, energyItem, null, new StackItemInventoryHandler(stack, JDTDataKeys.TOOL_CONTENTS, 1));
     }
 
     static boolean showEnergyBar(Item item, ItemStack stack) {

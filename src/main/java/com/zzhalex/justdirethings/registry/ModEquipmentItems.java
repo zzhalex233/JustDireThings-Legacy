@@ -99,12 +99,24 @@ public final class ModEquipmentItems {
         return new ArrayList<>(TOOL_ITEMS.keySet());
     }
 
+    public static Collection<Item> toolItems() {
+        return Collections.unmodifiableCollection(TOOL_ITEMS.values());
+    }
+
     public static List<String> bowItemIds() {
         return new ArrayList<>(BOW_ITEMS.keySet());
     }
 
+    public static Collection<Item> bowItems() {
+        return Collections.unmodifiableCollection(BOW_ITEMS.values());
+    }
+
     public static List<String> armorItemIds() {
         return new ArrayList<>(ARMOR_ITEMS.keySet());
+    }
+
+    public static Collection<Item> armorItems() {
+        return Collections.unmodifiableCollection(ARMOR_ITEMS.values());
     }
 
     public static Collection<Item> allItems() {

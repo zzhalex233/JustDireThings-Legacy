@@ -29,7 +29,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
@@ -83,6 +86,56 @@ public final class ModItems {
 
     public static Item getItem(String id) {
         return ITEMS.get(id);
+    }
+
+    public static List<Item> machineBlockItems() {
+        return Collections.unmodifiableList(Arrays.asList(
+                UPGRADE_STATION_ITEM,
+                GENERATOR_T1_ITEM,
+                GENERATOR_FLUID_T1_ITEM,
+                ITEMCOLLECTOR_ITEM,
+                BLOCK_BREAKER_T1_ITEM,
+                BLOCK_BREAKER_T2_ITEM,
+                BLOCK_PLACER_T1_ITEM,
+                BLOCK_PLACER_T2_ITEM,
+                CLICKER_T1_ITEM,
+                CLICKER_T2_ITEM,
+                SENSOR_T1_ITEM,
+                SENSOR_T2_ITEM,
+                DROPPER_T1_ITEM,
+                DROPPER_T2_ITEM,
+                BLOCK_SWAPPER_T1_ITEM,
+                BLOCK_SWAPPER_T2_ITEM,
+                FLUID_PLACER_T1_ITEM,
+                FLUID_PLACER_T2_ITEM,
+                FLUID_COLLECTOR_T1_ITEM,
+                FLUID_COLLECTOR_T2_ITEM,
+                INVENTORY_HOLDER_ITEM,
+                EXPERIENCEHOLDER_ITEM,
+                ENERGYTRANSMITTER_ITEM,
+                PLAYERACCESSOR_ITEM,
+                PARADOX_MACHINE_ITEM
+        ));
+    }
+
+    public static List<Item> generalItems() {
+        return Collections.unmodifiableList(Arrays.asList(
+                POCKET_GENERATOR,
+                FLUID_CANISTER,
+                POTION_CANISTER,
+                FUEL_CANISTER,
+                TOTEM_OF_DEATH_RECALL,
+                BLAZEJET_WAND,
+                VOIDSHIFT_WAND,
+                ECLIPSEGATE_WAND,
+                CREATURE_CATCHER,
+                MACHINE_SETTINGS_COPIER,
+                PORTAL_GUN,
+                POLYMORPHIC_WAND,
+                POLYMORPHIC_WAND_V2,
+                TIME_WAND,
+                PORTAL_GUN_V2
+        ));
     }
 
     @SubscribeEvent

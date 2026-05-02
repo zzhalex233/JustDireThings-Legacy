@@ -11,6 +11,7 @@ public final class JDTDataKeys {
     public static final String ABILITY_BINDINGS = "AbilityBindings";
     public static final String ABILITY_COOLDOWNS = "AbilityCooldowns";
     public static final String LEFT_CLICK_ABILITIES = "LeftClickAbilities";
+    public static final String TOOL_CONTENTS = "ToolContents";
     public static final String POCKET_GENERATOR_ENERGY = "PocketGeneratorEnergy";
     public static final String POCKET_GENERATOR_COUNTER = "PocketGeneratorCounter";
     public static final String POCKET_GENERATOR_MAX_BURN = "PocketGeneratorMaxBurn";
@@ -29,6 +30,8 @@ public final class JDTDataKeys {
     public static final String ECLIPSEGATE_WAND_ENERGY = "EclipsegateWandEnergy";
     public static final String POLYMORPHIC_WAND_ENERGY = "PolymorphicWandEnergy";
     public static final String POLYMORPHIC_WAND_FLUID = "PolymorphicWandFluid";
+    public static final String POLYMORPHIC_TARGET_ENTITY = "PolymorphicTargetEntity";
+    public static final String EPIC_ARROW = "EpicArrow";
     public static final String PORTAL_GUN_ENERGY = "PortalGunEnergy";
     public static final String PORTAL_GUN_FLUID = "PortalGunFluid";
     public static final String PORTAL_GUN_UUID = "PortalGunUuid";

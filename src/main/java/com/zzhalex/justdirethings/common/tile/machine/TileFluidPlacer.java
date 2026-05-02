@@ -9,7 +9,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -20,7 +23,14 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
-public class TileFluidPlacer extends TileTimedMachineBase {
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class TileFluidPlacer extends TileTimedMachineBase implements ITickable {
+
+    private final List<BlockPos> positionsToPlace = new ArrayList<>();
 
     public TileFluidPlacer() {
         super(1);
@@ -28,25 +38,31 @@ public class TileFluidPlacer extends TileTimedMachineBase {
     }
 
     @Override
-    protected boolean performWork() {
+    public void update() {
+        if (world == null || world.isRemote) {
+            return;
+        }
+
+        handleTicks();
+        evaluateRedstoneControl();
+
+        boolean activeRedstone = isRedstoneActive();
         boolean changed = absorbFluidContainer();
-        BlockPos targetPos = MachineActionHelper.targetPos(this);
-        if (getFluidState().getAmount() < 1000 || !canPlaceFluidAt(targetPos)) {
-            return changed;
+        FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, this);
+        changed |= doFluidPlace(fakePlayer, activeRedstone);
+        if (changed) {
+            markDirtyClient();
         }
+    }
 
-        Fluid fluid = resolveFluid();
-        if (fluid == null) {
-            return changed;
+    @Override
+    protected boolean performWork() {
+        if (world == null || world.isRemote) {
+            return false;
         }
-
-        FluidStack toPlace = new FluidStack(fluid, 1000);
-        if (!FluidUtil.tryPlaceFluid(null, world, targetPos, createPlacementFluidSource(), toPlace)) {
-            return changed;
-        }
-
-        world.neighborChanged(targetPos, world.getBlockState(targetPos).getBlock(), targetPos);
-        return true;
+        boolean changed = absorbFluidContainer();
+        changed |= doFluidPlace(MachineActionHelper.createFakePlayer((WorldServer) world, this), isRedstoneActive());
+        return changed;
     }
 
     protected boolean absorbFluidContainer() {
@@ -106,6 +122,86 @@ public class TileFluidPlacer extends TileTimedMachineBase {
             return ((IFluidBlock) block).canDrain(world, targetPos);
         }
         return block instanceof BlockLiquid && state.getValue(BlockLiquid.LEVEL) == 0;
+    }
+
+    protected boolean doFluidPlace(FakePlayer fakePlayer, boolean activeRedstone) {
+        FluidStack placeStack = getPlaceStack();
+        if (!isStackValid(placeStack)) {
+            getRedstoneState().setPulsed(false);
+            return false;
+        }
+        if (clearTrackerIfNeeded(placeStack, activeRedstone)) {
+            positionsToPlace.clear();
+            return false;
+        }
+        if (!canPlace()) {
+            return false;
+        }
+
+        if (activeRedstone && canRun() && positionsToPlace.isEmpty()) {
+            positionsToPlace.addAll(findSpotsToPlace(fakePlayer));
+        }
+        if (positionsToPlace.isEmpty()) {
+            return false;
+        }
+
+        if (canRun()) {
+            BlockPos blockPos = positionsToPlace.removeFirst();
+            if (placeFluid(placeStack, blockPos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected FluidStack getPlaceStack() {
+        return currentFluidStack();
+    }
+
+    protected boolean isStackValid(FluidStack fluidStack) {
+        return fluidStack != null && fluidStack.amount >= 1000;
+    }
+
+    protected boolean canRun() {
+        return getOperationTicks() == 0 || getRedstoneState().isPulseMode();
+    }
+
+    public boolean canPlace() {
+        return true;
+    }
+
+    public boolean clearTrackerIfNeeded(FluidStack fluidStack) {
+        return clearTrackerIfNeeded(fluidStack, isRedstoneActive());
+    }
+
+    protected boolean clearTrackerIfNeeded(FluidStack fluidStack, boolean activeRedstone) {
+        if (positionsToPlace.isEmpty()) {
+            return false;
+        }
+        if (!isStackValid(fluidStack)) {
+            return true;
+        }
+        if (!canPlace()) {
+            return true;
+        }
+        return !activeRedstone && !getRedstoneState().isPulseMode();
+    }
+
+    protected boolean placeFluid(FluidStack fluidStack, BlockPos blockPos) {
+        return FluidUtil.tryPlaceFluid(null, world, blockPos, createPlacementFluidSource(), fluidStack);
+    }
+
+    protected List<BlockPos> findSpotsToPlace(FakePlayer fakePlayer) {
+        List<BlockPos> returnList = new ArrayList<>();
+        BlockPos blockPos = MachineActionHelper.targetPos(this);
+        if (isBlockPosValid(blockPos, fakePlayer)) {
+            returnList.add(blockPos);
+        }
+        return returnList;
+    }
+
+    public boolean isBlockPosValid(BlockPos blockPos, FakePlayer fakePlayer) {
+        return world.isBlockModifiable(fakePlayer, blockPos) && canPlaceFluidAt(blockPos);
     }
 
     protected IFluidHandler createPlacementFluidSource() {
@@ -183,15 +279,29 @@ public class TileFluidPlacer extends TileTimedMachineBase {
         }
 
         @Override
-        protected boolean performWork() {
-            boolean changed = absorbFluidContainer();
-            if (getFluidState().getAmount() < 1000 || !hasEnoughEnergy(getStandardEnergyCost())) {
-                return changed;
-            }
+        public boolean canPlace() {
+            return hasEnoughEnergy(getStandardEnergyCost());
+        }
 
+        @Override
+        protected boolean placeFluid(FluidStack fluidStack, BlockPos blockPos) {
+            if (!super.placeFluid(fluidStack, blockPos)) {
+                return false;
+            }
+            consumeEnergy(getStandardEnergyCost(), false);
+            world.neighborChanged(blockPos, world.getBlockState(blockPos).getBlock(), blockPos);
+            return true;
+        }
+
+        @Override
+        protected List<BlockPos> findSpotsToPlace(FakePlayer fakePlayer) {
+            List<BlockPos> returnList = new ArrayList<>();
             Fluid fluid = resolveFluid();
-            if (fluid == null) {
-                return changed;
+            if (fluid == null || !matchesFluidFilter(fluid)) {
+                return returnList;
+            }
+            if (getFluidState().getAmount() + 1000 > getFluidState().getCapacity()) {
+                return returnList;
             }
 
             EnumFacing facing = MachineActionHelper.getFacing(this);
@@ -203,14 +313,11 @@ public class TileFluidPlacer extends TileTimedMachineBase {
                 if (!matchesBlockFilter(world.getBlockState(supportPos), supportPos)) {
                     continue;
                 }
-                FluidStack toPlace = new FluidStack(fluid, 1000);
-                if (FluidUtil.tryPlaceFluid(null, world, targetPos, createPlacementFluidSource(), toPlace)) {
-                    consumeEnergy(getStandardEnergyCost(), false);
-                    world.neighborChanged(targetPos, world.getBlockState(targetPos).getBlock(), targetPos);
-                    return true;
+                if (isBlockPosValid(targetPos, fakePlayer)) {
+                    returnList.add(targetPos);
                 }
             }
-            return changed;
+            return returnList;
         }
 
         @Override

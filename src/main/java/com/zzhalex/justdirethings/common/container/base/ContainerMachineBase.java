@@ -1,6 +1,5 @@
 package com.zzhalex.justdirethings.common.container.base;
 
-import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
 import com.zzhalex.justdirethings.common.container.slot.SlotFilterItemHandler;
 import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
@@ -12,6 +11,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineBase extends Container {
@@ -23,7 +23,7 @@ public class ContainerMachineBase extends Container {
 
     protected final TileMachineBase machine;
     protected final IInventory machineInventory;
-    private FilterItemHandler filterHandler;
+    private ItemStackHandler filterHandler;
     private int filterSlotStart = -1;
     private int filterSlotCount;
 
@@ -80,19 +80,30 @@ public class ContainerMachineBase extends Container {
         addFilterSlots(advancedMachine.getFilterHandler());
     }
 
-    protected void addFilterSlots(FilterItemHandler filterHandler) {
+    protected void addFilterSlots(ItemStackHandler filterHandler) {
         if (filterHandler == null) {
             return;
         }
         this.filterHandler = filterHandler;
         this.filterSlotStart = inventorySlots.size();
         this.filterSlotCount = filterHandler.getSlots();
+        addFilterSlots(filterHandler, 8, 54, 9);
+    }
+
+    protected void addFilterSlots(ItemStackHandler filterHandler, int left, int top, int columns) {
+        if (filterHandler == null) {
+            return;
+        }
+        this.filterHandler = filterHandler;
+        this.filterSlotStart = inventorySlots.size();
+        this.filterSlotCount = filterHandler.getSlots();
+        int slotColumns = Math.max(1, columns);
         for (int slot = 0; slot < filterHandler.getSlots(); slot++) {
             addSlotToContainer(new SlotFilterItemHandler(
                     filterHandler,
                     slot,
-                    8 + (slot % 9) * 18,
-                    54 + (slot / 9) * 18
+                    left + (slot % slotColumns) * 18,
+                    top + (slot / slotColumns) * 18
             ));
         }
     }
@@ -186,6 +197,22 @@ public class ContainerMachineBase extends Container {
             }
         }
         return false;
+    }
+
+    public boolean applyGhostSlot(int slotId, ItemStack ghostStack) {
+        if (!isFilterSlot(slotId) || filterHandler == null) {
+            return false;
+        }
+        int filterIndex = slotId - filterSlotStart;
+        if (ghostStack == null || ghostStack.isEmpty()) {
+            filterHandler.setStackInSlot(filterIndex, ItemStack.EMPTY);
+        } else {
+            ItemStack filterStack = ghostStack.copy();
+            filterStack.setCount(1);
+            filterHandler.setStackInSlot(filterIndex, filterStack);
+        }
+        markFilterChanged();
+        return true;
     }
 
     private void updateTransferredSlot(EntityPlayer playerIn, Slot slot, ItemStack stack) {

@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings.common.item.base;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
+import com.zzhalex.justdirethings.data.tool.AbilityCooldown;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import com.zzhalex.justdirethings.data.tool.ToolStateIO;
 import net.minecraft.item.ItemStack;
@@ -128,6 +129,16 @@ public interface ToggleableTool {
 
     static boolean hasUpgrade(ItemStack stack, Ability ability) {
         return ability != null && readToolState(stack).hasInstalledAbility(ability.getId());
+    }
+
+    static void addCooldown(ItemStack stack, Ability ability, int ticks, boolean active) {
+        if (stack == null || stack.isEmpty() || ability == null || ticks <= 0) {
+            return;
+        }
+        ToolState state = readToolState(stack);
+        state.getAbilityCooldowns().removeIf(cooldown -> ability.getId().equals(cooldown.getAbilityId()));
+        state.getAbilityCooldowns().add(new AbilityCooldown(ability.getId(), ticks, active));
+        writeToolState(stack, state);
     }
 
     static ToolState readToolState(ItemStack stack) {

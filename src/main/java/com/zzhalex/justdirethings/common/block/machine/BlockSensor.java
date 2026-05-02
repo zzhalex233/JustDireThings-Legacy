@@ -35,12 +35,19 @@ public class BlockSensor extends BlockMachineBase {
 
     @Override
     public int getWeakPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+        if (isFacingSide(blockState, side)) {
+            return 0;
+        }
         TileEntity tileEntity = blockAccess.getTileEntity(pos);
         return tileEntity instanceof TileSensor ? ((TileSensor) tileEntity).getSignalStrength() : 0;
     }
 
     @Override
     public int getStrongPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+        TileEntity tileEntity = blockAccess.getTileEntity(pos);
+        if (!(tileEntity instanceof TileSensor) || !((TileSensor) tileEntity).isStrongSignal()) {
+            return 0;
+        }
         return getWeakPower(blockState, blockAccess, pos, side);
     }
 
@@ -53,5 +60,9 @@ public class BlockSensor extends BlockMachineBase {
     public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
         TileEntity tileEntity = worldIn.getTileEntity(pos);
         return tileEntity instanceof TileSensor ? ((TileSensor) tileEntity).getSignalStrength() : 0;
+    }
+
+    private boolean isFacingSide(IBlockState blockState, EnumFacing side) {
+        return blockState.getPropertyKeys().contains(FACING) && side == blockState.getValue(FACING).getOpposite();
     }
 }

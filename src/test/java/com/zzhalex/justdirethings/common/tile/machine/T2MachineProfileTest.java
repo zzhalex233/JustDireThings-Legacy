@@ -19,7 +19,7 @@ class T2MachineProfileTest {
         assertAdvanced(new TileDropper.T2(), 25, 9);
         assertAdvanced(new TileFluidCollector.T2(), 500, 9);
         assertAdvanced(new TileFluidPlacer.T2(), 500, 9);
-        assertAdvanced(new TileSensor.T2(), 2, 0);
+        assertAdvanced(new TileSensor.T2(), 2, 9);
         assertAdvanced(new TileBlockSwapper.T2(), 50, 9);
     }
 

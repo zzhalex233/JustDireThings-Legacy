@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.item.base;
 
+import com.zzhalex.justdirethings.TestForgeCapabilities;
 import com.zzhalex.justdirethings.common.item.misc.FluidCanisterItem;
 import com.zzhalex.justdirethings.common.item.misc.PocketGeneratorItem;
 import com.zzhalex.justdirethings.common.item.equipment.ItemJDTAxe;
@@ -10,6 +11,7 @@ import com.zzhalex.justdirethings.common.item.equipment.ItemJDTPaxel;
 import com.zzhalex.justdirethings.common.item.equipment.ItemJDTPickaxe;
 import com.zzhalex.justdirethings.common.item.equipment.ItemJDTShovel;
 import com.zzhalex.justdirethings.common.item.equipment.ItemJDTSword;
+import com.zzhalex.justdirethings.common.item.misc.PotionCanisterItem;
 import com.zzhalex.justdirethings.common.item.material.JDTArmorMaterial;
 import com.zzhalex.justdirethings.common.item.material.JDTToolTier;
 import com.zzhalex.justdirethings.common.item.tool.ItemEclipsegateWand;
@@ -27,6 +29,8 @@ import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +50,7 @@ class PoweredItemCapabilityTest {
     @BeforeAll
     static void bootstrapMinecraft() {
         Bootstrap.register();
+        TestForgeCapabilities.registerStandardCapabilities();
     }
 
     @Test
@@ -109,6 +114,24 @@ class PoweredItemCapabilityTest {
     }
 
     @Test
+    void bowsExposeOriginalModPotionCanisterItemHandler() {
+        for (ItemStack bowStack : createBows()) {
+            IItemHandler handler = bowStack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+
+            assertNotNull(handler, bowStack.getItem().getRegistryName() + " should expose a tool item handler");
+            assertEquals(1, handler.getSlots(), "Original BaseBow exposes one tool-content slot");
+            ItemStack canister = new ItemStack(new PotionCanisterItem());
+
+            ItemStack remainder = handler.insertItem(0, canister, false);
+
+            assertTrue(remainder.isEmpty(), "Bow item handler should accept a potion canister");
+            assertEquals(canister.getItem(), handler.getStackInSlot(0).getItem());
+            assertTrue(bowStack.hasTagCompound() && bowStack.getTagCompound().hasKey("ToolContents"),
+                    "Inserted canister should be persisted on the bow stack");
+        }
+    }
+
+    @Test
     void timeWandAcceptsTimeFluidThroughItemFluidCapability() {
         ModFluids.bootstrap();
         ItemTimeWand timeWand = new ItemTimeWand();
@@ -137,6 +160,15 @@ class PoweredItemCapabilityTest {
         assertUsesFluidPickup("src/main/java/com/zzhalex/justdirethings/common/item/tool/ItemPortalGunV2.java");
         assertUsesFluidPickup("src/main/java/com/zzhalex/justdirethings/common/item/tool/ItemPolymorphicWand.java");
         assertUsesFluidPickup("src/main/java/com/zzhalex/justdirethings/common/item/tool/ItemPolymorphicWandV2.java");
+    }
+
+    private static List<ItemStack> createBows() {
+        return Arrays.asList(
+                new ItemStack(new ItemJDTBow("bow_ferricore", JDTToolTier.FERRICORE, 250)),
+                new ItemStack(new ItemJDTBow("bow_blazegold", JDTToolTier.BLAZEGOLD, 450)),
+                new ItemStack(new ItemJDTBow("bow_celestigem", JDTToolTier.CELESTIGEM, 450)),
+                new ItemStack(new ItemJDTBow("bow_eclipsealloy", JDTToolTier.ECLIPSEALLOY, 450))
+        );
     }
 
     private static List<ItemStack> createToolSet(String prefix, JDTToolTier toolTier, JDTArmorMaterial armorMaterial, int bowDurability) {

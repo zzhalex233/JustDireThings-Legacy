@@ -1,10 +1,16 @@
 package com.zzhalex.justdirethings.common.item.tool;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.base.AbilityParams;
+import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemPoweredTool;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.world.World;
 
 public class ItemVoidshiftWand extends ItemPoweredTool {
 
@@ -14,7 +20,14 @@ public class ItemVoidshiftWand extends ItemPoweredTool {
     public ItemVoidshiftWand() {
         super(ENERGY_CAPACITY, ENERGY_CAPACITY, ENERGY_CAPACITY, 50);
         setMaxDamage(DURABILITY);
-        addSupportedAbilities(Ability.AIRBURST, Ability.VOIDSHIFT);
+        addSupportedAbility(Ability.AIRBURST, new AbilityParams(1, 4, 1, 4));
+        addSupportedAbility(Ability.VOIDSHIFT, new AbilityParams(1, 15, 1, 15));
+    }
+
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(world, player, hand);
+        return abilityResult != null ? abilityResult : super.onItemRightClick(world, player, hand);
     }
 
     @Override

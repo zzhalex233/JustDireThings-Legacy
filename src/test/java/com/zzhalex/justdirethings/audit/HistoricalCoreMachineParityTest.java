@@ -309,15 +309,15 @@ class HistoricalCoreMachineParityTest {
         String tile = read("src/main/java/com/zzhalex/justdirethings/common/tile/machine/TileSensor.java");
         String gui = read("src/main/java/com/zzhalex/justdirethings/client/gui/machine/GuiSensor.java");
 
-        assertTrue(tile.contains("extends TileInventoryMachineBase implements ITickable"),
-                "Sensor should own the upstream one-slot filter inventory");
-        assertTrue(tile.contains("super(1);"),
-                "Sensor should reserve exactly one filter slot");
-        assertTrue(container.contains("addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), 0, 80, 13))"),
-                "Sensor filter slot should use the upstream T1 position");
+        assertTrue(tile.contains("implements ITickable, TileFilteredMachine"),
+                "Sensor should expose the upstream ghost filter handler instead of a real item container");
+        assertTrue(tile.contains("FILTER_SLOT_COUNT = 9") && tile.contains("new FilterItemHandler(FILTER_SLOT_COUNT)"),
+                "Sensor should reserve the upstream 9 marked filter slots");
+        assertTrue(container.contains("addFilterSlots(tile.getFilterHandler(), tile instanceof TileSensor.T2 ? 8 : 80, tile instanceof TileSensor.T2 ? 54 : 13, 9)"),
+                "Sensor T1/T2 filter slots should use the upstream T1 row and shared T2 lower filter row positions");
         assertTrue(tile.contains("senseTarget") && tile.contains("strongSignal"),
                 "Sensor should persist upstream target and strong/weak settings");
-        assertTrue(gui.contains("SENSOR_TARGET") && gui.contains("STRONG_WEAK_REDSTONE"),
+        assertTrue(gui.contains("sensorTargetButton") && gui.contains("strongWeakRedstoneButton"),
                 "Sensor GUI should expose upstream signal controls");
     }
 

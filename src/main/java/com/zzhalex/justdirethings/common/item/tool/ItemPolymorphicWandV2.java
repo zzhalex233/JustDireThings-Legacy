@@ -2,6 +2,8 @@ package com.zzhalex.justdirethings.common.item.tool;
 
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
+import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.FluidPickupHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemFluidPoweredTool;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
@@ -9,9 +11,13 @@ import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModFluids;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -38,7 +44,27 @@ public class ItemPolymorphicWandV2 extends ItemFluidPoweredTool {
         if (FluidPickupHelper.pickupSourceFluid(world, player, stack, rayTrace(world, player, true), getContainedFluid(stack))) {
             return new ActionResult<>(EnumActionResult.SUCCESS, stack);
         }
-        return super.onItemRightClick(world, player, hand);
+        if (player.isSneaking()) {
+            Entity lookedAt = AbilityMethods.getLookedAtEntity(world, player, 4.0D);
+            if (lookedAt instanceof EntityLiving) {
+                savePolymorphTarget(stack, player, (EntityLiving) lookedAt);
+                return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+            }
+        }
+        ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(world, player, hand);
+        return abilityResult != null ? abilityResult : super.onItemRightClick(world, player, hand);
+    }
+
+    public static void savePolymorphTarget(ItemStack stack, EntityPlayer player, EntityLiving interactionTarget) {
+        String entityId = getEntityId(interactionTarget);
+        if (!entityId.isEmpty() && !AbilityMethods.isPolymorphicTargetDenied(entityId)) {
+            getOrCreateTag(stack).setString(JDTDataKeys.POLYMORPHIC_TARGET_ENTITY, entityId);
+        }
+    }
+
+    private static String getEntityId(Entity entity) {
+        ResourceLocation id = EntityList.getKey(entity);
+        return id == null ? "" : id.toString();
     }
 
     @Override

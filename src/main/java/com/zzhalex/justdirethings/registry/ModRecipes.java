@@ -6,6 +6,7 @@ import com.zzhalex.justdirethings.common.recipe.TierUpgradeRecipe;
 import com.zzhalex.justdirethings.common.recipe.UpgradeStationRecipe;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,8 +22,11 @@ public final class ModRecipes {
     }
 
     public static void register() {
+        addSmelting("raw_ferricore", "ferricore_ingot", 1.0F);
+        addSmelting("raw_blazegold", "blazegold_ingot", 1.0F);
+        addSmelting("raw_eclipsealloy", "eclipsealloy_ingot", 1.0F);
         // PARITY STUB: ability/paxel/smithing loaders are still bridged in memory rather than data-driven.
-        // Goo spread and fluid drop now have 1.12 recipe factories/data; runtime consumers are implemented later.
+        // Goo spread and fluid drop use 1.12 recipe factories/data plus runtime consumers in goo and fluid event systems.
     }
 
     public static List<String> coreRecipeTypeIds() {
@@ -174,6 +178,14 @@ public final class ModRecipes {
 
     private static Item content(String id) {
         return ModContentItems.getItem(id);
+    }
+
+    private static void addSmelting(String inputId, String outputId, float experience) {
+        Item input = content(inputId);
+        Item output = content(outputId);
+        if (input != null && output != null) {
+            GameRegistry.addSmelting(new ItemStack(input), new ItemStack(output), experience);
+        }
     }
 
     private static Item equipment(String id) {

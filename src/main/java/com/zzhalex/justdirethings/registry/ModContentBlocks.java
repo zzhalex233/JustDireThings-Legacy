@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.block.goo.BlockGooBlock;
 import com.zzhalex.justdirethings.common.block.goo.BlockGooPattern;
 import com.zzhalex.justdirethings.common.block.goo.BlockGooSoil;
+import com.zzhalex.justdirethings.common.block.BlockEclipseGate;
 import com.zzhalex.justdirethings.common.block.BlockRawOre;
 import com.zzhalex.justdirethings.common.block.BlockSimpleContent;
 import com.zzhalex.justdirethings.common.block.BlockTimeCrystalBudding;
@@ -45,7 +46,7 @@ public final class ModContentBlocks {
     public static final Block GOO_SOIL_TIER2 = register(new BlockGooSoil("goosoil_tier2", 2));
     public static final Block GOO_SOIL_TIER3 = register(new BlockGooSoil("goosoil_tier3", 3));
     public static final Block GOO_SOIL_TIER4 = register(new BlockGooSoil("goosoil_tier4", 4));
-    public static final Block ECLIPSE_GATE_BLOCK = registerSimple("eclipsegateblock", Material.ROCK, SoundType.STONE, 4.0F, 8.0F, 2);
+    public static final Block ECLIPSE_GATE_BLOCK = register(new BlockEclipseGate());
 
     public static final Block RAW_FERRICORE_ORE = registerRawOre("raw_ferricore_ore", Material.ROCK, SoundType.STONE, 3.0F, 5.0F, 1);
     public static final Block RAW_BLAZEGOLD_ORE = registerRawOre("raw_blazegold_ore", Material.ROCK, SoundType.STONE, 3.5F, 5.0F, 2);

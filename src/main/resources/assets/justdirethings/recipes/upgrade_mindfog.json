@@ -10,7 +10,8 @@
                           "item":  "justdirethings:upgrade_blank"
                       },
                 "e":  {
-                          "item":  "minecraft:lapis_lazuli"
+                          "item":  "minecraft:dye",
+                          "data":  4
                       },
                 "f":  {
                           "item":  "minecraft:fermented_spider_eye"

@@ -10,7 +10,8 @@
                           "item":  "justdirethings:upgrade_blank"
                       },
                 "e":  {
-                          "item":  "minecraft:golden_apple"
+                          "item":  "minecraft:golden_apple",
+                          "data":  0
                       },
                 "f":  {
                           "item":  "minecraft:magma_cream"

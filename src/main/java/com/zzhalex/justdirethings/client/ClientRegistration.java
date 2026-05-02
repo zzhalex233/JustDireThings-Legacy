@@ -11,6 +11,7 @@ import com.zzhalex.justdirethings.client.render.RenderDecoy;
 import com.zzhalex.justdirethings.client.render.RenderPortal;
 import com.zzhalex.justdirethings.client.render.RenderPortalProjectile;
 import com.zzhalex.justdirethings.client.render.RenderTimeWand;
+import com.zzhalex.justdirethings.client.render.ThingFinder;
 import com.zzhalex.justdirethings.client.render.tile.RenderGooBlock;
 import com.zzhalex.justdirethings.common.entity.EntityCreatureCatcher;
 import com.zzhalex.justdirethings.common.entity.EntityDecoy;
@@ -62,6 +63,7 @@ public final class ClientRegistration {
         MinecraftForge.EVENT_BUS.register(AbilityCooldownOverlay.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ClientPortalGunInputHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(MachineAreaRenderHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(ThingFinder.INSTANCE);
     }
 
     private static void registerEntityRenderers() {

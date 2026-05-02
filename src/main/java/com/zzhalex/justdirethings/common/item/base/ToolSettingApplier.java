@@ -56,7 +56,12 @@ public final class ToolSettingApplier {
         }
         if (button == 2) {
             if (keyCode == -1) {
-                LeftClickableTool.removeFromCustomBindingList(stack, ability);
+                AbilityBinding binding = LeftClickableTool.getAbilityBinding(stack, ability);
+                if (binding == null) {
+                    LeftClickableTool.removeFromCustomBindingList(stack, ability);
+                } else {
+                    LeftClickableTool.addToCustomBindingList(stack, new AbilityBinding(ability.getId(), binding.getKeyCode(), binding.isMouseBinding(), requireEquipped));
+                }
             } else {
                 LeftClickableTool.addToCustomBindingList(stack, new AbilityBinding(ability.getId(), keyCode, isMouse, requireEquipped));
             }

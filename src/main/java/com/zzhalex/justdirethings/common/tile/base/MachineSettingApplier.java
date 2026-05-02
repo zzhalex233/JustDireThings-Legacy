@@ -8,6 +8,7 @@ import com.zzhalex.justdirethings.common.tile.machine.TileEnergyTransmitter;
 import com.zzhalex.justdirethings.common.tile.machine.TileExperienceHolder;
 import com.zzhalex.justdirethings.common.tile.machine.TileInventoryHolder;
 import com.zzhalex.justdirethings.common.tile.machine.TileItemCollector;
+import com.zzhalex.justdirethings.common.tile.machine.TileParadoxMachine;
 import com.zzhalex.justdirethings.common.tile.machine.TilePlayerAccessor;
 import com.zzhalex.justdirethings.common.tile.machine.TileSensor;
 import net.minecraft.entity.player.EntityPlayer;
@@ -252,6 +253,20 @@ public final class MachineSettingApplier {
             case MachineSettingKeys.EQUALITY:
                 if (machine instanceof TileSensor) {
                     ((TileSensor) machine).setEquality(value);
+                    return true;
+                }
+                return false;
+            case MachineSettingKeys.RENDER_PARADOX:
+                if (machine instanceof TileParadoxMachine) {
+                    TileParadoxMachine paradox = (TileParadoxMachine) machine;
+                    paradox.setPreviewState(value != 0, paradox.getTargetType());
+                    return true;
+                }
+                return false;
+            case MachineSettingKeys.PARADOX_TARGET_TYPE:
+                if (machine instanceof TileParadoxMachine) {
+                    TileParadoxMachine paradox = (TileParadoxMachine) machine;
+                    paradox.setPreviewState(paradox.shouldRenderParadox(), value);
                     return true;
                 }
                 return false;

@@ -13,7 +13,8 @@
                           "item":  "justdirethings:upgrade_blank"
                       },
                 "e":  {
-                          "item":  "minecraft:wither_skeleton_skull"
+                          "item":  "minecraft:skull",
+                          "data":  1
                       },
                 "f":  {
                           "item":  "minecraft:armor_stand"

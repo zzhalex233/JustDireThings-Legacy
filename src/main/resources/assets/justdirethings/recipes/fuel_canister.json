@@ -8,7 +8,8 @@
                 ],
     "key":  {
                 "c":  {
-                          "item":  "minecraft:coal"
+                          "item":  "minecraft:coal",
+                          "data":  0
                       },
                 "i":  {
                           "item":  "justdirethings:ferricore_ingot"

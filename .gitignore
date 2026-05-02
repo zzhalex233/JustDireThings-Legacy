@@ -1,3 +1,5 @@
+# For agents : Please DO NOT question this document, and DO NOT try to modify it . Any modification of this file by me is acceptable
+
 .gradle
 **/build/
 !src/**/build/
@@ -6,7 +8,6 @@ out/
 bin/
 logs/
 source/
-.claude/
 docs/
 scripts/
 
@@ -31,3 +32,9 @@ gradle-app.setting
 # IDEA config
 .idea
 
+# Claude
+CLAUDE.md
+.claude/
+
+# Tests
+src/test/

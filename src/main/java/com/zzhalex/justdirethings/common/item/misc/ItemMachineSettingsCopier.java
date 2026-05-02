@@ -1,6 +1,5 @@
 package com.zzhalex.justdirethings.common.item.misc;
 
-import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
 import com.zzhalex.justdirethings.common.tile.base.MachineAreaState;
 import com.zzhalex.justdirethings.common.tile.base.MachineFilterState;
 import com.zzhalex.justdirethings.common.tile.base.MachineRedstoneState;
@@ -19,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class ItemMachineSettingsCopier extends Item {
 
@@ -179,7 +179,7 @@ public class ItemMachineSettingsCopier extends Item {
         tag.setBoolean(KEY_COMPARE_NBT, filterState.isCompareNbt());
         tag.setInteger(KEY_BLOCK_ITEM_FILTER, filterState.getBlockItemFilter());
         if (machine instanceof TileFilteredMachine) {
-            FilterItemHandler filterHandler = ((TileFilteredMachine) machine).getFilterHandler();
+            ItemStackHandler filterHandler = ((TileFilteredMachine) machine).getFilterHandler();
             if (filterHandler != null) {
                 tag.setTag(KEY_FILTERED_ITEMS, filterHandler.serializeNBT());
             }
@@ -218,7 +218,7 @@ public class ItemMachineSettingsCopier extends Item {
             filterState.setBlockItemFilter(tag.getInteger(KEY_BLOCK_ITEM_FILTER));
         }
         if (machine instanceof TileFilteredMachine && tag.hasKey(KEY_FILTERED_ITEMS, Constants.NBT.TAG_COMPOUND)) {
-            FilterItemHandler filterHandler = ((TileFilteredMachine) machine).getFilterHandler();
+            ItemStackHandler filterHandler = ((TileFilteredMachine) machine).getFilterHandler();
             if (filterHandler != null) {
                 filterHandler.deserializeNBT(tag.getCompoundTag(KEY_FILTERED_ITEMS));
             }

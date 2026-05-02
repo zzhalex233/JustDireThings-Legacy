@@ -17,7 +17,12 @@
                           "item":  "justdirethings:time_crystal_block"
                       },
                 "r":  {
-                          "item":  "justdirethings:time_fluid_bucket"
+                          "type":  "minecraft:item_nbt",
+                          "item":  "forge:bucketfilled",
+                          "nbt":  {
+                                      "FluidName":  "time_fluid",
+                                      "Amount":  1000
+                                  }
                       }
             },
     "result":  {

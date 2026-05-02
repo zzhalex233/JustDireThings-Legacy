@@ -1,14 +1,14 @@
 package com.zzhalex.justdirethings.common.tile.base;
 
-import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.items.IItemHandler;
 
 public final class MachineFilterHelper {
 
     private MachineFilterHelper() {
     }
 
-    public static boolean matchesFilter(FilterItemHandler filterHandler, MachineFilterState filterState, ItemStack stack) {
+    public static boolean matchesFilter(IItemHandler filterHandler, MachineFilterState filterState, ItemStack stack) {
         if (filterHandler == null || filterState == null) {
             return true;
         }

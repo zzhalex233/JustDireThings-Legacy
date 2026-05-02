@@ -14,6 +14,8 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.FluidTankProperties;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
@@ -21,27 +23,41 @@ public class StackItemCapabilityProvider implements ICapabilityProvider {
 
     private final IEnergyStorage energyStorage;
     private final IFluidHandlerItem fluidHandler;
+    private final IItemHandler itemHandler;
 
     public StackItemCapabilityProvider(ItemStack stack, @Nullable EnergyBackedItem energyItem, @Nullable FluidBackedItem fluidItem) {
+        this(stack, energyItem, fluidItem, null);
+    }
+
+    public StackItemCapabilityProvider(ItemStack stack, @Nullable EnergyBackedItem energyItem, @Nullable FluidBackedItem fluidItem, @Nullable IItemHandler itemHandler) {
         this.energyStorage = energyItem == null ? null : new StackEnergyStorage(stack, energyItem);
         this.fluidHandler = fluidItem == null ? null : new StackFluidHandler(stack, fluidItem);
+        this.itemHandler = itemHandler;
     }
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityEnergy.ENERGY && energyStorage != null
-                || capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY && fluidHandler != null;
+        return capability != null
+                && (capability == CapabilityEnergy.ENERGY && energyStorage != null
+                || capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY && fluidHandler != null
+                || capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && itemHandler != null);
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (capability == null) {
+            return null;
+        }
         if (capability == CapabilityEnergy.ENERGY) {
             return energyStorage == null ? null : (T) energyStorage;
         }
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
             return fluidHandler == null ? null : (T) fluidHandler;
+        }
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return itemHandler == null ? null : (T) itemHandler;
         }
         return null;
     }

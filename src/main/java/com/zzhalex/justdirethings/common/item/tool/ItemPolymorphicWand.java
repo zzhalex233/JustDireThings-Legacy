@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings.common.item.tool;
 
 import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.FluidBackedItem;
 import com.zzhalex.justdirethings.common.item.base.FluidPickupHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemToggleableTool;
@@ -42,7 +43,8 @@ public class ItemPolymorphicWand extends ItemToggleableTool implements FluidBack
         if (FluidPickupHelper.pickupSourceFluid(world, player, stack, rayTrace(world, player, true), getContainedFluid(stack))) {
             return new ActionResult<>(EnumActionResult.SUCCESS, stack);
         }
-        return super.onItemRightClick(world, player, hand);
+        ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(world, player, hand);
+        return abilityResult != null ? abilityResult : super.onItemRightClick(world, player, hand);
     }
 
     @Override

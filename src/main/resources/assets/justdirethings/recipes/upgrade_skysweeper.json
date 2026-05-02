@@ -10,7 +10,8 @@
                           "item":  "justdirethings:upgrade_blank"
                       },
                 "e":  {
-                          "item":  "minecraft:sand"
+                          "item":  "minecraft:sand",
+                          "data":  0
                       },
                 "f":  {
                           "item":  "minecraft:gravel"

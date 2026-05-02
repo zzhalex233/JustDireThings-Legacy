@@ -42,6 +42,8 @@ public class TileClicker extends TileTimedMachineBase {
     private boolean sneaking;
     private boolean showFakePlayer;
     private int maxHoldTicks = 1;
+    private final List<BlockPos> positionsToClick = new ArrayList<>();
+    private final List<EntityLivingBase> entitiesToClick = new ArrayList<>();
 
     public TileClicker() {
         super(1);
@@ -53,6 +55,7 @@ public class TileClicker extends TileTimedMachineBase {
 
     public void setClickTarget(int clickTarget) {
         this.clickTarget = Math.max(0, Math.min(ClickTarget.values().length - 1, clickTarget));
+        clearQueuedTargets();
     }
 
     public int getClickType() {
@@ -61,6 +64,7 @@ public class TileClicker extends TileTimedMachineBase {
 
     public void setClickType(int clickType) {
         this.clickType = Math.max(0, Math.min(2, clickType));
+        clearQueuedTargets();
     }
 
     public boolean isSneaking() {
@@ -69,6 +73,7 @@ public class TileClicker extends TileTimedMachineBase {
 
     public void setSneaking(boolean sneaking) {
         this.sneaking = sneaking;
+        clearQueuedTargets();
     }
 
     public boolean isShowFakePlayer() {
@@ -77,6 +82,7 @@ public class TileClicker extends TileTimedMachineBase {
 
     public void setShowFakePlayer(boolean showFakePlayer) {
         this.showFakePlayer = showFakePlayer;
+        clearQueuedTargets();
     }
 
     public int getMaxHoldTicks() {
@@ -85,30 +91,106 @@ public class TileClicker extends TileTimedMachineBase {
 
     public void setMaxHoldTicks(int maxHoldTicks) {
         this.maxHoldTicks = Math.max(1, Math.min(1200, maxHoldTicks));
+        clearQueuedTargets();
+    }
+
+    @Override
+    public void update() {
+        if (world == null || world.isRemote) {
+            return;
+        }
+        handleTicks();
+        evaluateRedstoneControl();
+        onServerTick();
+
+        boolean activeRedstone = isRedstoneActive();
+        boolean changed = doClick(activeRedstone);
+        if (changed) {
+            markDirtyClient();
+        }
     }
 
     @Override
     protected boolean performWork() {
+        if (world == null || world.isRemote) {
+            return false;
+        }
+        return doClick(isRedstoneActive());
+    }
+
+    @Override
+    protected boolean canRun() {
+        if (clickType == 2 && world instanceof WorldServer) {
+            return getClickFakePlayer().isHandActive() || getOperationTicks() == 0 || getRedstoneState().isPulseMode();
+        }
+        return getOperationTicks() == 0 || getRedstoneState().isPulseMode();
+    }
+
+    protected boolean doClick(boolean activeRedstone) {
         if (!(world instanceof WorldServer)) {
+            return false;
+        }
+        ItemStack clickStack = getItemHandler().getStackInSlot(0);
+        if (clearTrackerIfNeeded(clickStack, activeRedstone)) {
+            positionsToClick.clear();
+            entitiesToClick.clear();
+            return false;
+        }
+        if (!canClick()) {
             return false;
         }
 
         ClickTarget target = getClickTargetMode();
         if (target == ClickTarget.BLOCK || target == ClickTarget.AIR) {
-            for (BlockPos targetPos : findSpotsToClick()) {
-                if (clickBlock(targetPos)) {
-                    return true;
-                }
+            if (activeRedstone && canRun() && positionsToClick.isEmpty()) {
+                positionsToClick.addAll(findSpotsToClick());
             }
-            return false;
+            if (positionsToClick.isEmpty() || !canRun()) {
+                return false;
+            }
+            return clickBlock(positionsToClick.remove(0));
         }
 
-        for (EntityLivingBase entity : findEntitiesToClick(getClickAABB())) {
-            if (clickEntity(entity)) {
-                return true;
-            }
+        if (activeRedstone && canRun() && entitiesToClick.isEmpty()) {
+            entitiesToClick.addAll(findEntitiesToClick(getClickAABB()));
         }
-        return false;
+        if (entitiesToClick.isEmpty()) {
+            return false;
+        }
+        if (!canRun() && !(clickType == 2 && getClickFakePlayer().isHandActive())) {
+            return false;
+        }
+        return clickEntity(entitiesToClick.remove(0));
+    }
+
+    protected boolean clearTrackerIfNeeded(ItemStack itemStack, boolean activeRedstone) {
+        if (positionsToClick.isEmpty() && entitiesToClick.isEmpty()) {
+            return false;
+        }
+        if (!isStackValid(itemStack)) {
+            return true;
+        }
+        if (!canClick()) {
+            return true;
+        }
+        return !activeRedstone && !getRedstoneState().isPulseMode();
+    }
+
+    protected boolean isStackValid(ItemStack itemStack) {
+        return true;
+    }
+
+    protected boolean canClick() {
+        return true;
+    }
+
+    protected FakePlayer getClickFakePlayer() {
+        return MachineActionHelper.createFakePlayer((WorldServer) world, this);
+    }
+
+    protected void clearQueuedTargets() {
+        positionsToClick.clear();
+        entitiesToClick.clear();
     }
 
     protected ClickTarget getClickTargetMode() {
@@ -276,19 +358,26 @@ public class TileClicker extends TileTimedMachineBase {
         }
 
         @Override
-        protected boolean performWork() {
-            if (!(world instanceof WorldServer)) {
-                return false;
-            }
-            if (!hasEnoughEnergy(getStandardEnergyCost())) {
-                return false;
-            }
+        protected boolean canClick() {
+            return hasEnoughEnergy(getStandardEnergyCost());
+        }
 
-            boolean clicked = super.performWork();
-            if (clicked) {
-                consumeEnergy(getStandardEnergyCost(), false);
+        @Override
+        protected boolean clickBlock(BlockPos targetPos) {
+            if (!super.clickBlock(targetPos)) {
+                return false;
             }
-            return clicked;
+            consumeEnergy(getStandardEnergyCost(), false);
+            return true;
+        }
+
+        @Override
+        protected boolean clickEntity(EntityLivingBase entity) {
+            if (!super.clickEntity(entity)) {
+                return false;
+            }
+            consumeEnergy(getStandardEnergyCost(), false);
+            return true;
         }
 
         @Override

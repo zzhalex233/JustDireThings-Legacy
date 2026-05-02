@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.client.jei;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.client.gui.base.GuiMachineBase;
 import com.zzhalex.justdirethings.common.recipe.custom.FluidDropDataRecipe;
 import com.zzhalex.justdirethings.common.recipe.custom.GooFluidRecipeRuntime;
 import com.zzhalex.justdirethings.common.recipe.custom.GooSpreadDataRecipe;
@@ -46,6 +47,7 @@ public class JDTJeiPlugin implements IModPlugin {
         registry.addRecipes(GooFluidRecipeRuntime.gooSpreadTagRecipes(), GOO_SPREAD_TAG_UID);
         registry.addRecipes(GooFluidRecipeRuntime.fluidDropRecipes(), FLUID_DROP_UID);
         registry.addRecipes(oreToResourceRecipes(), ORE_TO_RESOURCE_UID);
+        registry.addGhostIngredientHandler(GuiMachineBase.class, new GhostFilterBasic());
 
         registry.addRecipeCatalyst(new ItemStack(ModContentBlocks.GOO_BLOCK_TIER1), GOO_SPREAD_UID, GOO_SPREAD_TAG_UID);
         registry.addRecipeCatalyst(new ItemStack(ModContentBlocks.GOO_BLOCK_TIER2), GOO_SPREAD_UID, GOO_SPREAD_TAG_UID);

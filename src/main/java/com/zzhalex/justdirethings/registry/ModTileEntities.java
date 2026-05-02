@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.registry;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.tile.TileEclipseGate;
 import com.zzhalex.justdirethings.common.tile.TileUpgradeStation;
 import com.zzhalex.justdirethings.common.tile.goo.TileGooBlock;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockBreaker;
@@ -29,6 +30,7 @@ public final class ModTileEntities {
 
     public static void register() {
         GameRegistry.registerTileEntity(TileUpgradeStation.class, new ResourceLocation(Reference.MOD_ID, "upgrade_station"));
+        GameRegistry.registerTileEntity(TileEclipseGate.class, new ResourceLocation(Reference.MOD_ID, "eclipsegatebe"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier1.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier1"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier2.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier2"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier3.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier3"));

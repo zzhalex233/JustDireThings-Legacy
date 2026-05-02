@@ -94,6 +94,12 @@ public final class MachineButtonFactory {
             state("filter-air.png", "justdirethings.screen.target-noblock")
     );
 
+    private static final List<ButtonDefinition.State> PARADOX_TARGET_STATES = states(
+            state("target-both.png", "justdirethings.screen.paradoxall"),
+            state("filter-block.png", "justdirethings.screen.paradoxblock"),
+            state("passivemob.png", "justdirethings.screen.paradoxentity")
+    );
+
     private static final List<ButtonDefinition.State> INVENTORY_CONNECTION_STATES = states(
             state("inv-normal.png", "justdirethings.screen.inv-normal"),
             state("inv-armor.png", "justdirethings.screen.inv-armor"),
@@ -155,12 +161,16 @@ public final class MachineButtonFactory {
 
     public static List<ButtonDefinition> filterButtons(boolean allowList, boolean compareNbt, int blockItemFilter) {
         List<ButtonDefinition> buttons = new ArrayList<>();
-        buttons.add(ButtonDefinition.toggle(8, 62, MachineSettingKeys.FILTER_ALLOWLIST, allowList ? 1 : 0, ALLOW_LIST_STATES));
+        buttons.add(allowListButton(8, 62, allowList));
         buttons.add(compareNbtFilterButton(26, 62, compareNbt));
         if (blockItemFilter != -1) {
             buttons.add(ButtonDefinition.toggle(44, 62, MachineSettingKeys.FILTER_BLOCK_ITEM, blockItemFilter, BLOCK_ITEM_FILTER_STATES));
         }
         return Collections.unmodifiableList(buttons);
+    }
+
+    public static ButtonDefinition allowListButton(int x, int y, boolean allowList) {
+        return ButtonDefinition.toggle(x, y, MachineSettingKeys.FILTER_ALLOWLIST, allowList ? 1 : 0, ALLOW_LIST_STATES);
     }
 
     public static ButtonDefinition compareNbtFilterButton(int x, int y, boolean compareNbt) {
@@ -319,6 +329,15 @@ public final class MachineButtonFactory {
 
     public static ButtonDefinition equalityButton(int x, int y, int equality) {
         return ButtonDefinition.toggle(x, y, MachineSettingKeys.EQUALITY, equality, EQUALITY_STATES);
+    }
+
+    public static ButtonDefinition renderParadoxButton(int x, int y, boolean renderParadox) {
+        return ButtonDefinition.grayscale(x, y, MachineSettingKeys.RENDER_PARADOX, renderParadox,
+                state("showfakeplayer.png", "justdirethings.screen.renderparadox"));
+    }
+
+    public static ButtonDefinition paradoxTargetButton(int x, int y, int targetType) {
+        return ButtonDefinition.toggle(x, y, MachineSettingKeys.PARADOX_TARGET_TYPE, targetType, PARADOX_TARGET_STATES);
     }
 
     private static ButtonDefinition.State state(String textureName, String localizationKey) {

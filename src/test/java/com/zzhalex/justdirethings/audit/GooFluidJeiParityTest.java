@@ -128,6 +128,41 @@ class GooFluidJeiParityTest {
     }
 
     @Test
+    void creativeTabMirrorsUpstreamGroupingAndIncludesFluidBuckets() throws IOException {
+        String tab = read("src/main/java/com/zzhalex/justdirethings/registry/ModCreativeTabs.java");
+        String modItems = read("src/main/java/com/zzhalex/justdirethings/registry/ModItems.java");
+        String contentItems = read("src/main/java/com/zzhalex/justdirethings/registry/ModContentItems.java");
+        String equipmentItems = read("src/main/java/com/zzhalex/justdirethings/registry/ModEquipmentItems.java");
+
+        assertTrue(tab.contains("displayAllRelevantItems(NonNullList<ItemStack> items)"),
+                "1.12 creative tab should override displayAllRelevantItems so ordering is stable instead of registry/default order");
+        assertTrue(tab.contains("addItems(items, ModContentItems.blockItems())")
+                        && tab.contains("addItems(items, ModItems.machineBlockItems())")
+                        && tab.contains("addItems(items, ModContentItems.resourceItems())")
+                        && tab.contains("addItems(items, ModItems.generalItems())")
+                        && tab.contains("addItems(items, ModContentItems.templateItems())"),
+                "Creative tab ITEMS section should be manually grouped before buckets, matching upstream ITEMS register before BUCKET_ITEMS");
+        assertTrue(tab.indexOf("addItems(items, ModContentItems.templateItems())") < tab.indexOf("addFluidBuckets(items)")
+                        && tab.indexOf("addFluidBuckets(items)") < tab.indexOf("addItems(items, ModEquipmentItems.toolItems())")
+                        && tab.indexOf("addItems(items, ModEquipmentItems.toolItems())") < tab.indexOf("addItems(items, ModEquipmentItems.bowItems())")
+                        && tab.indexOf("addItems(items, ModEquipmentItems.bowItems())") < tab.indexOf("addItems(items, ModEquipmentItems.armorItems())")
+                        && tab.indexOf("addItems(items, ModEquipmentItems.armorItems())") < tab.indexOf("addItems(items, ModContentItems.upgradeItems())"),
+                "Creative tab order should mirror upstream: ITEMS, BUCKET_ITEMS, TOOLS, BOWS, ARMORS, UPGRADES");
+        assertTrue(tab.contains("ModFluids.coreFluidIds()") && tab.contains("ModFluids.getFluid(id)")
+                        && tab.contains("FluidUtil.getFilledBucket(new FluidStack(fluid, 1000))")
+                        && tab.contains("!bucket.isEmpty()"),
+                "Creative tab should add Forge universal bucket stacks for each JDT fluid");
+        assertTrue(modItems.contains("machineBlockItems()") && modItems.contains("generalItems()"),
+                "Legacy item registry should expose machine block items and general items separately for tab ordering");
+        assertTrue(contentItems.contains("blockItems()") && contentItems.contains("resourceItems()")
+                        && contentItems.contains("templateItems()") && contentItems.contains("upgradeItems()"),
+                "Content item registry should expose upstream creative tab groups without leaking map internals");
+        assertTrue(equipmentItems.contains("toolItems()") && equipmentItems.contains("bowItems()")
+                        && equipmentItems.contains("armorItems()"),
+                "Equipment registry should expose the upstream TOOLS/BOWS/ARMORS tab groups separately");
+    }
+
+    @Test
     void fluidDropRecipesHaveRuntimeEntityConsumer() throws IOException {
         String handler = read("src/main/java/com/zzhalex/justdirethings/common/event/FluidDropEventHandler.java");
         String proxy = read("src/main/java/com/zzhalex/justdirethings/CommonProxy.java");

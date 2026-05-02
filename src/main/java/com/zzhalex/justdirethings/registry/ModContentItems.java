@@ -113,12 +113,28 @@ public final class ModContentItems {
         return new ArrayList<>(RESOURCE_ITEMS.keySet());
     }
 
+    public static Collection<Item> blockItems() {
+        return Collections.unmodifiableCollection(BLOCK_ITEMS.values());
+    }
+
+    public static Collection<Item> resourceItems() {
+        return Collections.unmodifiableCollection(RESOURCE_ITEMS.values());
+    }
+
     public static List<String> templateItemIds() {
         return new ArrayList<>(TEMPLATE_ITEMS.keySet());
     }
 
+    public static Collection<Item> templateItems() {
+        return Collections.unmodifiableCollection(TEMPLATE_ITEMS.values());
+    }
+
     public static List<String> upgradeItemIds() {
         return new ArrayList<>(UPGRADE_ITEMS.keySet());
+    }
+
+    public static Collection<Item> upgradeItems() {
+        return Collections.unmodifiableCollection(UPGRADE_ITEMS.values());
     }
 
     public static Item getItem(String id) {
