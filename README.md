@@ -1,23 +1,53 @@
 # JustDireThings-Legacy
 
-`JustDireThings-Legacy` is a Minecraft 1.12.2 backport project for `justdirethings`.
+`JustDireThings-Legacy` is a Minecraft 1.12.2 backport project for [`JustDireThings`](https://github.com/Direwolf20-MC/JustDireThings).
 
-## Project Metadata
+---
 
-- Mod ID: `justdirethings`
-- Mod Name: `JustDireThings-Legacy`
-- Version: `1.12.2-0.1`
-- Root Package: `com.zzhalex.justdirethings`
-- Author: `zzhalex233`
-- Repository: <https://github.com/zzhalex233/JustDireThings-Legacy>
+## About
 
-## Development
+Just Dire Things started as a collection of random items and blocks I wanted added to the game.  
+Then things kind of got away from me...
 
-- Run `./gradlew.bat classes` to validate the project compiles.
-- Run `./gradlew.bat runClient` to launch a development client.
-- Add mod dependencies in `gradle/scripts/dependencies.gradle`.
+---
 
-## Notes
+## Features
 
-- The initial Cleanroom template placeholders have been removed so the repository can serve as the real project base.
-- Access transformers are currently disabled until the project needs them.
+This mod adds:
+
+### Resources
+
+- 4 tiers of resources
+- Progression that requires exploration of different Minecraft dimensions
+
+### Tools
+
+- 4 tiers of tools
+- Each tool tier has unique abilities
+- Some abilities are never-before-seen
+
+### Armor
+
+- 4 tiers of armor
+- Each armor tier has its own unique abilities
+
+### Automation Blocks
+
+Many blocks designed around automation, including:
+
+- Block breakers
+- Block placers
+- Sensors
+- Teleporters
+- Energy generators
+- Energy distribution blocks
+
+### Gallery
+Gallery content is unrelated to the original mod and only shows backported features in this project.🥰
+
+![portal gun](gallery/image.png)
+![t2 machine](gallery/image-1.png)
+![mob catcher](gallery/image-2.png)
+![goo jei](gallery/image-3.png)
+![goo block](gallery/image-5.png)
+![goo fluid](gallery/image-6.png)
