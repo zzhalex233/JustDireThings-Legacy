@@ -2,6 +2,8 @@ package com.zzhalex.justdirethings.common.block.machine;
 
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.item.equipment.ItemJDTWrench;
+import com.zzhalex.justdirethings.common.item.misc.ItemMachineSettingsCopier;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
 import com.zzhalex.justdirethings.registry.ModCreativeTabs;
 import net.minecraft.block.BlockDirectional;
@@ -25,6 +27,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class BlockMachineBase extends Block implements ITileEntityProvider {
 
@@ -47,6 +51,10 @@ public abstract class BlockMachineBase extends Block implements ITileEntityProvi
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        ItemStack heldStack = playerIn.getHeldItem(hand);
+        if (!heldStack.isEmpty() && (heldStack.getItem() instanceof ItemJDTWrench || heldStack.getItem() instanceof ItemMachineSettingsCopier)) {
+            return false;
+        }
         if (worldIn.isRemote) {
             return true;
         }
@@ -104,6 +112,20 @@ public abstract class BlockMachineBase extends Block implements ITileEntityProvi
     @Override
     public IBlockState withRotation(IBlockState state, Rotation rot) {
         return state.getPropertyKeys().contains(FACING) ? state.withProperty(FACING, rot.rotate(state.getValue(FACING))) : state;
+    }
+
+    public IBlockState direRotate(IBlockState state, World world, BlockPos pos, Rotation rotation) {
+        return direRotate(state, rotation);
+    }
+
+    public IBlockState direRotate(IBlockState state, Rotation rotation) {
+        if (!state.getPropertyKeys().contains(FACING)) {
+            return state.withRotation(rotation);
+        }
+        List<EnumFacing> directions = new ArrayList<>(FACING.getAllowedValues());
+        int currentDirectionIndex = directions.indexOf(state.getValue(FACING));
+        int nextDirectionIndex = (currentDirectionIndex + 1) % directions.size();
+        return state.withProperty(FACING, directions.get(nextDirectionIndex));
     }
 
     @Override

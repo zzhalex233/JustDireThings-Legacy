@@ -1,5 +1,10 @@
 package com.zzhalex.justdirethings.common.entity.group;
 
+import com.zzhalex.justdirethings.registry.ModEntities;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.util.ResourceLocation;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -99,6 +104,18 @@ public final class JDTEntityGroups {
 
     public static boolean canRandomlyPolymorph(String entityId) {
         return isPolymorphicPeaceful(entityId) || isPolymorphicHostile(entityId);
+    }
+
+    public static boolean isTeleportingNotSupported(Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        ResourceLocation entityId = EntityList.getKey(entity);
+        if (entityId == null) {
+            return false;
+        }
+        return entityId.equals(ModEntities.TIME_WAND_ENTITY_ID)
+                || entityId.equals(ModEntities.PARADOX_ENTITY_ID);
     }
 
     public static Set<String> getPolymorphicPeacefulEntities() {
