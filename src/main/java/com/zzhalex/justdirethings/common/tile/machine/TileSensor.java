@@ -35,19 +35,20 @@ import java.util.Map;
 
 public class TileSensor extends TileInventoryMachineBase implements ITickable, TileFilteredMachine {
 
-    public static final int FILTER_SLOT_COUNT = 9;
+    public static final int FILTER_SLOT_COUNT = 1;
 
     private int signalStrength;
     private int senseTarget;
     private boolean strongSignal;
     private int senseAmount;
     private int equality;
-    private final FilterItemHandler filterHandler = new FilterItemHandler(FILTER_SLOT_COUNT);
+    private final FilterItemHandler filterHandler;
     private final List<BlockPos> positionsToSense = new ArrayList<>();
     private final Map<Integer, Map<IProperty<?>, Comparable<?>>> blockStateProperties = new HashMap<>();
 
     public TileSensor() {
         super(0);
+        filterHandler = new FilterItemHandler(getFilterSlotCount());
         setTickSpeed(20);
     }
 
@@ -107,6 +108,10 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable, T
     @Override
     public FilterItemHandler getFilterHandler() {
         return filterHandler;
+    }
+
+    protected int getFilterSlotCount() {
+        return FILTER_SLOT_COUNT;
     }
 
     protected boolean canSense() {
@@ -487,6 +492,11 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable, T
 
         public T2() {
             configureAdvancedMachine();
+        }
+
+        @Override
+        protected int getFilterSlotCount() {
+            return 9;
         }
 
         @Override

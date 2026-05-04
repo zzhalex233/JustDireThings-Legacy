@@ -14,7 +14,7 @@ public class ContainerSensor extends ContainerMachineBase {
     public ContainerSensor(InventoryPlayer playerInventory, TileSensor tile) {
         super(playerInventory, tile, null);
         this.tile = tile;
-        addFilterSlots(tile.getFilterHandler(), tile instanceof TileSensor.T2 ? 8 : 80, tile instanceof TileSensor.T2 ? 54 : 13, 9);
+        addFilterSlots(tile.getFilterHandler(), tile instanceof TileSensor.T2 ? 8 : 80, tile instanceof TileSensor.T2 ? 54 : 13, tile.getFilterHandler().getSlots());
         addPlayerInventory(playerInventory, 8, 84);
     }
 
@@ -24,7 +24,7 @@ public class ContainerSensor extends ContainerMachineBase {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
-        if (slotId >= 0 && slotId < TileSensor.FILTER_SLOT_COUNT && dragType == 1 && clickTypeIn == ClickType.PICKUP) {
+        if (slotId >= 0 && slotId < tile.getFilterHandler().getSlots() && dragType == 1 && clickTypeIn == ClickType.PICKUP) {
             return ItemStack.EMPTY;
         }
         return super.slotClick(slotId, dragType, clickTypeIn, player);
