@@ -25,7 +25,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -35,10 +34,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.world.BlockEvent;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -367,20 +363,7 @@ public class TileBlockSwapper extends TileMachineBase implements ITickable {
     }
 
     protected boolean canBreakAndPlaceAt(World targetWorld, BlockPos blockPos, FakePlayer fakePlayer) {
-        return canBreakAt(targetWorld, blockPos, fakePlayer) && canPlaceAt(targetWorld, blockPos, fakePlayer);
-    }
-
-    protected boolean canBreakAt(World targetWorld, BlockPos blockPos, FakePlayer fakePlayer) {
-        return targetWorld != null && blockPos != null && fakePlayer != null;
-    }
-
-    protected boolean canPlaceAt(World targetWorld, BlockPos blockPos, FakePlayer fakePlayer) {
-        if (targetWorld == null || blockPos == null || fakePlayer == null) {
-            return false;
-        }
-        BlockSnapshot snapshot = BlockSnapshot.getBlockSnapshot(targetWorld, blockPos);
-        BlockEvent.PlaceEvent event = ForgeEventFactory.onPlayerBlockPlace(fakePlayer, snapshot, EnumFacing.UP, EnumHand.MAIN_HAND);
-        return !event.isCanceled();
+        return MachineActionHelper.canBreakAndPlaceAt(targetWorld, blockPos, fakePlayer);
     }
 
     protected int swapEntities(TileBlockSwapper partner) {

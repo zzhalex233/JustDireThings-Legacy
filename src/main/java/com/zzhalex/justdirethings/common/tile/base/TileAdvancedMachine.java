@@ -1,19 +1,23 @@
 package com.zzhalex.justdirethings.common.tile.base;
 
 import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.tile.machine.MachineActionHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
@@ -109,8 +113,26 @@ public interface TileAdvancedMachine extends TileFilteredMachine {
         if (state.getBlock().isAir(state, getMachine().getWorld(), pos)) {
             return matchesFilter(ItemStack.EMPTY);
         }
-        ItemStack blockStack = new ItemStack(state.getBlock(), 1, state.getBlock().getMetaFromState(state));
+        ItemStack blockStack = getBlockFilterStack(state, pos);
         return matchesFilter(blockStack);
+    }
+
+    default ItemStack getBlockFilterStack(IBlockState state, BlockPos pos) {
+        World world = getMachine().getWorld();
+        if (world instanceof WorldServer) {
+            FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, pos, EnumFacing.UP);
+            ItemStack pickBlock = state.getBlock().getPickBlock(
+                    state,
+                    new RayTraceResult(Vec3d.ZERO, EnumFacing.UP, pos),
+                    world,
+                    pos,
+                    fakePlayer
+            );
+            if (!pickBlock.isEmpty()) {
+                return pickBlock;
+            }
+        }
+        return new ItemStack(state.getBlock(), 1, state.getBlock().getMetaFromState(state));
     }
 
     default boolean matchesDropFilter(IBlockState state, BlockPos pos, int fortune) {
@@ -128,17 +150,7 @@ public interface TileAdvancedMachine extends TileFilteredMachine {
     }
 
     default boolean matchesFluidFilter(Fluid fluid) {
-        if (fluid == null) {
-            return false;
-        }
-        if (fluid == FluidRegistry.WATER) {
-            return matchesFilter(new ItemStack(Items.WATER_BUCKET));
-        }
-        if (fluid == FluidRegistry.LAVA) {
-            return matchesFilter(new ItemStack(Items.LAVA_BUCKET));
-        }
-        Block block = fluid.getBlock();
-        return block != null && matchesFilter(new ItemStack(block));
+        return MachineFilterHelper.matchesFluidFilter(getFilterHandler(), getMachine().getFilterState(), fluid);
     }
 
     default NBTTagCompound writeAdvancedMachineToNbt(NBTTagCompound compound) {

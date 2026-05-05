@@ -25,6 +25,9 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.items.IItemHandler;
 
 import java.util.ArrayList;
@@ -378,15 +381,24 @@ public class TileSensor extends TileInventoryMachineBase implements ITickable, T
 
     private ItemStack getFilterStackForState(IBlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BlockLiquid) {
-            if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
-                return new ItemStack(Items.WATER_BUCKET);
-            }
-            if (block == Blocks.LAVA || block == Blocks.FLOWING_LAVA) {
-                return new ItemStack(Items.LAVA_BUCKET);
-            }
+        if (block instanceof BlockLiquid || block instanceof IFluidBlock) {
+            return MachineFilterHelper.getFilterStackForFluid(resolveFluid(state));
         }
         return new ItemStack(block, 1, block.getMetaFromState(state));
+    }
+
+    private Fluid resolveFluid(IBlockState state) {
+        Block block = state.getBlock();
+        if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
+            return FluidRegistry.WATER;
+        }
+        if (block == Blocks.LAVA || block == Blocks.FLOWING_LAVA) {
+            return FluidRegistry.LAVA;
+        }
+        if (block instanceof IFluidBlock) {
+            return ((IFluidBlock) block).getFluid();
+        }
+        return null;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

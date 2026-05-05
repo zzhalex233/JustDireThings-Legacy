@@ -1,8 +1,8 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
-import com.mojang.authlib.GameProfile;
 import com.zzhalex.justdirethings.capability.inventory.InternalItemHandler;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
+import com.zzhalex.justdirethings.common.util.UsefulFakePlayer;
 import com.zzhalex.justdirethings.common.util.WorldInteractionRules;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -22,19 +22,15 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.items.ItemHandlerHelper;
 
-import java.util.UUID;
-
 public final class MachineActionHelper {
-
-    private static final UUID DEFAULT_FAKE_PLAYER_UUID = UUID.fromString("127c8dd2-b17e-4a95-82af-7dcbcafc3987");
-    private static final GameProfile DEFAULT_FAKE_PLAYER_PROFILE = new GameProfile(DEFAULT_FAKE_PLAYER_UUID, "[JDTMachine]");
-
     private MachineActionHelper() {
     }
 
@@ -48,18 +44,13 @@ public final class MachineActionHelper {
     }
 
     public static FakePlayer createFakePlayer(WorldServer world, TileMachineBase machine) {
-        GameProfile profile = machine.getOwnerUuid() == null
-                ? DEFAULT_FAKE_PLAYER_PROFILE
-                : new GameProfile(machine.getOwnerUuid(), "[JDTMachine]");
-        return createFakePlayer(world, profile, targetPos(machine), getFacing(machine));
+        FakePlayer fakePlayer = machine.getUsefulFakePlayer(world);
+        alignFakePlayer(fakePlayer, targetPos(machine), getFacing(machine));
+        return fakePlayer;
     }
 
     public static FakePlayer createFakePlayer(WorldServer world, BlockPos targetPos, EnumFacing facing) {
-        return createFakePlayer(world, DEFAULT_FAKE_PLAYER_PROFILE, targetPos, facing);
-    }
-
-    private static FakePlayer createFakePlayer(WorldServer world, GameProfile profile, BlockPos targetPos, EnumFacing facing) {
-        FakePlayer fakePlayer = FakePlayerFactory.get(world, profile);
+        FakePlayer fakePlayer = UsefulFakePlayer.createPlayer(world, new com.mojang.authlib.GameProfile(java.util.UUID.fromString("127c8dd2-b17e-4a95-82af-7dcbcafc3987"), "[JDTMachine]"));
         alignFakePlayer(fakePlayer, targetPos, facing);
         return fakePlayer;
     }
@@ -183,6 +174,23 @@ public final class MachineActionHelper {
         return true;
     }
 
+    public static boolean canBreakAndPlaceAt(World targetWorld, BlockPos blockPos, FakePlayer fakePlayer) {
+        return canBreakAt(targetWorld, blockPos, fakePlayer) && canPlaceAt(targetWorld, blockPos, fakePlayer);
+    }
+
+    public static boolean canBreakAt(World targetWorld, BlockPos blockPos, FakePlayer fakePlayer) {
+        return targetWorld != null && blockPos != null && fakePlayer != null;
+    }
+
+    public static boolean canPlaceAt(World targetWorld, BlockPos blockPos, FakePlayer fakePlayer) {
+        if (targetWorld == null || blockPos == null || fakePlayer == null) {
+            return false;
+        }
+        BlockSnapshot snapshot = BlockSnapshot.getBlockSnapshot(targetWorld, blockPos);
+        BlockEvent.PlaceEvent event = ForgeEventFactory.onPlayerBlockPlace(fakePlayer, snapshot, EnumFacing.UP, EnumHand.MAIN_HAND);
+        return !event.isCanceled();
+    }
+
     public static boolean swapFirstBlock(InternalItemHandler itemHandler, World world, BlockPos originPos, BlockPos targetPos, EnumFacing facing) {
         IBlockState currentState = world.getBlockState(targetPos);
         if (currentState.getBlock() == Blocks.AIR) {
@@ -217,12 +225,17 @@ public final class MachineActionHelper {
     }
 
     public static boolean useHeldItemOnTarget(WorldServer world, TileMachineBase machine, InternalItemHandler itemHandler, int slot, BlockPos targetPos, EnumFacing facing, boolean targetIsReplaceable) {
+        FakePlayer fakePlayer = machine.getUsefulFakePlayer(world);
+        alignFakePlayer(fakePlayer, targetPos(machine), getFacing(machine));
+        return useHeldItemOnTarget(world, fakePlayer, itemHandler, slot, targetPos, facing, targetIsReplaceable);
+    }
+
+    public static boolean useHeldItemOnTarget(WorldServer world, FakePlayer fakePlayer, InternalItemHandler itemHandler, int slot, BlockPos targetPos, EnumFacing facing, boolean targetIsReplaceable) {
         ItemStack heldStack = itemHandler.getStackInSlot(slot);
         if (heldStack.isEmpty()) {
             return false;
         }
 
-        FakePlayer fakePlayer = createFakePlayer(world, machine);
         fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
 
         BlockPos clickPos = targetIsReplaceable ? targetPos.offset(facing.getOpposite()) : targetPos;
@@ -246,15 +259,13 @@ public final class MachineActionHelper {
             return false;
         }
 
-        if (targetIsReplaceable && canAttemptPlacement(activeStack)) {
-            EnumActionResult useResult = activeStack.onItemUse(fakePlayer, world, clickPos, EnumHand.MAIN_HAND, hitFace, hitX, hitY, hitZ);
-            if (useResult == EnumActionResult.SUCCESS) {
-                syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
-                return true;
-            }
-            if (useResult == EnumActionResult.FAIL) {
-                return false;
-            }
+        EnumActionResult useResult = activeStack.onItemUse(fakePlayer, world, clickPos, EnumHand.MAIN_HAND, hitFace, hitX, hitY, hitZ);
+        if (useResult == EnumActionResult.SUCCESS) {
+            syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+            return true;
+        }
+        if (useResult == EnumActionResult.FAIL) {
+            return false;
         }
 
         IBlockState targetState = world.getBlockState(targetPos);

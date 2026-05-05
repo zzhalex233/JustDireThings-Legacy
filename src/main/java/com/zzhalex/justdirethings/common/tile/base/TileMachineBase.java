@@ -1,11 +1,14 @@
 package com.zzhalex.justdirethings.common.tile.base;
 
+import com.mojang.authlib.GameProfile;
+import com.zzhalex.justdirethings.common.util.UsefulFakePlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -19,6 +22,7 @@ public class TileMachineBase extends TileEntity {
     private int tickSpeed = 20;
     private int operationTicks = -1;
     private UUID ownerUuid;
+    private UsefulFakePlayer usefulFakePlayer;
 
     private final MachineRedstoneState redstoneState = new MachineRedstoneState();
     private final MachineAreaState areaState = new MachineAreaState();
@@ -61,7 +65,22 @@ public class TileMachineBase extends TileEntity {
     }
 
     public void setOwnerUuid(UUID ownerUuid) {
+        if (this.ownerUuid == null ? ownerUuid != null : !this.ownerUuid.equals(ownerUuid)) {
+            usefulFakePlayer = null;
+        }
         this.ownerUuid = ownerUuid;
+    }
+
+    public UsefulFakePlayer getUsefulFakePlayer(WorldServer worldServer) {
+        if (usefulFakePlayer == null || usefulFakePlayer.getEntityWorld() != worldServer) {
+            usefulFakePlayer = UsefulFakePlayer.createPlayer(worldServer, getFakePlayerProfile());
+        }
+        return usefulFakePlayer;
+    }
+
+    protected GameProfile getFakePlayerProfile() {
+        UUID profileUuid = ownerUuid == null ? UUID.fromString("127c8dd2-b17e-4a95-82af-7dcbcafc3987") : ownerUuid;
+        return new GameProfile(profileUuid, "[JDTMachine]");
     }
 
     public MachineRedstoneState getRedstoneState() {

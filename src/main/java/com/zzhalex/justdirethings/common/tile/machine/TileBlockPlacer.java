@@ -108,7 +108,7 @@ public class TileBlockPlacer extends TileTimedMachineBase implements ITickable {
     }
 
     protected boolean placeBlock(ItemStack itemStack, FakePlayer fakePlayer, BlockPos blockPos) {
-        return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, blockPos, MachineActionHelper.getFacing(this), MachineActionHelper.canReplace(world, blockPos));
+        return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, fakePlayer, getItemHandler(), 0, blockPos, MachineActionHelper.getFacing(this), MachineActionHelper.canReplace(world, blockPos));
     }
 
     protected boolean isBlockPosValid(FakePlayer fakePlayer, BlockPos blockPos) {
@@ -118,7 +118,7 @@ public class TileBlockPlacer extends TileTimedMachineBase implements ITickable {
         if (!MachineActionHelper.canReplace(world, blockPos)) {
             return false;
         }
-        return true;
+        return MachineActionHelper.canPlaceAt(world, blockPos, fakePlayer);
     }
 
     protected List<BlockPos> findSpotsToPlace(FakePlayer fakePlayer) {

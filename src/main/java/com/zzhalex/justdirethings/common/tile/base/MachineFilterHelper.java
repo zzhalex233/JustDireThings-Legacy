@@ -9,6 +9,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.items.IItemHandler;
 
 public final class MachineFilterHelper {
@@ -41,6 +44,41 @@ public final class MachineFilterHelper {
             return false;
         }
         return !filterState.isCompareNbt() || ItemStack.areItemStackTagsEqual(filter, stack);
+    }
+
+    public static boolean matchesFluidFilter(IItemHandler filterHandler, MachineFilterState filterState, Fluid fluid) {
+        if (filterHandler == null || filterState == null) {
+            return true;
+        }
+        ItemStack fluidStack = getFilterStackForFluid(fluid);
+        boolean allowList = filterState.isAllowList();
+        for (int slot = 0; slot < filterHandler.getSlots(); slot++) {
+            ItemStack filter = filterHandler.getStackInSlot(slot);
+            if (!filter.isEmpty() && matchesFluidFilterStack(filterState, filter, fluid, fluidStack)) {
+                return allowList;
+            }
+        }
+        return !allowList;
+    }
+
+    public static ItemStack getFilterStackForFluid(Fluid fluid) {
+        if (fluid == null) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack bucket = FluidUtil.getFilledBucket(new FluidStack(fluid, 1000));
+        if (!bucket.isEmpty()) {
+            return bucket;
+        }
+        return fluid.getBlock() == null ? ItemStack.EMPTY : new ItemStack(fluid.getBlock());
+    }
+
+    private static boolean matchesFluidFilterStack(MachineFilterState filterState, ItemStack filter, Fluid fluid, ItemStack fluidStack) {
+        FluidStack filterFluid = FluidUtil.getFluidContained(filter);
+        FluidStack targetFluid = fluid == null ? null : new FluidStack(fluid, 1000);
+        if (filterFluid != null && targetFluid != null && filterFluid.isFluidEqual(targetFluid)) {
+            return !filterState.isCompareNbt() || ItemStack.areItemStackTagsEqual(filter, fluidStack);
+        }
+        return matchesFilterStack(filterState, filter, fluidStack);
     }
 
     public static boolean matchesEntityFilter(IItemHandler filterHandler, MachineFilterState filterState, Entity entity, World world) {

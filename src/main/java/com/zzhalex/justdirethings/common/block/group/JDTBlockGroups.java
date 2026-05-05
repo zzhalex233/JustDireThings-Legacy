@@ -45,6 +45,10 @@ public final class JDTBlockGroups {
         return false;
     }
 
+    public static boolean isNoAutoClick(Block block) {
+        return false;
+    }
+
     private static boolean isOptionalPowahPlayerTransmitter(Block block) {
         ResourceLocation id = block.getRegistryName();
         if (id == null || !"powah".equals(id.getNamespace())) {

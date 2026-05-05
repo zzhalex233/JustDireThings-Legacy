@@ -1,8 +1,13 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
 import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.block.group.JDTBlockGroups;
+import com.zzhalex.justdirethings.common.tile.base.MachineFilterHelper;
 import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileTimedMachineBase;
+import com.zzhalex.justdirethings.common.util.UsefulFakePlayer;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.IMob;
@@ -17,8 +22,14 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.IFluidBlock;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -208,14 +219,65 @@ public class TileClicker extends TileTimedMachineBase {
         EnumFacing facing = MachineActionHelper.getFacing(this);
         ItemStack heldStack = getItemHandler().getStackInSlot(0);
         boolean replaceable = MachineActionHelper.canReplace(world, targetPos);
-        if (replaceable && MachineActionHelper.canAttemptPlacement(heldStack)) {
-            return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, targetPos, facing, true);
+        FakePlayer fakePlayer = getClickFakePlayer();
+        fakePlayer.setSneaking(sneaking);
+        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
+        boolean result;
+        if (clickType == 1) {
+            IBlockState state = world.getBlockState(targetPos);
+            if (state.getBlock() == Blocks.AIR) {
+                fakePlayer.setSneaking(false);
+                return false;
+            }
+            result = leftClickBlock(fakePlayer, targetPos, facing);
+        } else if (clickType == 2) {
+            result = holdUseItem(fakePlayer);
+        } else if (replaceable && MachineActionHelper.canAttemptPlacement(heldStack)) {
+            result = MachineActionHelper.useHeldItemOnTarget((WorldServer) world, fakePlayer, getItemHandler(), 0, targetPos, facing, true);
+        } else {
+            IBlockState state = world.getBlockState(targetPos);
+            if (state.getBlock() == Blocks.AIR) {
+                fakePlayer.setSneaking(false);
+                return false;
+            }
+            result = MachineActionHelper.useHeldItemOnTarget((WorldServer) world, fakePlayer, getItemHandler(), 0, targetPos, facing, false);
         }
-        IBlockState state = world.getBlockState(targetPos);
-        if (state.getBlock() == Blocks.AIR) {
+        fakePlayer.setSneaking(false);
+        return result;
+    }
+
+    protected boolean leftClickBlock(FakePlayer fakePlayer, BlockPos targetPos, EnumFacing facing) {
+        PlayerInteractEvent.LeftClickBlock event = net.minecraftforge.common.ForgeHooks.onLeftClickBlock(
+                fakePlayer,
+                targetPos,
+                facing.getOpposite(),
+                net.minecraftforge.common.ForgeHooks.rayTraceEyeHitVec(fakePlayer, 2.0D)
+        );
+        if (event.isCanceled()) {
             return false;
         }
-        return MachineActionHelper.useHeldItemOnTarget((WorldServer) world, this, getItemHandler(), 0, targetPos, facing, false);
+        world.getBlockState(targetPos).getBlock().onBlockClicked(world, targetPos, fakePlayer);
+        return true;
+    }
+
+    protected boolean holdUseItem(FakePlayer fakePlayer) {
+        if (fakePlayer.getHeldItem(EnumHand.MAIN_HAND).isEmpty()) {
+            fakePlayer.stopActiveHand();
+            return false;
+        }
+        if (!fakePlayer.isHandActive()) {
+            fakePlayer.setActiveHand(EnumHand.MAIN_HAND);
+        }
+        if (fakePlayer instanceof com.zzhalex.justdirethings.common.util.UsefulFakePlayer) {
+            ((com.zzhalex.justdirethings.common.util.UsefulFakePlayer) fakePlayer).fakeupdateUsingItem(fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+        }
+        if (fakePlayer.getItemInUseCount() >= maxHoldTicks) {
+            fakePlayer.stopActiveHand();
+            getItemHandler().setStackInSlot(0, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+            return true;
+        }
+        getItemHandler().setStackInSlot(0, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+        return true;
     }
 
     protected boolean clickAir(BlockPos targetPos) {
@@ -230,10 +292,37 @@ public class TileClicker extends TileTimedMachineBase {
         FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, this);
         fakePlayer.setSneaking(sneaking);
         fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
+        if (clickType == 2) {
+            boolean held = holdUseItem(fakePlayer);
+            fakePlayer.setSneaking(false);
+            return held;
+        }
+        RayTraceResult hit = rayTraceForAirClick(fakePlayer);
+        if (hit != null && hit.typeOfHit == RayTraceResult.Type.BLOCK) {
+            boolean used = MachineActionHelper.useHeldItemOnTarget(
+                    (WorldServer) world,
+                    fakePlayer,
+                    getItemHandler(),
+                    0,
+                    hit.getBlockPos(),
+                    hit.sideHit,
+                    false
+            );
+            fakePlayer.setSneaking(false);
+            return used;
+        }
         ActionResult<ItemStack> result = fakePlayer.getHeldItem(EnumHand.MAIN_HAND).getItem().onItemRightClick(world, fakePlayer, EnumHand.MAIN_HAND);
         getItemHandler().setStackInSlot(0, result.getResult());
         fakePlayer.setSneaking(false);
         return result.getType() == EnumActionResult.SUCCESS;
+    }
+
+    protected RayTraceResult rayTraceForAirClick(FakePlayer fakePlayer) {
+        UsefulFakePlayer usefulFakePlayer = (UsefulFakePlayer) fakePlayer;
+        Vec3d eyePosition = fakePlayer.getPositionEyes(1.0F);
+        Vec3d lookVector = fakePlayer.getLookVec();
+        Vec3d endPosition = eyePosition.add(lookVector.scale(usefulFakePlayer.getReach()));
+        return world.rayTraceBlocks(eyePosition, endPosition, false, true, false);
     }
 
     protected boolean clickEntity(EntityLivingBase entity) {
@@ -247,6 +336,8 @@ public class TileClicker extends TileTimedMachineBase {
         if (clickType == 1) {
             fakePlayer.attackTargetEntityWithCurrentItem(entity);
             clicked = true;
+        } else if (clickType == 2) {
+            clicked = holdUseItem(fakePlayer);
         } else {
             clicked = fakePlayer.interactOn(entity, EnumHand.MAIN_HAND) == EnumActionResult.SUCCESS;
         }
@@ -268,10 +359,34 @@ public class TileClicker extends TileTimedMachineBase {
     protected boolean isBlockPosValidForClick(BlockPos targetPos) {
         IBlockState state = world.getBlockState(targetPos);
         ClickTarget target = getClickTargetMode();
-        if (target == ClickTarget.BLOCK && state.getBlock() == Blocks.AIR) {
+        FakePlayer fakePlayer = getClickFakePlayer();
+        if (!world.isBlockModifiable(fakePlayer, targetPos)) {
             return false;
         }
-        return target != ClickTarget.AIR || state.getBlock() == Blocks.AIR;
+        if (state.getBlock().isAir(state, world, targetPos) && target == ClickTarget.BLOCK) {
+            return false;
+        }
+        if (!state.getBlock().isAir(state, world, targetPos) && target == ClickTarget.AIR) {
+            return false;
+        }
+        if (JDTBlockGroups.isNoAutoClick(state.getBlock())) {
+            return false;
+        }
+        return true;
+    }
+
+    protected Fluid resolveFluid(IBlockState state) {
+        Block block = state.getBlock();
+        if (block == Blocks.WATER || block == Blocks.FLOWING_WATER) {
+            return FluidRegistry.WATER;
+        }
+        if (block == Blocks.LAVA || block == Blocks.FLOWING_LAVA) {
+            return FluidRegistry.LAVA;
+        }
+        if (block instanceof IFluidBlock) {
+            return ((IFluidBlock) block).getFluid();
+        }
+        return null;
     }
 
     protected AxisAlignedBB getClickAABB() {
@@ -381,6 +496,12 @@ public class TileClicker extends TileTimedMachineBase {
         }
 
         @Override
+        protected boolean isValidEntityForClick(EntityLivingBase entity) {
+            return super.isValidEntityForClick(entity)
+                    && MachineFilterHelper.matchesEntityFilter(getFilterHandler(), getFilterState(), entity, world);
+        }
+
+        @Override
         protected List<BlockPos> findSpotsToClick() {
             List<BlockPos> positions = new ArrayList<>();
             for (BlockPos targetPos : getAreaPositionsNearestFirst()) {
@@ -398,6 +519,9 @@ public class TileClicker extends TileTimedMachineBase {
                 return false;
             }
             IBlockState state = world.getBlockState(targetPos);
+            if (state.getBlock() instanceof BlockLiquid || state.getBlock() instanceof IFluidBlock) {
+                return matchesFluidFilter(resolveFluid(state));
+            }
             return state.getBlock() == Blocks.AIR || matchesBlockFilter(state, targetPos);
         }
 

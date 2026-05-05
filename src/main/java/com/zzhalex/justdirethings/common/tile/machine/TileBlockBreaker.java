@@ -1,6 +1,8 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
 import com.zzhalex.justdirethings.capability.inventory.FilterItemHandler;
+import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileInventoryMachineBase;
 import net.minecraft.block.Block;
@@ -12,10 +14,12 @@ import net.minecraft.init.Enchantments;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -73,6 +77,7 @@ public class TileBlockBreaker extends TileInventoryMachineBase implements ITicka
         ItemStack tool = getTool();
         clearTrackerIfNeeded(tool, fakePlayer);
         if (tool.isEmpty()) {
+            getRedstoneState().setPulsed(false);
             return false;
         }
 
@@ -130,7 +135,8 @@ public class TileBlockBreaker extends TileInventoryMachineBase implements ITicka
         if (state.getBlockHardness(world, targetPos) < 0.0F) {
             return false;
         }
-        return world.isBlockModifiable(fakePlayer, targetPos);
+        return world.isBlockModifiable(fakePlayer, targetPos)
+                && MachineActionHelper.canBreakAndPlaceAt(world, targetPos, fakePlayer);
     }
 
     protected ItemStack getTool() {
@@ -186,6 +192,12 @@ public class TileBlockBreaker extends TileInventoryMachineBase implements ITicka
     protected float getDestroySpeed(BlockPos targetPos, ItemStack tool, FakePlayer fakePlayer, IBlockState state) {
         alignFakePlayerForBreak(fakePlayer, targetPos, tool);
         float toolSpeed = tool.isEmpty() ? 1.0F : tool.getDestroySpeed(state);
+        if (toolSpeed > 1.0F) {
+            int efficiency = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, tool);
+            if (efficiency > 0) {
+                toolSpeed += efficiency * efficiency + 1;
+            }
+        }
         return ForgeEventFactory.getBreakSpeed(fakePlayer, state, toolSpeed, targetPos);
     }
 
@@ -354,7 +366,38 @@ public class TileBlockBreaker extends TileInventoryMachineBase implements ITicka
             IBlockState state = world.getBlockState(targetPos);
             return getFilterState().getBlockItemFilter() == 0
                     ? matchesBlockFilter(state, targetPos)
-                    : matchesDropFilter(state, targetPos, getFortuneLevel(getTool()));
+                    : matchesToolAwareDropFilter(state, targetPos, getTool());
+        }
+
+        protected boolean matchesToolAwareDropFilter(IBlockState state, BlockPos targetPos, ItemStack tool) {
+            NonNullList<ItemStack> drops = NonNullList.create();
+            state.getBlock().getDrops(drops, world, targetPos, state, getFortuneLevel(tool));
+            if (drops.isEmpty()) {
+                return matchesFilter(ItemStack.EMPTY);
+            }
+            boolean smelterActive = hasActiveSmelter(tool);
+            for (ItemStack drop : drops) {
+                ItemStack filterStack = smelterActive ? getSmeltedDrop(drop) : drop;
+                if (matchesFilter(filterStack)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        protected boolean hasActiveSmelter(ItemStack tool) {
+            if (tool.isEmpty() || !(tool.getItem() instanceof ToggleableTool)) {
+                return false;
+            }
+            ToggleableTool toggleableTool = (ToggleableTool) tool.getItem();
+            return toggleableTool.supportsAbility(Ability.SMELTER)
+                    && toggleableTool.hasInstalledAbility(tool, Ability.SMELTER)
+                    && toggleableTool.getSetting(tool, Ability.SMELTER);
+        }
+
+        protected ItemStack getSmeltedDrop(ItemStack drop) {
+            ItemStack smelted = FurnaceRecipes.instance().getSmeltingResult(drop);
+            return smelted.isEmpty() ? drop : smelted;
         }
 
         @Override
