@@ -53,7 +53,7 @@ dependencies {
     // Development/runtime integrations used while validating 1.12.2 parity.
     modCompileOnly "curse.maven:jei-238222:5846804"
     modRuntimeOnly "curse.maven:jei-238222:5846804"
-    modRuntimeOnly "curse.maven:future-mc-310059:6162819"
+//    modRuntimeOnly "curse.maven:future-mc-310059:6162819"
     modRuntimeOnly "curse.maven:forgelin-continuous-456403:7883992"
     mekanismRunClientSource "curse.maven:mekanism-ce-unofficial-840735:7904551"
     modRuntimeOnly "curse.maven:industrial-craft-242638:3078606"

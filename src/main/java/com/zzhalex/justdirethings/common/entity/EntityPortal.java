@@ -76,6 +76,10 @@ public class EntityPortal extends Entity {
         return portalGunUuid;
     }
 
+    public UUID getOwnerUuid() {
+        return ownerUuid;
+    }
+
     public boolean isPrimary() {
         if (!isPortalDataReady()) {
             return true;

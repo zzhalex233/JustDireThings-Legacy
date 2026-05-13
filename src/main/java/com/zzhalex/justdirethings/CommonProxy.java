@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings;
 import com.zzhalex.justdirethings.common.event.AbilityRuntimeEventHandler;
 import com.zzhalex.justdirethings.common.event.FluidDropEventHandler;
 import com.zzhalex.justdirethings.common.event.GooSoilEventHandler;
+import com.zzhalex.justdirethings.common.event.ToolMiningAbilityHandler;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.world.PortalChunkKeeper;
 import com.zzhalex.justdirethings.registry.ModContainers;
@@ -24,6 +25,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(AbilityRuntimeEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(FluidDropEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(GooSoilEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(ToolMiningAbilityHandler.INSTANCE);
         PortalChunkKeeper.initialize();
     }
 

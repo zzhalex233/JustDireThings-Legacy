@@ -25,15 +25,15 @@ public final class AbilityExecutionHelper {
 
         ToggleableTool tool = (ToggleableTool) stack.getItem();
         ToolState state = ToggleableTool.readToolState(stack);
+        boolean consumedAny = false;
         for (Ability ability : tool.getSupportedAbilities()) {
             if (!ability.requiresUseAction() || ability.getBindingType() != Ability.BindingType.LEFT_AND_CUSTOM
                     || !canExecuteFromDirectUse(tool, stack, state, ability)) {
                 continue;
             }
-            boolean consumed = AbilityMethods.execute(ability, world, player, stack);
-            return consumed ? new ActionResult<>(EnumActionResult.SUCCESS, stack) : null;
+            consumedAny |= AbilityMethods.execute(ability, world, player, stack);
         }
-        return null;
+        return consumedAny ? new ActionResult<>(EnumActionResult.SUCCESS, stack) : null;
     }
 
     public static EnumActionResult tryExecuteUseOnAbility(
@@ -50,15 +50,15 @@ public final class AbilityExecutionHelper {
 
         ToggleableTool tool = (ToggleableTool) stack.getItem();
         ToolState state = ToggleableTool.readToolState(stack);
+        boolean consumedAny = false;
         for (Ability ability : tool.getSupportedAbilities()) {
             if (!ability.requiresUseOnAction() || ability.getBindingType() != Ability.BindingType.LEFT_AND_CUSTOM
-                    || !canExecuteFromDirectUse(tool, stack, state, ability)) {
+                    || !canExecuteFromDirectUseOn(tool, stack, state, ability)) {
                 continue;
             }
-            boolean consumed = AbilityMethods.executeUseOn(ability, world, player, stack, pos, facing, hand);
-            return consumed ? EnumActionResult.SUCCESS : EnumActionResult.PASS;
+            consumedAny |= AbilityMethods.executeUseOn(ability, world, player, stack, pos, facing, hand);
         }
-        return EnumActionResult.PASS;
+        return consumedAny ? EnumActionResult.SUCCESS : EnumActionResult.PASS;
     }
 
     public static boolean canExecuteFromDirectUse(ToggleableTool tool, ItemStack stack, ToolState state, Ability ability) {
@@ -68,7 +68,20 @@ public final class AbilityExecutionHelper {
                 && state != null
                 && ability != null
                 && tool.supportsAbility(ability)
-                && state.hasInstalledAbility(ability.getId())
-                && tool.getSetting(stack, ability);
+                && tool.hasInstalledAbility(stack, ability)
+                && tool.getSetting(stack, ability)
+                && (!(stack.getItem() instanceof LeftClickableTool) || LeftClickableTool.getBindingMode(stack, ability) == 0);
+    }
+
+    private static boolean canExecuteFromDirectUseOn(ToggleableTool tool, ItemStack stack, ToolState state, Ability ability) {
+        return tool != null
+                && stack != null
+                && !stack.isEmpty()
+                && state != null
+                && ability != null
+                && tool.supportsAbility(ability)
+                && tool.hasInstalledAbility(stack, ability)
+                && tool.getSetting(stack, ability)
+                && (!(stack.getItem() instanceof LeftClickableTool) || !LeftClickableTool.getLeftClickList(stack).contains(ability));
     }
 }

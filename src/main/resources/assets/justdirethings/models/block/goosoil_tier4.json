@@ -1,8 +1,8 @@
 {
-  "parent": "block/cube_bottom_top",
+  "parent": "block/farmland",
   "textures": {
-    "bottom": "minecraft:blocks/dirt",
-    "top": "justdirethings:block/goofarmland_tier4",
-    "side": "justdirethings:block/goosoilside_tier4"
+    "particle": "justdirethings:block/goosoilside_tier4",
+    "dirt": "justdirethings:block/goosoilside_tier4",
+    "top": "justdirethings:block/goofarmland_tier4"
   }
 }

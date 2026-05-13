@@ -5,14 +5,16 @@ import com.zzhalex.justdirethings.client.render.ThingFinder;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
-import com.zzhalex.justdirethings.data.tool.AbilityBinding;
 import com.zzhalex.justdirethings.network.JDTNetwork;
 import com.zzhalex.justdirethings.network.message.MessageExecuteAbility;
 import com.zzhalex.justdirethings.network.message.MessagePortalGunLeftClick;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -63,14 +65,25 @@ public final class ClientPortalGunInputHandler {
         if (event.getSide() != Side.CLIENT) {
             return;
         }
-        sendConfiguredLeftClickAbilities(event.getEntityPlayer(), event.getItemStack(), event.getHand());
+        BlockPos pos = BlockPos.ORIGIN;
+        EnumFacing facing = EnumFacing.DOWN;
+        boolean useOn = false;
+        if (event instanceof PlayerInteractEvent.LeftClickBlock) {
+            PlayerInteractEvent.LeftClickBlock blockEvent = (PlayerInteractEvent.LeftClickBlock) event;
+            if (blockEvent.getFace() != null) {
+                pos = blockEvent.getPos();
+                facing = blockEvent.getFace();
+                useOn = true;
+            }
+        }
+        sendConfiguredLeftClickAbilities(event.getEntityPlayer(), event.getItemStack(), event.getHand(), useOn, pos, facing);
         if (!shouldSendLeftClick(event.getItemStack())) {
             return;
         }
         JDTNetwork.getChannel().sendToServer(new MessagePortalGunLeftClick());
     }
 
-    private static void sendConfiguredLeftClickAbilities(EntityPlayer player, ItemStack stack, EnumHand hand) {
+    private static void sendConfiguredLeftClickAbilities(EntityPlayer player, ItemStack stack, EnumHand hand, boolean useOn, BlockPos pos, EnumFacing facing) {
         if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof LeftClickableTool)) {
             return;
         }
@@ -78,6 +91,8 @@ public final class ClientPortalGunInputHandler {
             if (ability.requiresUseAction() && isAbilityEnabled(stack, ability)) {
                 discoverLocallyIfScanner(player, ability, stack);
                 JDTNetwork.getChannel().sendToServer(new MessageExecuteAbility(ability.getId(), hand));
+            } else if (useOn && ability.requiresUseOnAction() && isAbilityEnabled(stack, ability)) {
+                JDTNetwork.getChannel().sendToServer(new MessageExecuteAbility(ability.getId(), hand, true, pos, facing));
             }
         }
     }
@@ -99,22 +114,20 @@ public final class ClientPortalGunInputHandler {
     }
 
     private static void sendMatchingCustomBindings(EntityPlayer player, ItemStack stack, int slot, int keyCode, boolean mouse) {
-        for (AbilityBinding binding : LeftClickableTool.getCustomBindingList(stack)) {
-            Ability ability = Ability.byId(binding.getAbilityId());
-            if (ability == null || !ability.requiresUseAction() || binding.isMouseBinding() != mouse || binding.getKeyCode() != keyCode) {
+        RayTraceResult hit = player.rayTrace(player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue(), 1.0F);
+        boolean hasBlockHit = hit != null && hit.typeOfHit == RayTraceResult.Type.BLOCK && hit.getBlockPos() != null && hit.sideHit != null;
+        for (Ability ability : LeftClickableTool.getCustomBindingListFor(stack, keyCode, mouse, player)) {
+            if (!canSendCustomBinding(stack, ability)) {
                 continue;
             }
-            if (LeftClickableTool.getBindingMode(stack, ability) != 2) {
-                continue;
+            if (ability.requiresUseAction()) {
+                discoverLocallyIfScanner(player, ability, stack);
+                JDTNetwork.getChannel().sendToServer(new MessageExecuteAbility(ability.getId(), slot, keyCode, mouse, false, BlockPos.ORIGIN, EnumFacing.DOWN));
+            } else if (ability.requiresUseOnAction() && hasBlockHit) {
+                JDTNetwork.getChannel().sendToServer(new MessageExecuteAbility(ability.getId(), slot, keyCode, mouse, true, hit.getBlockPos(), hit.sideHit));
+            } else if (isPassiveBindingAbility(ability)) {
+                JDTNetwork.getChannel().sendToServer(new MessageExecuteAbility(ability.getId(), slot, keyCode, mouse, false, BlockPos.ORIGIN, EnumFacing.DOWN));
             }
-            if (!isAbilityEnabled(stack, ability)) {
-                continue;
-            }
-            if (binding.isRequireEquipped() && !isEquipped(player, stack)) {
-                continue;
-            }
-            discoverLocallyIfScanner(player, ability, stack);
-            JDTNetwork.getChannel().sendToServer(new MessageExecuteAbility(ability.getId(), slot));
         }
     }
 
@@ -122,12 +135,6 @@ public final class ClientPortalGunInputHandler {
         if (ability == Ability.MOBSCANNER || ability == Ability.ORESCANNER || ability == Ability.OREXRAY) {
             ThingFinder.discover(player, ability, stack);
         }
-    }
-
-    private static boolean isEquipped(EntityPlayer player, ItemStack stack) {
-        return player.getHeldItemMainhand() == stack
-                || player.getHeldItemOffhand() == stack
-                || player.inventory.armorInventory.contains(stack);
     }
 
     private static boolean isAbilityEnabled(ItemStack stack, Ability ability) {
@@ -138,5 +145,24 @@ public final class ClientPortalGunInputHandler {
         return tool.supportsAbility(ability)
                 && tool.hasInstalledAbility(stack, ability)
                 && tool.getSetting(stack, ability);
+    }
+
+    private static boolean canSendCustomBinding(ItemStack stack, Ability ability) {
+        if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ToggleableTool) || ability == null) {
+            return false;
+        }
+        ToggleableTool tool = (ToggleableTool) stack.getItem();
+        if (!tool.supportsAbility(ability) || !tool.hasInstalledAbility(stack, ability) || !tool.isEnabled(stack)) {
+            return false;
+        }
+        return isPassiveBindingAbility(ability) || tool.getSetting(stack, ability);
+    }
+
+    private static boolean isPassiveBindingAbility(Ability ability) {
+        Ability.UseType useType = ability.getUseType();
+        return useType == Ability.UseType.PASSIVE
+                || useType == Ability.UseType.PASSIVE_TICK
+                || useType == Ability.UseType.PASSIVE_COOLDOWN
+                || useType == Ability.UseType.PASSIVE_TICK_COOLDOWN;
     }
 }

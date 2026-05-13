@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.item.equipment;
 
+import com.google.common.collect.Multimap;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
@@ -7,6 +8,7 @@ import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.material.JDTArmorMaterial;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemArmor;
@@ -46,6 +48,19 @@ public class ItemJDTArmor extends ItemArmor implements ToggleableTool, LeftClick
         }
         ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(worldIn, playerIn, handIn);
         return abilityResult != null ? abilityResult : super.onItemRightClick(worldIn, playerIn, handIn);
+    }
+
+    @Override
+    public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
+        return EquipmentItemSupport.getPoweredArmorAttributeModifiers(stack, super.getAttributeModifiers(slot, stack));
+    }
+
+    @Override
+    public void setDamage(ItemStack stack, int damage) {
+        if (EquipmentItemSupport.redirectPoweredArmorDamageToEnergy(stack, damage)) {
+            return;
+        }
+        super.setDamage(stack, damage);
     }
 
     @Override

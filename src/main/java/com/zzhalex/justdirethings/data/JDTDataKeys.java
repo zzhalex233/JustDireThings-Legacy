@@ -10,6 +10,11 @@ public final class JDTDataKeys {
     public static final String ABILITY_BINDING_MODES = "AbilityBindingModes";
     public static final String ABILITY_BINDINGS = "AbilityBindings";
     public static final String ABILITY_COOLDOWNS = "AbilityCooldowns";
+    public static final String STUPEFY_TARGETS = "StupefyTargets";
+    public static final String LAVAREPAIR_FLOATING_TICKS = "LavaRepairFloatingTicks";
+    public static final String LAVAREPAIR_LAVA_X = "LavaRepairLavaX";
+    public static final String LAVAREPAIR_LAVA_Y = "LavaRepairLavaY";
+    public static final String LAVAREPAIR_LAVA_Z = "LavaRepairLavaZ";
     public static final String LEFT_CLICK_ABILITIES = "LeftClickAbilities";
     public static final String TOOL_CONTENTS = "ToolContents";
     public static final String POCKET_GENERATOR_ENERGY = "PocketGeneratorEnergy";

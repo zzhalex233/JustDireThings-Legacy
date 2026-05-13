@@ -1,11 +1,13 @@
 package com.zzhalex.justdirethings.common.block.goo;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.tile.goo.TileGooSoil;
 import com.zzhalex.justdirethings.registry.ModCreativeTabs;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCactus;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.block.BlockFarmland;
+import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.BlockNetherWart;
 import net.minecraft.block.BlockReed;
 import net.minecraft.block.IGrowable;
@@ -15,6 +17,8 @@ import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +29,7 @@ import net.minecraftforge.common.IPlantable;
 
 import java.util.Random;
 
-public class BlockGooSoil extends BlockFarmland {
+public class BlockGooSoil extends BlockFarmland implements ITileEntityProvider {
 
     private final int tier;
 
@@ -70,6 +74,21 @@ public class BlockGooSoil extends BlockFarmland {
     @Override
     public void onFallenUpon(World worldIn, BlockPos pos, Entity entityIn, float fallDistance) {
         entityIn.fall(fallDistance, 1.0F);
+    }
+
+    @Override
+    public boolean hasTileEntity(IBlockState state) {
+        return tier >= 3;
+    }
+
+    @Override
+    public TileEntity createTileEntity(World world, IBlockState state) {
+        return tier >= 3 ? new TileGooSoil() : null;
+    }
+
+    @Override
+    public TileEntity createNewTileEntity(World worldIn, int meta) {
+        return tier >= 3 ? new TileGooSoil() : null;
     }
 
     public static void bonemealMe(World world, BlockPos soilPos, Random random) {
@@ -143,17 +162,19 @@ public class BlockGooSoil extends BlockFarmland {
         IBlockState cropState = world.getBlockState(cropPos);
         Block crop = cropState.getBlock();
         if (crop instanceof BlockCrops && ((BlockCrops) crop).isMaxAge(cropState)) {
-            world.destroyBlock(cropPos, true);
+            dropOrTeleportDrops(world, soilPos, cropPos, cropState);
+            world.destroyBlock(cropPos, false);
             world.setBlockState(cropPos, crop.getDefaultState(), 3);
         } else if (crop instanceof BlockNetherWart && cropState.getValue(BlockNetherWart.AGE) >= 3) {
-            world.destroyBlock(cropPos, true);
+            dropOrTeleportDrops(world, soilPos, cropPos, cropState);
+            world.destroyBlock(cropPos, false);
             world.setBlockState(cropPos, crop.getDefaultState(), 3);
         } else if (crop instanceof BlockReed || crop instanceof BlockCactus) {
-            harvestTallPlant(world, cropPos, crop);
+            harvestTallPlant(world, soilPos, cropPos, crop);
         }
     }
 
-    private static void harvestTallPlant(World world, BlockPos cropPos, Block crop) {
+    private static void harvestTallPlant(World world, BlockPos soilPos, BlockPos cropPos, Block crop) {
         BlockPos second = cropPos.up();
         if (world.getBlockState(second).getBlock() != crop) {
             return;
@@ -163,7 +184,20 @@ public class BlockGooSoil extends BlockFarmland {
             top = top.up();
         }
         for (BlockPos current = top; current.getY() >= second.getY(); current = current.down()) {
-            world.destroyBlock(current, true);
+            dropOrTeleportDrops(world, soilPos, current, world.getBlockState(current));
+            world.destroyBlock(current, false);
+        }
+    }
+
+    private static void dropOrTeleportDrops(World world, BlockPos soilPos, BlockPos cropPos, IBlockState cropState) {
+        TileEntity tileEntity = world.getTileEntity(soilPos);
+        java.util.List<ItemStack> drops = cropState.getBlock().getDrops(world, cropPos, cropState, 0);
+        if (tileEntity instanceof TileGooSoil) {
+            ((TileGooSoil) tileEntity).handleDrops(drops, cropPos);
+        } else {
+            for (ItemStack drop : drops) {
+                Block.spawnAsEntity(world, cropPos, drop);
+            }
         }
     }
 }

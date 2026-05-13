@@ -12,6 +12,13 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.FluidTankProperties;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -30,6 +37,7 @@ public class TileMachineBase extends TileEntity {
     private final MachineEnergyState energyState = new MachineEnergyState();
     private final IEnergyStorage energyCapability = new SyncingEnergyStorage();
     private final MachineFluidState fluidState = new MachineFluidState();
+    private final IFluidHandler fluidCapability = new SyncingFluidHandler();
 
     public int getDirection() {
         return direction;
@@ -204,6 +212,7 @@ public class TileMachineBase extends TileEntity {
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable net.minecraft.util.EnumFacing facing) {
         return (capability != null && capability == CapabilityEnergy.ENERGY && energyState.getCapacity() > 0)
+                || (capability != null && capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && fluidState.getCapacity() > 0)
                 || super.hasCapability(capability, facing);
     }
 
@@ -213,6 +222,9 @@ public class TileMachineBase extends TileEntity {
     public <T> T getCapability(Capability<T> capability, @Nullable net.minecraft.util.EnumFacing facing) {
         if (capability != null && capability == CapabilityEnergy.ENERGY && energyState.getCapacity() > 0) {
             return (T) energyCapability;
+        }
+        if (capability != null && capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && fluidState.getCapacity() > 0) {
+            return (T) fluidCapability;
         }
         return super.getCapability(capability, facing);
     }
@@ -255,6 +267,83 @@ public class TileMachineBase extends TileEntity {
         public boolean canReceive() {
             return energyState.canReceive();
         }
+    }
+
+    private final class SyncingFluidHandler implements IFluidHandler {
+        @Override
+        public IFluidTankProperties[] getTankProperties() {
+            return new IFluidTankProperties[] {
+                    new FluidTankProperties(currentFluidStack(), fluidState.getCapacity(), true, true)
+            };
+        }
+
+        @Override
+        public int fill(FluidStack resource, boolean doFill) {
+            if (resource == null || resource.amount <= 0 || fluidState.getCapacity() <= 0 || resource.getFluid() == null) {
+                return 0;
+            }
+            if (!fluidState.getFluidName().isEmpty() && !fluidState.getFluidName().equals(resource.getFluid().getName())) {
+                return 0;
+            }
+
+            int accepted = Math.min(fluidState.getCapacity() - fluidState.getAmount(), resource.amount);
+            if (accepted <= 0) {
+                return 0;
+            }
+
+            if (doFill) {
+                fluidState.setFluidName(resource.getFluid().getName());
+                fluidState.setAmount(fluidState.getAmount() + accepted);
+                markDirtyClient();
+            }
+            return accepted;
+        }
+
+        @Nullable
+        @Override
+        public FluidStack drain(FluidStack resource, boolean doDrain) {
+            if (resource == null || resource.amount <= 0) {
+                return null;
+            }
+            FluidStack current = currentFluidStack();
+            if (current == null || !current.isFluidEqual(resource)) {
+                return null;
+            }
+            return drain(resource.amount, doDrain);
+        }
+
+        @Nullable
+        @Override
+        public FluidStack drain(int maxDrain, boolean doDrain) {
+            if (maxDrain <= 0) {
+                return null;
+            }
+            FluidStack current = currentFluidStack();
+            if (current == null || current.amount <= 0) {
+                return null;
+            }
+
+            int drained = Math.min(maxDrain, current.amount);
+            FluidStack result = new FluidStack(current.getFluid(), drained);
+            if (doDrain) {
+                int remaining = fluidState.getAmount() - drained;
+                fluidState.setAmount(remaining);
+                if (remaining <= 0) {
+                    fluidState.setFluidName("");
+                }
+                markDirtyClient();
+            }
+            return result;
+        }
+    }
+
+    @Nullable
+    private FluidStack currentFluidStack() {
+        if (fluidState.getAmount() <= 0 || fluidState.getFluidName().isEmpty()) {
+            return null;
+        }
+        Fluid fluid = FluidRegistry.getFluid(fluidState.getFluidName());
+        return fluid == null ? null : new FluidStack(fluid, fluidState.getAmount());
     }
 
     private void rotateDefaultAreaWithFacing(int oldDirection, int newDirection) {

@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.common.item.equipment;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
@@ -11,7 +12,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,6 +25,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -66,9 +73,49 @@ public class ItemJDTPaxel extends ItemTool implements ToggleableTool, LeftClicka
     }
 
     @Override
+    public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker) {
+        if (EquipmentItemSupport.isCreativePlayer(attacker)) {
+            return true;
+        }
+        if (EquipmentItemSupport.isPowered(stack) && !EquipmentItemSupport.hasPoweredDurability(stack, 2)) {
+            return true;
+        }
+        if (EquipmentItemSupport.consumePoweredDurability(stack, 2)) {
+            return true;
+        }
+        return super.hitEntity(stack, target, attacker);
+    }
+
+    @Override
+    public boolean onBlockDestroyed(ItemStack stack, World worldIn, IBlockState state, BlockPos pos, EntityLivingBase entityLiving) {
+        if (EquipmentItemSupport.isCreativePlayer(entityLiving)) {
+            return true;
+        }
+        if (!worldIn.isRemote && EquipmentItemSupport.isPowered(stack) && !EquipmentItemSupport.hasPoweredDurability(stack, 1)) {
+            return true;
+        }
+        if (!worldIn.isRemote && state.getBlockHardness(worldIn, pos) != 0.0F && EquipmentItemSupport.consumePoweredDurability(stack, 1)) {
+            return true;
+        }
+        return super.onBlockDestroyed(stack, worldIn, state, pos, entityLiving);
+    }
+
+    @Override
+    public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
+        return EquipmentItemSupport.getPoweredAttributeModifiers(slot, stack, super.getAttributeModifiers(slot, stack));
+    }
+
+    @Override
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (EquipmentItemSupport.bindDrops(player, worldIn, pos, hand, facing)) {
+            return EnumActionResult.SUCCESS;
+        }
         EnumActionResult abilityResult = AbilityExecutionHelper.tryExecuteUseOnAbility(worldIn, player, hand, pos, facing);
-        return abilityResult == EnumActionResult.SUCCESS ? abilityResult : super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
+        if (abilityResult == EnumActionResult.SUCCESS) {
+            return abilityResult;
+        }
+        EnumActionResult paxelResult = tryUseAsAxeOrShovel(player, worldIn, pos, hand, facing);
+        return paxelResult == EnumActionResult.SUCCESS ? paxelResult : super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
 
     @Override
@@ -106,6 +153,39 @@ public class ItemJDTPaxel extends ItemTool implements ToggleableTool, LeftClicka
         Block block = state.getBlock();
         String harvestTool = block.getHarvestTool(state);
         return "pickaxe".equals(harvestTool) || "axe".equals(harvestTool) || "shovel".equals(harvestTool);
+    }
+
+    private EnumActionResult tryUseAsAxeOrShovel(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing) {
+        ItemStack stack = player.getHeldItem(hand);
+        if (!player.canPlayerEdit(pos.offset(facing), facing, stack)) {
+            return EnumActionResult.FAIL;
+        }
+
+        if (tryFlattenGrass(player, world, pos, hand, facing)) {
+            return EnumActionResult.SUCCESS;
+        }
+        return EnumActionResult.PASS;
+    }
+
+    private boolean tryFlattenGrass(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing) {
+        if (facing == EnumFacing.DOWN || world.getBlockState(pos.up()).getMaterial() != Material.AIR || world.getBlockState(pos).getBlock() != Blocks.GRASS) {
+            return false;
+        }
+        world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        if (!world.isRemote) {
+            world.setBlockState(pos, Blocks.GRASS_PATH.getDefaultState(), 11);
+            consumePaxelRightClickCost(player.getHeldItem(hand), player);
+        }
+        return true;
+    }
+
+    private void consumePaxelRightClickCost(ItemStack stack, EntityPlayer player) {
+        if (player.capabilities.isCreativeMode) {
+            return;
+        }
+        if (!EquipmentItemSupport.consumePoweredDurability(stack, 1)) {
+            stack.damageItem(1, player);
+        }
     }
 
     @Override

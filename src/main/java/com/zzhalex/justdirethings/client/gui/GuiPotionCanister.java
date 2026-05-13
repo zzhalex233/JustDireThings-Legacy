@@ -7,12 +7,11 @@ import com.zzhalex.justdirethings.common.item.misc.PotionCanisterItem;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.PotionTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
@@ -27,13 +26,14 @@ public class GuiPotionCanister extends GuiTooltipContainer {
 
     private static final ResourceLocation BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/fuelcanister.png");
     private static final ResourceLocation FLUIDBAR = new ResourceLocation(Reference.MOD_ID, "textures/gui/fluidbar.png");
+    private static final ResourceLocation POTION_WATER_STILL = new ResourceLocation(Reference.MOD_ID, "textures/block/water_still.png");
+    private static final float POTION_WATER_TEXTURE_WIDTH = 16.0F;
+    private static final float POTION_WATER_TEXTURE_HEIGHT = 512.0F;
 
-    private final InventoryPlayer playerInventory;
     private final ContainerPotionCanister container;
 
     public GuiPotionCanister(InventoryPlayer playerInventory, ContainerPotionCanister container) {
         super(container);
-        this.playerInventory = playerInventory;
         this.container = container;
         this.xSize = 176;
         this.ySize = 166;
@@ -41,9 +41,6 @@ public class GuiPotionCanister extends GuiTooltipContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        String title = I18n.format("item.justdirethings.potion_canister.name");
-        fontRenderer.drawString(title, xSize / 2 - fontRenderer.getStringWidth(title) / 2, 6, 4210752);
-        fontRenderer.drawString(I18n.format("justdirethings.gui.player_inventory"), 8, ySize - 96 + 2, 4210752);
     }
 
     @Override
@@ -56,14 +53,13 @@ public class GuiPotionCanister extends GuiTooltipContainer {
         drawTexturedModalRect(left, top, 0, 0, xSize, ySize);
 
         mc.getTextureManager().bindTexture(FLUIDBAR);
-        drawTexturedModalRect(left + 5, top + 5, 0, 0, 18, 72);
-        int filled = (PotionCanisterItem.getPotionAmount(container.getBoundStack()) * 70) / PotionCanisterItem.MAX_MB;
+        drawModalRectWithCustomSizedTexture(left + 5, top + 5, 0, 0, 18, 72, 36, 72);
+        int filled = (container.getPotionAmount() * 70) / PotionCanisterItem.MAX_MB;
         if (filled > 0) {
-            int color = PotionUtils.getPotionColorFromEffectList(PotionCanisterItem.getPotionType(container.getBoundStack()).getEffects());
-            drawPotionFluid(left + 6, top + 76, 16, filled, color);
+            drawPotionFluid(left + 6, top + 76, 16, filled, container.getPotionType(), container.getPotionAmount());
         }
         mc.getTextureManager().bindTexture(FLUIDBAR);
-        drawTexturedModalRect(left + 5, top + 5, 18, 0, 18, 72);
+        drawModalRectWithCustomSizedTexture(left + 5, top + 5, 18, 0, 18, 72, 36, 72);
     }
 
     @Override
@@ -72,20 +68,18 @@ public class GuiPotionCanister extends GuiTooltipContainer {
         drawFluidBarTooltip(mouseX, mouseY);
     }
 
-    private void drawPotionFluid(int startX, int bottomY, int width, int height, int color) {
-        PotionType potionType = PotionCanisterItem.getPotionType(container.getBoundStack());
-        if (potionType.getEffects().isEmpty() || PotionCanisterItem.getPotionAmount(container.getBoundStack()) <= 0) {
+    private void drawPotionFluid(int startX, int bottomY, int width, int height, PotionType potionType, int amount) {
+        if (potionType == PotionTypes.EMPTY || amount <= 0) {
             return;
         }
 
-        TextureAtlasSprite sprite = mc.getTextureMapBlocks().getAtlasSprite("minecraft:blocks/water_still");
-        mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        mc.getTextureManager().bindTexture(POTION_WATER_STILL);
 
+        int color = PotionUtils.getPotionColor(potionType);
         float red = (float) (color >> 16 & 255) / 255.0F;
         float green = (float) (color >> 8 & 255) / 255.0F;
         float blue = (float) (color & 255) / 255.0F;
         GlStateManager.color(red, green, blue, 1.0F);
-        GlStateManager.enableBlend();
 
         int yOffset = 0;
         while (yOffset < height) {
@@ -94,21 +88,20 @@ public class GuiPotionCanister extends GuiTooltipContainer {
             int xOffset = 0;
             while (xOffset < width) {
                 int drawWidth = Math.min(16, width - xOffset);
-                drawTexturedFluidQuad(startX + xOffset, drawY, drawWidth, drawHeight, sprite);
+                drawTexturedFluidQuad(startX + xOffset, drawY, drawWidth, drawHeight);
                 xOffset += drawWidth;
             }
             yOffset += drawHeight;
         }
 
-        GlStateManager.disableBlend();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private static void drawTexturedFluidQuad(int x, int y, int width, int height, TextureAtlasSprite sprite) {
-        float uMin = sprite.getMinU();
-        float uMax = uMin + (sprite.getMaxU() - uMin) * (width / 16.0F);
-        float vMin = sprite.getMinV();
-        float vMax = vMin + (sprite.getMaxV() - vMin) * (height / 16.0F);
+    private static void drawTexturedFluidQuad(int x, int y, int width, int height) {
+        float uMin = 0.0F;
+        float uMax = width / POTION_WATER_TEXTURE_WIDTH;
+        float vMin = 0.0F;
+        float vMax = height / POTION_WATER_TEXTURE_HEIGHT;
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
@@ -121,9 +114,9 @@ public class GuiPotionCanister extends GuiTooltipContainer {
     }
 
     private void drawFluidBarTooltip(int mouseX, int mouseY) {
-        int amount = PotionCanisterItem.getPotionAmount(container.getBoundStack());
-        PotionType potionType = PotionCanisterItem.getPotionType(container.getBoundStack());
-        if (amount <= 0 || potionType.getEffects().isEmpty()) {
+        int amount = container.getPotionAmount();
+        PotionType potionType = container.getPotionType();
+        if (amount <= 0 || potionType == PotionTypes.EMPTY) {
             return;
         }
         if (mouseX < guiLeft + 5 || mouseX >= guiLeft + 23 || mouseY < guiTop + 5 || mouseY >= guiTop + 77) {

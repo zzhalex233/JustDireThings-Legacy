@@ -49,6 +49,8 @@ public class GuiToolSettings extends GuiTooltipContainer {
     private AbilityButton bindingTarget;
     private final Map<Ability, Boolean> pendingRequireEquipped = new HashMap<>();
     private int nextOptionButtonId;
+    private int lastObservedSlot = -1;
+    private ItemStack lastObservedStack = ItemStack.EMPTY;
 
     public GuiToolSettings(InventoryPlayer playerInventory, ContainerToolSettings container) {
         super(container);
@@ -63,9 +65,22 @@ public class GuiToolSettings extends GuiTooltipContainer {
         super.initGui();
         refreshDynamicSlots();
         rebuildAbilityButtons();
+        rememberSelectedStack();
+    }
+
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        ItemStack stack = selectedToolStack();
+        if (lastObservedSlot != selectedSlotIndex || !ItemStack.areItemStacksEqual(stack, lastObservedStack)) {
+            refreshDynamicSlots();
+            rebuildAbilityButtons();
+            rememberSelectedStack();
+        }
     }
 
     private void rebuildAbilityButtons() {
+        Ability previousShownAbility = shownAbilityButton == null ? null : shownAbilityButton.ability;
         buttonList.removeIf(button -> button instanceof ToolSettingsButton);
         optionalButtons.clear();
         sliders.clear();
@@ -101,6 +116,10 @@ public class GuiToolSettings extends GuiTooltipContainer {
             buttonList.add(button);
             addOptionalButtons(button, tool, stack);
             counter++;
+        }
+
+        if (previousShownAbility != null) {
+            restoreExpandedAbility(previousShownAbility);
         }
     }
 
@@ -238,6 +257,21 @@ public class GuiToolSettings extends GuiTooltipContainer {
         }
         optionalButtons.add(button);
         buttonList.add(button);
+    }
+
+    private void restoreExpandedAbility(Ability ability) {
+        AbilityButton button = abilityButtonFor(ability);
+        if (button == null) {
+            return;
+        }
+        shownAbilityButton = button;
+        addOptionalButton(sliders.get(button));
+        addOptionalButton(leftRightClickButtons.get(button));
+        if (showCustomBinding(button)) {
+            addOptionalButton(bindingButtons.get(button));
+            addOptionalButton(requireEquippedButtons.get(button));
+        }
+        addOptionalButton(customSettingsButtons.get(button));
     }
 
     private void refreshExpandedAbility(AbilityButton button) {
@@ -404,6 +438,12 @@ public class GuiToolSettings extends GuiTooltipContainer {
         JDTNetwork.getChannel().sendToServer(new MessageToolRefreshSlots(selectedSlotIndex));
     }
 
+    private void rememberSelectedStack() {
+        lastObservedSlot = selectedSlotIndex;
+        ItemStack stack = selectedToolStack();
+        lastObservedStack = stack.isEmpty() ? ItemStack.EMPTY : stack.copy();
+    }
+
     private static int findInitialToolSlot(InventoryPlayer inventory) {
         ItemStack mainHand = inventory.getCurrentItem();
         if (!mainHand.isEmpty() && mainHand.getItem() instanceof ToggleableTool) {
@@ -438,7 +478,7 @@ public class GuiToolSettings extends GuiTooltipContainer {
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
         mc.getTextureManager().bindTexture(SLOT_BACKGROUND);
         for (Slot slot : ((ContainerToolSettings) inventorySlots).getDynamicSlots()) {
-            drawModalRectWithCustomSizedTexture(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 0, 0, 18, 18, 18, 18);
+            drawTexturedModalRect(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 0, 0, 18, 18);
         }
     }
 

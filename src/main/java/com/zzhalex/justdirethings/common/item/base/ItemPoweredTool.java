@@ -68,6 +68,21 @@ public abstract class ItemPoweredTool extends ItemToggleableTool implements Ener
     }
 
     @Override
+    public boolean showDurabilityBar(ItemStack stack) {
+        return isEnergyBarVisible(stack) || super.showDurabilityBar(stack);
+    }
+
+    @Override
+    public double getDurabilityForDisplay(ItemStack stack) {
+        return isEnergyBarVisible(stack) ? getEnergyDurabilityForDisplay(stack) : super.getDurabilityForDisplay(stack);
+    }
+
+    @Override
+    public int getRGBDurabilityForDisplay(ItemStack stack) {
+        return isEnergyBarVisible(stack) ? getEnergyBarColor(stack) : super.getRGBDurabilityForDisplay(stack);
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);

@@ -1,8 +1,11 @@
 package com.zzhalex.justdirethings.client;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.client.event.AbilityRenderHandler;
 import com.zzhalex.justdirethings.client.event.ClientPortalGunInputHandler;
+import com.zzhalex.justdirethings.client.event.ElytraAbilityInputHandler;
 import com.zzhalex.justdirethings.client.event.MachineAreaRenderHandler;
+import com.zzhalex.justdirethings.client.event.PhaseClientEventHandler;
 import com.zzhalex.justdirethings.client.overlay.AbilityCooldownOverlay;
 import com.zzhalex.justdirethings.client.render.CreatureCatcherModelBakeHandler;
 import com.zzhalex.justdirethings.client.render.RenderCreatureCatcher;
@@ -62,6 +65,9 @@ public final class ClientRegistration {
         MinecraftForge.EVENT_BUS.register(CreatureCatcherModelBakeHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(AbilityCooldownOverlay.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ClientPortalGunInputHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(ElytraAbilityInputHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(PhaseClientEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(AbilityRenderHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(MachineAreaRenderHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ThingFinder.INSTANCE);
     }

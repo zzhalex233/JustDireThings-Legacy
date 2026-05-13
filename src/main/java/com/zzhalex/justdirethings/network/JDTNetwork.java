@@ -8,6 +8,7 @@ import com.zzhalex.justdirethings.network.message.MessageMachineSetting;
 import com.zzhalex.justdirethings.network.message.MessageParadoxState;
 import com.zzhalex.justdirethings.network.message.MessagePortalGunLeftClick;
 import com.zzhalex.justdirethings.network.message.MessagePortalFavorite;
+import com.zzhalex.justdirethings.network.message.MessageStartElytraFlight;
 import com.zzhalex.justdirethings.network.message.MessageSyncToolState;
 import com.zzhalex.justdirethings.network.message.MessageToolBindingSetting;
 import com.zzhalex.justdirethings.network.message.MessageToolRefreshSlots;
@@ -42,6 +43,7 @@ public final class JDTNetwork {
         CHANNEL.registerMessage(MessageToolBindingSetting.Handler.class, MessageToolBindingSetting.class, nextId++, Side.SERVER);
         CHANNEL.registerMessage(MessageToolRefreshSlots.Handler.class, MessageToolRefreshSlots.class, nextId++, Side.SERVER);
         CHANNEL.registerMessage(MessageExecuteAbility.Handler.class, MessageExecuteAbility.class, nextId++, Side.SERVER);
+        CHANNEL.registerMessage(MessageStartElytraFlight.Handler.class, MessageStartElytraFlight.class, nextId++, Side.SERVER);
         registered = true;
     }
 

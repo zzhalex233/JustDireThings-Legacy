@@ -6,8 +6,10 @@ import com.zzhalex.justdirethings.common.entity.EntityDecoy;
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.common.item.equipment.ItemJDTBow;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
+import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.FluidBackedItem;
 import com.zzhalex.justdirethings.common.item.base.ItemToggleableTool;
+import com.zzhalex.justdirethings.common.item.base.PoweredEnergyCostHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.material.JDTToolTier;
 import com.zzhalex.justdirethings.common.tile.TileEclipseGate;
@@ -17,6 +19,7 @@ import com.zzhalex.justdirethings.data.tool.ToolState;
 import com.zzhalex.justdirethings.data.tool.ToolStateIO;
 import com.zzhalex.justdirethings.registry.ModContentBlocks;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockTallGrass;
@@ -25,11 +28,14 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.MultiPartEntityPart;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
@@ -40,6 +46,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.tileentity.TileEntity;
@@ -49,7 +56,16 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -188,21 +204,21 @@ public final class AbilityMethods {
     }
 
     private static boolean scanForMobScanner(World world, EntityPlayer player, ItemStack stack) {
-        if (!hasInstalledAbility(stack, Ability.MOBSCANNER)) {
+        if (!canUseAbilityAndDurability(stack, Ability.MOBSCANNER)) {
             return false;
         }
         return scanFor(world, player, stack, Ability.MOBSCANNER);
     }
 
     private static boolean scanForOreScanner(World world, EntityPlayer player, ItemStack stack) {
-        if (!hasInstalledAbility(stack, Ability.ORESCANNER)) {
+        if (!canUseAbilityAndDurability(stack, Ability.ORESCANNER)) {
             return false;
         }
         return scanFor(world, player, stack, Ability.ORESCANNER);
     }
 
     private static boolean scanForOreXRay(World world, EntityPlayer player, ItemStack stack) {
-        if (!hasInstalledAbility(stack, Ability.OREXRAY)) {
+        if (!canUseAbilityAndDurability(stack, Ability.OREXRAY)) {
             return false;
         }
         return scanFor(world, player, stack, Ability.OREXRAY);
@@ -217,41 +233,48 @@ public final class AbilityMethods {
             return false;
         }
 
-        stack.damageItem(ability.getDurabilityCost(), player);
+        damageTool(stack, player, ability);
         return false;
     }
 
     private static boolean lawnmower(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.LAWNMOWER)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.LAWNMOWER)) {
             return false;
         }
 
-        Set<BlockPos> breakBlocks = findLawnmowerBlocks(world, player.getPosition(), 64, 5);
-        boolean brokeAny = false;
+        Set<BlockPos> breakBlocks = findLawnmowerBlocks(world, getPlayerOnPos(player), LAWNMOWER_MAX_BREAK, LAWNMOWER_RADIUS);
+        List<ItemStack> drops = new ArrayList<>();
         for (BlockPos pos : breakBlocks) {
-            if (!hasInstalledAbility(stack, Ability.LAWNMOWER)) {
+            if (!canUseAbilityAndDurability(stack, Ability.LAWNMOWER)) {
                 break;
             }
-            if (world.destroyBlock(pos, true)) {
-                brokeAny = true;
+            IBlockState state = world.getBlockState(pos);
+            if (world.destroyBlock(pos, false)) {
+                drops.addAll(collectBlockDrops(world, pos, state, 0));
                 if (world.rand.nextFloat() < 0.1F) {
-                    stack.damageItem(Ability.LAWNMOWER.getDurabilityCost(), player);
+                    damageTool(stack, player, Ability.LAWNMOWER);
                 }
             }
         }
 
-        if (brokeAny) {
+        if (!breakBlocks.isEmpty()) {
+            BlockPos firstPos = breakBlocks.iterator().next();
+            handleAbilityDrops(stack, world, firstPos, player, drops, breakBlocks);
             world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_GRASS_BREAK, SoundCategory.PLAYERS, 1.0F, 1.0F);
         }
-        return brokeAny;
+        return true;
     }
 
     private static boolean airBurst(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.AIRBURST)) {
+        if (world.isRemote) {
             return true;
         }
 
         int multiplier = getToolValue(stack, Ability.AIRBURST);
+        if (!canUseAbilityAndDurability(stack, Ability.AIRBURST, Math.max(1, multiplier))) {
+            return false;
+        }
+
         Vec3d look = player.getLookVec();
         double addedStrength = (double) multiplier / 2.0D;
         double burstStrength = 1.5D + addedStrength;
@@ -264,7 +287,7 @@ public final class AbilityMethods {
             ((EntityPlayerMP) player).connection.sendPacket(new SPacketEntityVelocity(player));
         }
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 0.5F, 0.125F);
-        stack.damageItem(Ability.AIRBURST.getDurabilityCost() * Math.max(1, multiplier), player);
+        damageTool(stack, player, Ability.AIRBURST, Math.max(1, multiplier));
         return true;
     }
 
@@ -279,19 +302,19 @@ public final class AbilityMethods {
         }
 
         int distanceTraveled = (int) player.getPositionVector().distanceTo(shiftPosition);
-        if (distanceTraveled <= 0) {
+        if (distanceTraveled <= 0 || !canUseAbilityAndDurability(stack, Ability.VOIDSHIFT, distanceTraveled)) {
             return false;
         }
 
         player.setPositionAndUpdate(shiftPosition.x, shiftPosition.y, shiftPosition.z);
         player.fallDistance = 0.0F;
         world.playSound(null, shiftPosition.x, shiftPosition.y, shiftPosition.z, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        stack.damageItem(Ability.VOIDSHIFT.getDurabilityCost() * Math.max(1, distanceTraveled), player);
+        damageTool(stack, player, Ability.VOIDSHIFT, Math.max(1, distanceTraveled));
         return false;
     }
 
     private static boolean cauterizeWounds(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.CAUTERIZEWOUNDS) || hasCooldown(stack, Ability.CAUTERIZEWOUNDS)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.CAUTERIZEWOUNDS) || hasCooldown(stack, Ability.CAUTERIZEWOUNDS)) {
             return false;
         }
         if (player.getHealth() >= player.getMaxHealth()) {
@@ -301,47 +324,43 @@ public final class AbilityMethods {
         player.heal(6.0F);
         addCooldownFromParams(stack, Ability.CAUTERIZEWOUNDS, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        spawnParticles(world, EnumParticleTypes.FLAME, player.posX, player.posY + player.getEyeHeight(), player.posZ, 10, 0.5D, 0.5D, 0.5D, 0.0D);
-        stack.damageItem(Ability.CAUTERIZEWOUNDS.getDurabilityCost(), player);
+        spawnRandomEyeParticles(world, player, EnumParticleTypes.FLAME, 10);
+        damageTool(stack, player, Ability.CAUTERIZEWOUNDS);
         return true;
     }
 
     private static boolean invulnerability(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.INVULNERABILITY) || hasCooldown(stack, Ability.INVULNERABILITY)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.INVULNERABILITY) || hasCooldown(stack, Ability.INVULNERABILITY)) {
             return false;
         }
 
         addCooldownFromParams(stack, Ability.INVULNERABILITY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        stack.damageItem(Ability.INVULNERABILITY.getDurabilityCost(), player);
+        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.PLAYERS, 1.0F, 1.0F);
+        damageTool(stack, player, Ability.INVULNERABILITY);
         return false;
     }
 
     private static boolean groundstomp(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.GROUNDSTOMP) || hasCooldown(stack, Ability.GROUNDSTOMP)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.GROUNDSTOMP) || hasCooldown(stack, Ability.GROUNDSTOMP)) {
             return false;
         }
 
+        addCooldownFromParams(stack, Ability.GROUNDSTOMP, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        int strength = getToolValue(stack, Ability.GROUNDSTOMP);
         AxisAlignedBB area = new AxisAlignedBB(player.posX - GROUNDSTOMP_RADIUS, player.posY - GROUNDSTOMP_RADIUS, player.posZ - GROUNDSTOMP_RADIUS,
                 player.posX + GROUNDSTOMP_RADIUS, player.posY + GROUNDSTOMP_RADIUS, player.posZ + GROUNDSTOMP_RADIUS);
-        List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area);
-        if (mobs.isEmpty()) {
-            return false;
-        }
-
-        int strength = getToolValue(stack, Ability.GROUNDSTOMP);
-        addCooldownFromParams(stack, Ability.GROUNDSTOMP, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area, AbilityMethods::isValidStompEntity);
         for (EntityLiving mob : mobs) {
             mob.knockBack(player, strength, player.posX - mob.posX, player.posZ - mob.posZ);
         }
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.5F, 1.0F);
         spawnParticles(world, EnumParticleTypes.BLOCK_DUST, player.posX, player.posY, player.posZ, 20, 0.5D, 0.2D, 0.5D, 0.0D, Block.getStateId(Blocks.DIRT.getDefaultState()));
-        stack.damageItem(Ability.GROUNDSTOMP.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.GROUNDSTOMP);
         return false;
     }
 
     private static boolean stupefy(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.STUPEFY) || hasCooldown(stack, Ability.STUPEFY)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.STUPEFY) || hasCooldown(stack, Ability.STUPEFY)) {
             return false;
         }
 
@@ -350,16 +369,18 @@ public final class AbilityMethods {
             return false;
         }
 
-        ((EntityLiving) target).setAttackTarget(null);
+        EntityLiving livingTarget = (EntityLiving) target;
+        livingTarget.setAttackTarget(null);
+        addStupefyTarget(stack, livingTarget.getUniqueID().toString());
         addCooldownFromParams(stack, Ability.STUPEFY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.PLAYERS, 0.5F, 0.75F);
         spawnParticles(world, EnumParticleTypes.SMOKE_NORMAL, target.posX, target.posY + target.height * 0.75D, target.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
-        stack.damageItem(Ability.STUPEFY.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.STUPEFY);
         return false;
     }
 
     private static boolean polymorphRandom(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.POLYMORPH_RANDOM)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.POLYMORPH_RANDOM)) {
             return false;
         }
 
@@ -384,12 +405,12 @@ public final class AbilityMethods {
         consumePolymorphicFluid(stack, RANDOM_POLYMORPH_FLUID_COST);
         world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.PLAYERS, 0.5F, 0.75F);
         spawnParticles(world, EnumParticleTypes.SMOKE_NORMAL, entity.posX, entity.posY + entity.height * 0.75D, entity.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
-        stack.damageItem(Ability.POLYMORPH_RANDOM.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.POLYMORPH_RANDOM);
         return false;
     }
 
     private static boolean polymorphTarget(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.POLYMORPH_TARGET)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.POLYMORPH_TARGET)) {
             return false;
         }
 
@@ -412,12 +433,12 @@ public final class AbilityMethods {
         consumePolymorphicFluid(stack, TARGET_POLYMORPH_FLUID_COST);
         world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.PLAYERS, 0.5F, 0.75F);
         spawnParticles(world, EnumParticleTypes.SMOKE_NORMAL, entity.posX, entity.posY + entity.height * 0.75D, entity.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
-        stack.damageItem(Ability.POLYMORPH_TARGET.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.POLYMORPH_RANDOM);
         return false;
     }
 
     private static boolean glowing(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.GLOWING) || hasCooldown(stack, Ability.GLOWING)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.GLOWING)) {
             return false;
         }
 
@@ -428,17 +449,18 @@ public final class AbilityMethods {
             mob.addPotionEffect(new PotionEffect(MobEffects.GLOWING, GLOWING_DURATION_TICKS, 0));
         }
 
-        addCooldownFromParams(stack, Ability.GLOWING, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_XYLOPHONE, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        stack.damageItem(Ability.GLOWING.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.GLOWING);
         return true;
     }
 
     private static boolean debuffRemover(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.DEBUFFREMOVER) || hasCooldown(stack, Ability.DEBUFFREMOVER)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.DEBUFFREMOVER) || hasCooldown(stack, Ability.DEBUFFREMOVER)) {
             return false;
         }
 
+        addCooldownFromParams(stack, Ability.DEBUFFREMOVER, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0F, 1.0F);
         List<Potion> harmfulEffects = new ArrayList<>();
         for (PotionEffect effect : player.getActivePotionEffects()) {
             Potion potion = effect.getPotion();
@@ -446,81 +468,91 @@ public final class AbilityMethods {
                 harmfulEffects.add(potion);
             }
         }
-        if (harmfulEffects.isEmpty()) {
-            return false;
-        }
-
-        addCooldownFromParams(stack, Ability.DEBUFFREMOVER, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0F, 1.0F);
         for (Potion potion : harmfulEffects) {
+            if (!canUseAbilityAndDurability(stack, Ability.DEBUFFREMOVER)) {
+                break;
+            }
             player.removePotionEffect(potion);
-            stack.damageItem(Ability.DEBUFFREMOVER.getDurabilityCost(), player);
+            damageTool(stack, player, Ability.DEBUFFREMOVER);
         }
         return false;
     }
 
     private static boolean earthquake(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.EARTHQUAKE) || hasCooldown(stack, Ability.EARTHQUAKE)) {
-            return false;
-        }
-
-        AxisAlignedBB area = new AxisAlignedBB(player.posX - EARTHQUAKE_RADIUS, player.posY - EARTHQUAKE_RADIUS, player.posZ - EARTHQUAKE_RADIUS,
-                player.posX + EARTHQUAKE_RADIUS, player.posY + EARTHQUAKE_RADIUS, player.posZ + EARTHQUAKE_RADIUS);
-        List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area,
-                mob -> mob.onGround && !JDTEntityGroups.isEarthquakeDenied(getEntityId(mob)));
-        if (mobs.isEmpty()) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.EARTHQUAKE) || hasCooldown(stack, Ability.EARTHQUAKE)) {
             return false;
         }
 
         addCooldownFromParams(stack, Ability.EARTHQUAKE, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0F, 0.5F);
+        AxisAlignedBB area = new AxisAlignedBB(player.posX - EARTHQUAKE_RADIUS, player.posY - EARTHQUAKE_RADIUS, player.posZ - EARTHQUAKE_RADIUS,
+                player.posX + EARTHQUAKE_RADIUS, player.posY + EARTHQUAKE_RADIUS, player.posZ + EARTHQUAKE_RADIUS);
+        List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area, AbilityMethods::isValidEarthquakeEntity);
         for (EntityLiving mob : mobs) {
+            if (!canUseAbilityAndDurability(stack, Ability.EARTHQUAKE)) {
+                break;
+            }
             mob.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, EARTHQUAKE_SLOW_DURATION_TICKS, EARTHQUAKE_SLOW_AMPLIFIER));
             spawnParticles(world, EnumParticleTypes.END_ROD, mob.posX, mob.posY + mob.height * 0.5D, mob.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
             spawnParticles(world, EnumParticleTypes.ENCHANTMENT_TABLE, mob.posX, mob.posY + mob.height * 0.5D, mob.posZ, 20, 0.5D, 0.2D, 0.5D, 0.0D);
-            stack.damageItem(Ability.EARTHQUAKE.getDurabilityCost(), player);
+            damageTool(stack, player, Ability.EARTHQUAKE);
         }
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0F, 0.5F);
         return false;
     }
 
     private static boolean noAI(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.NOAI) || hasCooldown(stack, Ability.NOAI)) {
-            return false;
-        }
-
-        AxisAlignedBB area = new AxisAlignedBB(player.posX - NOAI_RADIUS, player.posY - NOAI_RADIUS, player.posZ - NOAI_RADIUS,
-                player.posX + NOAI_RADIUS, player.posY + NOAI_RADIUS, player.posZ + NOAI_RADIUS);
-        List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area,
-                mob -> !JDTEntityGroups.isNoAiDenied(getEntityId(mob)));
-        if (mobs.isEmpty()) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.NOAI) || hasCooldown(stack, Ability.NOAI)) {
             return false;
         }
 
         addCooldownFromParams(stack, Ability.NOAI, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        AxisAlignedBB area = new AxisAlignedBB(player.posX - NOAI_RADIUS, player.posY - NOAI_RADIUS, player.posZ - NOAI_RADIUS,
+                player.posX + NOAI_RADIUS, player.posY + NOAI_RADIUS, player.posZ + NOAI_RADIUS);
+        List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area, AbilityMethods::isValidNoAiEntity);
         for (EntityLiving mob : mobs) {
+            if (!canUseAbilityAndDurability(stack, Ability.NOAI)) {
+                break;
+            }
             mob.setNoAI(true);
             spawnParticles(world, EnumParticleTypes.END_ROD, mob.posX, mob.posY + mob.height * 0.75D, mob.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
             spawnParticles(world, EnumParticleTypes.ENCHANTMENT_TABLE, mob.posX, mob.posY + mob.height * 0.75D, mob.posZ, 20, 0.5D, 0.2D, 0.5D, 0.0D);
-            stack.damageItem(Ability.NOAI.getDurabilityCost(), player);
+            damageTool(stack, player, Ability.NOAI);
         }
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 1.0F, 0.5F);
+        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_WITHER_AMBIENT, SoundCategory.PLAYERS, 1.0F, 0.25F);
         return false;
     }
 
+    private static boolean isValidStompEntity(Entity entity) {
+        return !isMultipartEntity(entity);
+    }
+
+    private static boolean isValidNoAiEntity(Entity entity) {
+        return !isMultipartEntity(entity) && !JDTEntityGroups.isNoAiDenied(getEntityId(entity));
+    }
+
+    private static boolean isValidEarthquakeEntity(Entity entity) {
+        return entity.onGround && !isMultipartEntity(entity) && !JDTEntityGroups.isEarthquakeDenied(getEntityId(entity));
+    }
+
+    private static boolean isMultipartEntity(Entity entity) {
+        return entity instanceof MultiPartEntityPart || entity.getParts() != null;
+    }
+
     private static boolean epicArrow(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.EPICARROW) || hasCooldown(stack, Ability.EPICARROW)
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.EPICARROW) || hasCooldown(stack, Ability.EPICARROW)
                 || ItemJDTBow.isEpicArrowPrimed(stack)) {
             return false;
         }
 
         ItemJDTBow.setEpicArrowPrimed(stack, true);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.EVOCATION_ILLAGER_PREPARE_SUMMON, SoundCategory.PLAYERS, 1.0F, 0.5F);
-        stack.damageItem(Ability.EPICARROW.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.EPICARROW);
         return false;
     }
 
     private static boolean leafbreaker(World world, EntityPlayer player, ItemStack stack, BlockPos pos, EnumFacing facing, EnumHand hand) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.LEAFBREAKER)) {
+        if (!canUseAbilityAndDurability(stack, Ability.LEAFBREAKER)) {
             return false;
         }
 
@@ -528,12 +560,14 @@ public final class AbilityMethods {
         if (!isLeafBlock(state)) {
             return false;
         }
+        if (world.isRemote) {
+            return true;
+        }
 
         int maxBreak = getLeafbreakerMaxBreak(stack);
-        Set<BlockPos> alsoBreakSet = findLikeBlocks(world, state, pos, maxBreak, 2);
-        boolean brokeAny = false;
+        Set<BlockPos> alsoBreakSet = findLikeBlocks(world, state, pos, maxBreak, LEAFBREAKER_RADIUS);
         for (BlockPos breakPos : alsoBreakSet) {
-            if (!hasInstalledAbility(stack, Ability.LEAFBREAKER)) {
+            if (!canUseAbilityAndDurability(stack, Ability.LEAFBREAKER)) {
                 break;
             }
             IBlockState before = world.getBlockState(breakPos);
@@ -542,17 +576,12 @@ public final class AbilityMethods {
             }
             if (world.destroyBlock(breakPos, true)) {
                 world.notifyBlockUpdate(breakPos, before, world.getBlockState(breakPos), 3);
-                brokeAny = true;
                 if (world.rand.nextFloat() < 0.1F) {
-                    stack.damageItem(Ability.LEAFBREAKER.getDurabilityCost(), player);
+                    damageTool(stack, player, Ability.LEAFBREAKER);
                 }
             }
         }
-
-        if (brokeAny) {
-            world.playSound(null, pos, SoundEvents.BLOCK_GRASS_BREAK, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        }
-        return brokeAny;
+        return true;
     }
 
     private static boolean eclipseGate(World world, EntityPlayer player, ItemStack stack, BlockPos pos, EnumFacing facing, EnumHand hand) {
@@ -567,7 +596,7 @@ public final class AbilityMethods {
         Set<BlockPos> posList = getEclipseGateBlocks(world, pos, facing, distance);
         boolean anyWorked = false;
         for (BlockPos blockPos : posList) {
-            if (!hasInstalledAbility(stack, Ability.ECLIPSEGATE)) {
+            if (!canUseAbilityAndDurability(stack, Ability.ECLIPSEGATE)) {
                 break;
             }
             IBlockState blockState = world.getBlockState(blockPos);
@@ -579,7 +608,7 @@ public final class AbilityMethods {
             if (tileEntity instanceof TileEclipseGate) {
                 ((TileEclipseGate) tileEntity).setSourceBlock(blockState);
             }
-            stack.damageItem(Ability.ECLIPSEGATE.getDurabilityCost(), player);
+            damageTool(stack, player, Ability.ECLIPSEGATE);
             anyWorked = true;
         }
 
@@ -590,7 +619,7 @@ public final class AbilityMethods {
     }
 
     private static boolean decoy(World world, EntityPlayer player, ItemStack stack) {
-        if (world.isRemote || !hasInstalledAbility(stack, Ability.DECOY) || hasActiveCooldown(stack, Ability.DECOY)) {
+        if (world.isRemote || !canUseAbilityAndDurability(stack, Ability.DECOY) || hasActiveCooldown(stack, Ability.DECOY)) {
             return false;
         }
 
@@ -603,9 +632,9 @@ public final class AbilityMethods {
             return false;
         }
 
-        addActiveCooldown(stack, Ability.DECOY, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(stack, Ability.DECOY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.EVOCATION_ILLAGER_PREPARE_SUMMON, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        stack.damageItem(Ability.DECOY.getDurabilityCost(), player);
+        damageTool(stack, player, Ability.DECOY);
         return false;
     }
 
@@ -615,7 +644,73 @@ public final class AbilityMethods {
             return tool.supportsAbility(ability) && tool.hasInstalledAbility(stack, ability);
         }
 
-        return readStackState(stack).hasInstalledAbility(ability.getId());
+        return ability != null && (!ability.requiresUpgrade() || readStackState(stack).hasInstalledAbility(ability.getId()));
+    }
+
+    public static boolean canUseAbilityAndDurability(ItemStack stack, Ability ability) {
+        return canUseAbilityAndDurability(stack, ability, 1);
+    }
+
+    public static boolean canUseAbilityAndDurability(ItemStack stack, Ability ability, int multiplier) {
+        if (!canUseAbility(stack, ability)) {
+            return false;
+        }
+        return testUseTool(stack, ability, multiplier) >= 0;
+    }
+
+    public static boolean canUseAbility(ItemStack stack, Ability ability) {
+        if (stack == null || stack.isEmpty() || ability == null) {
+            return false;
+        }
+        if (stack.getItem() instanceof ToggleableTool) {
+            ToggleableTool tool = (ToggleableTool) stack.getItem();
+            return tool.supportsAbility(ability) && tool.hasInstalledAbility(stack, ability) && tool.getSetting(stack, ability);
+        }
+        return hasInstalledAbility(stack, ability);
+    }
+
+    public static int testUseTool(ItemStack stack, Ability ability) {
+        return testUseTool(stack, ability, 1);
+    }
+
+    public static int testUseTool(ItemStack stack, Ability ability, int multiplier) {
+        if (stack == null || stack.isEmpty() || ability == null) {
+            return -1;
+        }
+        int cost = ability.getDurabilityCost() * Math.max(1, multiplier);
+        IEnergyStorage energyStorage = stack.getCapability(CapabilityEnergy.ENERGY, null);
+        if (energyStorage != null) {
+            return energyStorage.getEnergyStored() - ability.getFeCost() * Math.max(1, multiplier);
+        }
+        if (!stack.isItemStackDamageable()) {
+            return 1;
+        }
+        return stack.getMaxDamage() - stack.getItemDamage() - cost;
+    }
+
+    public static void damageTool(ItemStack stack, EntityLivingBase player, Ability ability) {
+        damageTool(stack, player, ability, 1);
+    }
+
+    public static void damageTool(ItemStack stack, EntityLivingBase player, Ability ability, int multiplier) {
+        if (player instanceof EntityPlayer) {
+            EntityPlayer entityPlayer = (EntityPlayer) player;
+            if (entityPlayer.capabilities.isCreativeMode || entityPlayer.isSpectator()) {
+                return;
+            }
+        }
+        int count = Math.max(1, multiplier);
+        IEnergyStorage energyStorage = stack.getCapability(CapabilityEnergy.ENERGY, null);
+        if (energyStorage != null) {
+            int energyCost = PoweredEnergyCostHelper.afterUnbreakingDiscount(stack, ability.getFeCost() * count);
+            energyStorage.extractEnergy(energyCost, false);
+            return;
+        }
+        ItemStack before = stack.copy();
+        stack.damageItem(ability.getDurabilityCost() * count, player);
+        if (player instanceof EntityPlayer && stack.isEmpty() && !before.isEmpty()) {
+            ForgeEventFactory.onPlayerDestroyItem((EntityPlayer) player, before, EnumHand.MAIN_HAND);
+        }
     }
 
     private static boolean hasActiveCooldown(ItemStack stack, Ability ability) {
@@ -644,13 +739,6 @@ public final class AbilityMethods {
         return readStackState(stack).getAbilityValues().getOrDefault(ability.getId(), params.defaultValue);
     }
 
-    private static void addActiveCooldown(ItemStack stack, Ability ability, int ticks) {
-        ToolState state = readStackState(stack);
-        state.getAbilityCooldowns().removeIf(cooldown -> ability.getId().equals(cooldown.getAbilityId()));
-        state.getAbilityCooldowns().add(new AbilityCooldown(ability.getId(), ticks, true));
-        writeStackState(stack, state);
-    }
-
     private static void addCooldownFromParams(ItemStack stack, Ability ability, boolean active, int fallbackTicks) {
         int ticks = fallbackTicks;
         if (stack.getItem() instanceof ToggleableTool) {
@@ -665,6 +753,52 @@ public final class AbilityMethods {
         state.getAbilityCooldowns().removeIf(cooldown -> ability.getId().equals(cooldown.getAbilityId()));
         state.getAbilityCooldowns().add(new AbilityCooldown(ability.getId(), ticks, active));
         writeStackState(stack, state);
+    }
+
+    public static List<String> getStupefyTargets(ItemStack stack) {
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+            return Collections.emptyList();
+        }
+
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null || !tag.hasKey(JDTDataKeys.STUPEFY_TARGETS, Constants.NBT.TAG_LIST)) {
+            return Collections.emptyList();
+        }
+
+        NBTTagList list = tag.getTagList(JDTDataKeys.STUPEFY_TARGETS, Constants.NBT.TAG_STRING);
+        List<String> targets = new ArrayList<>();
+        for (int i = 0; i < list.tagCount(); i++) {
+            targets.add(list.getStringTagAt(i));
+        }
+        return targets;
+    }
+
+    public static void addStupefyTarget(ItemStack stack, String entityUuid) {
+        if (stack == null || stack.isEmpty() || entityUuid == null || entityUuid.isEmpty()) {
+            return;
+        }
+
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+
+        NBTTagList list = tag.getTagList(JDTDataKeys.STUPEFY_TARGETS, Constants.NBT.TAG_STRING);
+        for (int i = 0; i < list.tagCount(); i++) {
+            if (entityUuid.equals(list.getStringTagAt(i))) {
+                return;
+            }
+        }
+        list.appendTag(new NBTTagString(entityUuid));
+        tag.setTag(JDTDataKeys.STUPEFY_TARGETS, list);
+    }
+
+    public static void clearStupefyTargets(ItemStack stack) {
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+            return;
+        }
+        stack.getTagCompound().removeTag(JDTDataKeys.STUPEFY_TARGETS);
     }
 
     private static ToolState readStackState(ItemStack stack) {
@@ -705,11 +839,197 @@ public final class AbilityMethods {
         return foundBlocks;
     }
 
+    private static BlockPos getPlayerOnPos(EntityPlayer player) {
+        return new BlockPos(player.posX, player.posY - 0.2D, player.posZ);
+    }
+
+    private static List<ItemStack> collectBlockDrops(World world, BlockPos pos, IBlockState state, int fortune) {
+        NonNullList<ItemStack> drops = NonNullList.create();
+        state.getBlock().getDrops(drops, world, pos, state, fortune);
+        return drops;
+    }
+
+    public static void handleAbilityDrops(ItemStack stack, World world, BlockPos dropPos, EntityPlayer player, List<ItemStack> drops) {
+        handleAbilityDrops(stack, world, dropPos, player, drops, Collections.singleton(dropPos.toImmutable()));
+    }
+
+    public static void handleAbilityDrops(ItemStack stack, World world, BlockPos dropPos, EntityPlayer player, List<ItemStack> drops, Set<BlockPos> breakPositions) {
+        if (drops.isEmpty()) {
+            return;
+        }
+
+        drops = compactDrops(drops);
+        if (canUseAbilityAndDurability(stack, Ability.SMELTER)) {
+            SmeltResult smeltResult = smeltAbilityDrops(stack, player, drops);
+            drops = compactDrops(smeltResult.drops);
+            if (smeltResult.didSmelt) {
+                spawnSmelterParticles(world, breakPositions);
+            }
+        }
+
+        if (!drops.isEmpty() && canUseAbilityAndDurability(stack, Ability.DROPTELEPORT)) {
+            IItemHandler handler = getBoundDropHandler(stack, world);
+            if (handler != null) {
+                drops = compactDrops(teleportAbilityDrops(stack, player, handler, drops));
+            }
+        }
+
+        for (ItemStack drop : drops) {
+            if (drop == null || drop.isEmpty()) {
+                continue;
+            }
+            EntityItem itemEntity = new EntityItem(
+                    world,
+                    dropPos.getX() + 0.5D,
+                    dropPos.getY() + 0.5D,
+                    dropPos.getZ() + 0.5D,
+                    drop.copy()
+            );
+            world.spawnEntity(itemEntity);
+        }
+    }
+
+    private static List<ItemStack> compactDrops(List<ItemStack> drops) {
+        List<ItemStack> compacted = new ArrayList<>();
+        for (ItemStack drop : drops) {
+            if (drop == null || drop.isEmpty()) {
+                continue;
+            }
+
+            ItemStack remaining = drop.copy();
+            for (ItemStack existing : compacted) {
+                if (!ItemHandlerHelper.canItemStacksStack(existing, remaining)) {
+                    continue;
+                }
+
+                int moved = Math.min(remaining.getCount(), existing.getMaxStackSize() - existing.getCount());
+                if (moved <= 0) {
+                    continue;
+                }
+                existing.grow(moved);
+                remaining.shrink(moved);
+                if (remaining.isEmpty()) {
+                    break;
+                }
+            }
+
+            while (!remaining.isEmpty()) {
+                ItemStack split = remaining.copy();
+                split.setCount(Math.min(split.getCount(), split.getMaxStackSize()));
+                compacted.add(split);
+                remaining.shrink(split.getCount());
+            }
+        }
+        return compacted;
+    }
+
+    private static SmeltResult smeltAbilityDrops(ItemStack stack, EntityPlayer player, List<ItemStack> drops) {
+        List<ItemStack> smelted = new ArrayList<>();
+        boolean didSmelt = false;
+        for (ItemStack drop : drops) {
+            if (drop == null || drop.isEmpty()) {
+                continue;
+            }
+            ItemStack result = FurnaceRecipes.instance().getSmeltingResult(drop);
+            if (!result.isEmpty() && canUseAbilityAndDurability(stack, Ability.SMELTER, drop.getCount())) {
+                ItemStack resultCopy = result.copy();
+                resultCopy.setCount(drop.getCount());
+                smelted.add(resultCopy);
+                damageTool(stack, player, Ability.SMELTER, drop.getCount());
+                didSmelt = true;
+            } else {
+                smelted.add(drop);
+            }
+        }
+        return new SmeltResult(smelted, didSmelt);
+    }
+
+    private static void spawnSmelterParticles(World world, Set<BlockPos> breakPositions) {
+        if (!(world instanceof WorldServer) || breakPositions == null || breakPositions.isEmpty()) {
+            return;
+        }
+        int iterations = breakPositions.size() > 10 ? 1 : 5;
+        WorldServer serverWorld = (WorldServer) world;
+        for (int i = 0; i < iterations; i++) {
+            for (BlockPos pos : breakPositions) {
+                serverWorld.spawnParticle(
+                        EnumParticleTypes.FLAME,
+                        pos.getX() + world.rand.nextDouble(),
+                        pos.getY() + world.rand.nextDouble(),
+                        pos.getZ() + world.rand.nextDouble(),
+                        1,
+                        0.0D,
+                        0.0D,
+                        0.0D,
+                        0.0D
+                );
+            }
+        }
+    }
+
+    private static void spawnRandomEyeParticles(World world, EntityPlayer player, EnumParticleTypes particle, int count) {
+        if (!(world instanceof WorldServer)) {
+            return;
+        }
+        Vec3d eye = player.getPositionEyes(1.0F);
+        WorldServer serverWorld = (WorldServer) world;
+        for (int i = 0; i < count; i++) {
+            serverWorld.spawnParticle(
+                    particle,
+                    eye.x + world.rand.nextDouble(),
+                    eye.y + world.rand.nextDouble(),
+                    eye.z + world.rand.nextDouble(),
+                    1,
+                    0.0D,
+                    0.0D,
+                    0.0D,
+                    0.0D
+            );
+        }
+    }
+
+    private static IItemHandler getBoundDropHandler(ItemStack stack, World world) {
+        BoundInventoryHelper.BoundLocation boundLocation = BoundInventoryHelper.getBoundTo(stack);
+        if (boundLocation == null || world.getMinecraftServer() == null) {
+            return null;
+        }
+        WorldServer boundWorld = world.getMinecraftServer().getWorld(boundLocation.getDimension());
+        if (boundWorld == null) {
+            return null;
+        }
+        TileEntity tileEntity = boundWorld.getTileEntity(boundLocation.getPos());
+        if (tileEntity == null) {
+            return null;
+        }
+        return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, boundLocation.getSide());
+    }
+
+    private static List<ItemStack> teleportAbilityDrops(ItemStack stack, EntityPlayer player, IItemHandler handler, List<ItemStack> drops) {
+        List<ItemStack> leftovers = new ArrayList<>();
+        for (ItemStack drop : drops) {
+            if (drop == null || drop.isEmpty()) {
+                continue;
+            }
+            if (!canUseAbilityAndDurability(stack, Ability.DROPTELEPORT)) {
+                leftovers.add(drop);
+                continue;
+            }
+            ItemStack remainder = ItemHandlerHelper.insertItemStacked(handler, drop.copy(), false);
+            if (remainder.isEmpty()) {
+                damageTool(stack, player, Ability.DROPTELEPORT);
+            } else {
+                leftovers.add(remainder);
+            }
+        }
+        return leftovers;
+    }
+
     private static Set<BlockPos> findLikeBlocks(World world, IBlockState targetState, BlockPos start, int maxBreak, int radius) {
         Set<BlockPos> foundBlocks = new HashSet<>();
         Queue<BlockPos> blocksToCheck = new LinkedList<>();
         Set<BlockPos> checkedBlocks = new HashSet<>();
 
+        foundBlocks.add(start.toImmutable());
         blocksToCheck.add(start);
         while (!blocksToCheck.isEmpty()) {
             BlockPos posToCheck = blocksToCheck.poll();
@@ -736,14 +1056,14 @@ public final class AbilityMethods {
 
     private static boolean isLawnmowerBlock(IBlockState state) {
         Block block = state.getBlock();
-        Material material = state.getMaterial();
+        if (block == Blocks.DOUBLE_PLANT) {
+            BlockDoublePlant.EnumPlantType variant = state.getValue(BlockDoublePlant.VARIANT);
+            return variant == BlockDoublePlant.EnumPlantType.GRASS
+                    || variant == BlockDoublePlant.EnumPlantType.FERN;
+        }
         return block instanceof BlockTallGrass
                 || block instanceof BlockFlower
-                || block instanceof BlockVine
-                || block == Blocks.DEADBUSH
-                || block == Blocks.DOUBLE_PLANT
-                || material == Material.PLANTS
-                || material == Material.VINE;
+                || block == Blocks.DEADBUSH;
     }
 
     private static boolean isLeafBlock(IBlockState state) {
@@ -978,5 +1298,15 @@ public final class AbilityMethods {
     @FunctionalInterface
     public interface UseOnAbilityAction {
         boolean execute(World world, EntityPlayer player, ItemStack stack, BlockPos pos, EnumFacing facing, EnumHand hand);
+    }
+
+    private static final class SmeltResult {
+        private final List<ItemStack> drops;
+        private final boolean didSmelt;
+
+        private SmeltResult(List<ItemStack> drops, boolean didSmelt) {
+            this.drops = drops;
+            this.didSmelt = didSmelt;
+        }
     }
 }

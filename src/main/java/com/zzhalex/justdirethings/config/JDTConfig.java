@@ -20,6 +20,22 @@ public final class JDTConfig {
     @Config.RequiresMcRestart
     public static boolean enableFutureMcMaterialResolution = true;
 
+    @Config.Name("toolMaxBreakFerricore")
+    @Config.Comment("Maximum connected blocks a Ferricore tool can break through mining abilities such as Ore Miner, Tree Feller, and Sky Sweeper.")
+    public static int toolMaxBreakFerricore = 64;
+
+    @Config.Name("toolMaxBreakBlazegold")
+    @Config.Comment("Maximum connected blocks a Blazegold tool can break through mining abilities such as Ore Miner, Tree Feller, and Sky Sweeper.")
+    public static int toolMaxBreakBlazegold = 128;
+
+    @Config.Name("toolMaxBreakCelestigem")
+    @Config.Comment("Maximum connected blocks a Celestigem tool can break through mining abilities such as Ore Miner, Tree Feller, and Sky Sweeper.")
+    public static int toolMaxBreakCelestigem = 192;
+
+    @Config.Name("toolMaxBreakEclipsealloy")
+    @Config.Comment("Maximum connected blocks an Eclipse Alloy tool can break through mining abilities such as Ore Miner, Tree Feller, and Sky Sweeper.")
+    public static int toolMaxBreakEclipsealloy = 256;
+
     @Config.Name("pocketGeneratorMaxFe")
     @Config.Comment("Maximum FE buffer for the pocket generator.")
     public static int pocketGeneratorMaxFe = 1000000;

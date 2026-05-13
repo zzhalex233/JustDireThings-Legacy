@@ -185,6 +185,21 @@ public class PocketGeneratorItem extends Item implements EnergyBackedItem {
         return Math.max(1, JDTConfig.pocketGeneratorFePerTick);
     }
 
+    @Override
+    public boolean showDurabilityBar(ItemStack stack) {
+        return isEnergyBarVisible(stack) || super.showDurabilityBar(stack);
+    }
+
+    @Override
+    public double getDurabilityForDisplay(ItemStack stack) {
+        return isEnergyBarVisible(stack) ? getEnergyDurabilityForDisplay(stack) : super.getDurabilityForDisplay(stack);
+    }
+
+    @Override
+    public int getRGBDurabilityForDisplay(ItemStack stack) {
+        return isEnergyBarVisible(stack) ? getEnergyBarColor(stack) : super.getRGBDurabilityForDisplay(stack);
+    }
+
     public void tryBurn(ItemStack stack) {
         int counter = getCounter(stack);
         if (counter > 0 && getStoredEnergy(stack) < getMaxEnergy()) {

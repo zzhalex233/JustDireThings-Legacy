@@ -8,7 +8,7 @@ import java.util.List;
 
 public final class PortalRenderState {
 
-    private static final double FRAME_NORMAL_THICKNESS = 0.01D;
+    private static final double FRAME_NORMAL_THICKNESS = 0.002D;
 
     private PortalRenderState() {
     }
@@ -33,13 +33,12 @@ public final class PortalRenderState {
             return boxes;
         }
 
-        double inset = thickness * 0.5D;
-        double minX = insetMin(bounds.minX, bounds.maxX, inset);
-        double minY = insetMin(bounds.minY, bounds.maxY, inset);
-        double minZ = insetMin(bounds.minZ, bounds.maxZ, inset);
-        double maxX = insetMax(bounds.minX, bounds.maxX, inset);
-        double maxY = insetMax(bounds.minY, bounds.maxY, inset);
-        double maxZ = insetMax(bounds.minZ, bounds.maxZ, inset);
+        double minX = bounds.minX;
+        double minY = bounds.minY;
+        double minZ = bounds.minZ;
+        double maxX = bounds.maxX;
+        double maxY = bounds.maxY;
+        double maxZ = bounds.maxZ;
 
         if (planeAxis == EnumFacing.Axis.Z) {
             Range normal = centeredRange(bounds.minZ, bounds.maxZ, FRAME_NORMAL_THICKNESS);
@@ -65,20 +64,6 @@ public final class PortalRenderState {
 
     public static EnumFacing.Axis planeAxisForFacing(EnumFacing facing) {
         return facing == null ? EnumFacing.Axis.Z : facing.getAxis();
-    }
-
-    private static double insetMin(double min, double max, double inset) {
-        if (max - min <= inset * 2.0D) {
-            return (min + max) * 0.5D;
-        }
-        return min + inset;
-    }
-
-    private static double insetMax(double min, double max, double inset) {
-        if (max - min <= inset * 2.0D) {
-            return (min + max) * 0.5D;
-        }
-        return max - inset;
     }
 
     private static Range centeredRange(double min, double max, double desiredThickness) {

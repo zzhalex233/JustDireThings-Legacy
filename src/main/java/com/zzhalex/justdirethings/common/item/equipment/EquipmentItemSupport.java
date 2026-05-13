@@ -1,28 +1,43 @@
 package com.zzhalex.justdirethings.common.item.equipment;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
 import com.zzhalex.justdirethings.capability.item.StackItemInventoryHandler;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
+import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.EnergyBackedItem;
+import com.zzhalex.justdirethings.common.item.base.PoweredEnergyCostHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModCreativeTabs;
 import com.zzhalex.justdirethings.registry.ModContainers;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -41,6 +56,8 @@ final class EquipmentItemSupport {
     private static final Map<Item, String> ITEM_IDS = new IdentityHashMap<>();
     private static final int DEFAULT_POWERED_CAPACITY = 10_000;
     private static final int ECLIPSEALLOY_POWERED_CAPACITY = 500_000;
+    private static final int POWERED_BLOCK_BREAK_FE_COST = 50;
+    private static final int POWERED_ARMOR_DAMAGE_FE_COST = 100;
 
     private EquipmentItemSupport() {
     }
@@ -66,6 +83,43 @@ final class EquipmentItemSupport {
             return new ActionResult<>(EnumActionResult.SUCCESS, stack);
         }
         return null;
+    }
+
+    static boolean bindDrops(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing) {
+        if (player == null || world == null || pos == null || facing == null || !player.isSneaking()) {
+            return false;
+        }
+
+        ItemStack stack = player.getHeldItem(hand);
+        if (!com.zzhalex.justdirethings.common.item.ability.AbilityMethods.canUseAbility(stack, Ability.DROPTELEPORT)) {
+            return false;
+        }
+
+        TileEntity tileEntity = world.getTileEntity(pos);
+        if (tileEntity == null || !tileEntity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
+            return false;
+        }
+
+        if (world.isRemote) {
+            return true;
+        }
+
+        BoundInventoryHelper.BoundLocation newBinding = new BoundInventoryHelper.BoundLocation(world.provider.getDimension(), pos, facing);
+        BoundInventoryHelper.BoundLocation existing = BoundInventoryHelper.getBoundTo(stack);
+        if (newBinding.equals(existing)) {
+            BoundInventoryHelper.removeBoundTo(stack);
+            player.sendStatusMessage(new TextComponentTranslation("justdirethings.bindremoved"), true);
+            world.playSound(null, player.posX, player.posY, player.posZ, net.minecraft.init.SoundEvents.ENTITY_ENDEREYE_DEATH, net.minecraft.util.SoundCategory.PLAYERS, 1.0F, 1.0F);
+        } else {
+            BoundInventoryHelper.setBoundTo(stack, newBinding);
+            player.sendStatusMessage(new TextComponentTranslation(
+                    "justdirethings.boundto",
+                    newBinding.getDimensionName(),
+                    "[" + newBinding.toShortString() + "]"
+            ), true);
+            world.playSound(null, player.posX, player.posY, player.posZ, net.minecraft.init.SoundEvents.BLOCK_END_PORTAL_FRAME_FILL, net.minecraft.util.SoundCategory.PLAYERS, 1.0F, 1.0F);
+        }
+        return true;
     }
 
     static Set<Ability> getAbilities(Item item) {
@@ -95,7 +149,7 @@ final class EquipmentItemSupport {
 
     static ICapabilityProvider initBowCapabilities(Item item, ItemStack stack) {
         EnergyBackedItem energyItem = getEnergyCapacity(item) <= 0 ? null : new EquipmentEnergy(item);
-        return new StackItemCapabilityProvider(stack, energyItem, null, new StackItemInventoryHandler(stack, JDTDataKeys.TOOL_CONTENTS, 1));
+        return new StackItemCapabilityProvider(stack, energyItem, null, new StackItemInventoryHandler(stack, JDTDataKeys.TOOL_CONTENTS, getBowSlotCount(item)));
     }
 
     static boolean showEnergyBar(Item item, ItemStack stack) {
@@ -120,6 +174,67 @@ final class EquipmentItemSupport {
         return MathHelper.hsvToRGB(filled / 3.0F, 1.0F, 1.0F);
     }
 
+    static boolean isPowered(ItemStack stack) {
+        return stack != null && !stack.isEmpty() && stack.hasCapability(CapabilityEnergy.ENERGY, null);
+    }
+
+    static boolean hasPoweredDurability(ItemStack stack, int vanillaDamageAmount) {
+        IEnergyStorage energyStorage = stack.getCapability(CapabilityEnergy.ENERGY, null);
+        if (energyStorage == null || vanillaDamageAmount <= 0) {
+            return false;
+        }
+        return energyStorage.getEnergyStored() >= POWERED_BLOCK_BREAK_FE_COST * vanillaDamageAmount;
+    }
+
+    static boolean consumePoweredDurability(ItemStack stack, int vanillaDamageAmount) {
+        IEnergyStorage energyStorage = stack.getCapability(CapabilityEnergy.ENERGY, null);
+        if (energyStorage == null || vanillaDamageAmount <= 0) {
+            return false;
+        }
+        extractPoweredDamageEnergy(stack, energyStorage, POWERED_BLOCK_BREAK_FE_COST * vanillaDamageAmount);
+        return true;
+    }
+
+    static boolean redirectPoweredArmorDamageToEnergy(ItemStack stack, int requestedDamage) {
+        if (!isPowered(stack)) {
+            return false;
+        }
+        int damageIncrease = requestedDamage - stack.getItemDamage();
+        if (damageIncrease <= 0) {
+            return false;
+        }
+        IEnergyStorage energyStorage = stack.getCapability(CapabilityEnergy.ENERGY, null);
+        if (energyStorage == null) {
+            return false;
+        }
+        extractPoweredDamageEnergy(stack, energyStorage, POWERED_ARMOR_DAMAGE_FE_COST * damageIncrease);
+        return true;
+    }
+
+    private static void extractPoweredDamageEnergy(ItemStack stack, IEnergyStorage energyStorage, int amount) {
+        energyStorage.extractEnergy(PoweredEnergyCostHelper.afterUnbreakingDiscount(stack, amount), false);
+    }
+
+    static boolean isCreativePlayer(EntityLivingBase entity) {
+        return entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.isCreativeMode;
+    }
+
+    static Multimap<String, AttributeModifier> getPoweredAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack, Multimap<String, AttributeModifier> originalModifiers) {
+        if (slot != EntityEquipmentSlot.MAINHAND || !isPowered(stack) || hasPoweredDurability(stack, 1)) {
+            return originalModifiers;
+        }
+        Multimap<String, AttributeModifier> modifiers = ArrayListMultimap.create(originalModifiers);
+        modifiers.removeAll(SharedMonsterAttributes.ATTACK_DAMAGE.getName());
+        return modifiers;
+    }
+
+    static Multimap<String, AttributeModifier> getPoweredArmorAttributeModifiers(ItemStack stack, Multimap<String, AttributeModifier> originalModifiers) {
+        if (!isPowered(stack) || hasPoweredDurability(stack, 1)) {
+            return originalModifiers;
+        }
+        return ArrayListMultimap.create();
+    }
+
     private static int getEnergyCapacity(Item item) {
         String id = ITEM_IDS.get(item);
         if (id == null) {
@@ -132,6 +247,20 @@ final class EquipmentItemSupport {
             return DEFAULT_POWERED_CAPACITY;
         }
         return 0;
+    }
+
+    private static int getBowSlotCount(Item item) {
+        String id = ITEM_IDS.get(item);
+        if ("bow_eclipsealloy".equals(id)) {
+            return 4;
+        }
+        if ("bow_celestigem".equals(id)) {
+            return 3;
+        }
+        if ("bow_blazegold".equals(id)) {
+            return 2;
+        }
+        return 1;
     }
 
     private static int getStoredEnergy(ItemStack stack) {

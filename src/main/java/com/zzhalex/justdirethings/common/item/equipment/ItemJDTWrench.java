@@ -1,10 +1,10 @@
 package com.zzhalex.justdirethings.common.item.equipment;
 
 import com.zzhalex.justdirethings.common.block.machine.BlockMachineBase;
+import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.material.JDTToolTier;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockSwapper;
-import com.zzhalex.justdirethings.common.util.DimensionDisplayHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -12,7 +12,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -28,12 +27,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ItemJDTWrench extends Item {
-
-    private static final String TAG_BOUND = "JDTWrenchBoundTo";
-    private static final String TAG_DIMENSION = "Dimension";
-    private static final String TAG_X = "X";
-    private static final String TAG_Y = "Y";
-    private static final String TAG_Z = "Z";
 
     private final JDTToolTier tier;
 
@@ -56,7 +49,7 @@ public class ItemJDTWrench extends Item {
             return new ActionResult<>(EnumActionResult.PASS, stack);
         }
 
-        BoundLocation boundLocation = getBoundTo(stack);
+        BoundInventoryHelper.BoundLocation boundLocation = getBoundTo(stack);
         if (boundLocation == null) {
             return new ActionResult<>(EnumActionResult.PASS, stack);
         }
@@ -111,9 +104,9 @@ public class ItemJDTWrench extends Item {
             return false;
         }
 
-        BoundLocation boundLocation = getBoundTo(itemStack);
+        BoundInventoryHelper.BoundLocation boundLocation = getBoundTo(itemStack);
         if (boundLocation == null) {
-            BoundLocation newBinding = new BoundLocation(world.provider.getDimension(), blockPos);
+            BoundInventoryHelper.BoundLocation newBinding = new BoundInventoryHelper.BoundLocation(world.provider.getDimension(), blockPos);
             setBoundTo(itemStack, newBinding);
             sendBoundMessage(world, player, newBinding);
             world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_END_PORTAL_FRAME_FILL, SoundCategory.PLAYERS, 1.0F, 1.0F);
@@ -132,7 +125,7 @@ public class ItemJDTWrench extends Item {
         return true;
     }
 
-    private void sendBoundMessage(World world, EntityPlayer player, BoundLocation boundLocation) {
+    private void sendBoundMessage(World world, EntityPlayer player, BoundInventoryHelper.BoundLocation boundLocation) {
         player.sendStatusMessage(new TextComponentTranslation(
                 "justdirethings.boundto",
                 boundLocation.getDimensionName(),
@@ -155,52 +148,22 @@ public class ItemJDTWrench extends Item {
         return getBoundTo(stack) != null || super.hasEffect(stack);
     }
 
-    public static BoundLocation getBoundTo(ItemStack stack) {
-        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
-            return null;
-        }
-        NBTTagCompound root = stack.getTagCompound();
-        if (root == null || !root.hasKey(TAG_BOUND)) {
-            return null;
-        }
-        NBTTagCompound bound = root.getCompoundTag(TAG_BOUND);
-        return new BoundLocation(
-                bound.getInteger(TAG_DIMENSION),
-                new BlockPos(bound.getInteger(TAG_X), bound.getInteger(TAG_Y), bound.getInteger(TAG_Z))
-        );
+    public static BoundInventoryHelper.BoundLocation getBoundTo(ItemStack stack) {
+        return BoundInventoryHelper.getBoundTo(stack);
     }
 
-    public static void setBoundTo(ItemStack stack, BoundLocation boundLocation) {
-        if (stack == null || stack.isEmpty() || boundLocation == null) {
-            return;
-        }
-        NBTTagCompound root = stack.getTagCompound();
-        if (root == null) {
-            root = new NBTTagCompound();
-            stack.setTagCompound(root);
-        }
-        NBTTagCompound bound = new NBTTagCompound();
-        bound.setInteger(TAG_DIMENSION, boundLocation.getDimension());
-        bound.setInteger(TAG_X, boundLocation.getPos().getX());
-        bound.setInteger(TAG_Y, boundLocation.getPos().getY());
-        bound.setInteger(TAG_Z, boundLocation.getPos().getZ());
-        root.setTag(TAG_BOUND, bound);
+    public static void setBoundTo(ItemStack stack, BoundInventoryHelper.BoundLocation boundLocation) {
+        BoundInventoryHelper.setBoundTo(stack, boundLocation);
     }
 
     public static void removeBoundTo(ItemStack stack) {
-        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
-            return;
-        }
-        NBTTagCompound root = stack.getTagCompound();
-        if (root != null) {
-            root.removeTag(TAG_BOUND);
-        }
+        BoundInventoryHelper.removeBoundTo(stack);
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        BoundLocation boundLocation = getBoundTo(stack);
+        BoundInventoryHelper.BoundLocation boundLocation = getBoundTo(stack);
         if (boundLocation != null) {
             tooltip.add(TextFormatting.DARK_PURPLE + I18n.format(
                     "justdirethings.boundto",
@@ -210,29 +173,4 @@ public class ItemJDTWrench extends Item {
         }
     }
 
-    public static final class BoundLocation {
-        private final int dimension;
-        private final BlockPos pos;
-
-        public BoundLocation(int dimension, BlockPos pos) {
-            this.dimension = dimension;
-            this.pos = pos == null ? BlockPos.ORIGIN : pos;
-        }
-
-        public int getDimension() {
-            return dimension;
-        }
-
-        public String getDimensionName() {
-            return DimensionDisplayHelper.getDimensionName(dimension);
-        }
-
-        public BlockPos getPos() {
-            return pos;
-        }
-
-        public String toShortString() {
-            return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
-        }
-    }
 }

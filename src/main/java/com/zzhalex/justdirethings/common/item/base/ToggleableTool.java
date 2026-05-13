@@ -128,7 +128,7 @@ public interface ToggleableTool {
     }
 
     static boolean hasUpgrade(ItemStack stack, Ability ability) {
-        return ability != null && readToolState(stack).hasInstalledAbility(ability.getId());
+        return ability != null && (!ability.requiresUpgrade() || readToolState(stack).hasInstalledAbility(ability.getId()));
     }
 
     static void addCooldown(ItemStack stack, Ability ability, int ticks, boolean active) {

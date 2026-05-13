@@ -2,12 +2,14 @@ package com.zzhalex.justdirethings.common.item.tooltip;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.EnergyBackedItem;
+import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.misc.PocketGeneratorItem;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -74,7 +76,7 @@ public final class TooltipHelper {
         ToggleableTool tool = (ToggleableTool) stack.getItem();
         for (Ability ability : tool.getSupportedAbilities()) {
             boolean installed = tool.hasInstalledAbility(stack, ability);
-            if (!installed) {
+            if (!installed && ability.requiresUpgrade()) {
                 tooltip.add(TextFormatting.GRAY
                         + abilityName(ability)
                         + I18n.format("justdirethings.missingupgrade"));
@@ -161,7 +163,23 @@ public final class TooltipHelper {
             return;
         }
 
-        tooltip.add(TextFormatting.DARK_PURPLE + I18n.format("justdirethings.unbound"));
+        BoundInventoryHelper.BoundLocation boundLocation = BoundInventoryHelper.getBoundTo(stack);
+        if (boundLocation == null) {
+            tooltip.add(TextFormatting.DARK_PURPLE + I18n.format("justdirethings.unbound"));
+            return;
+        }
+
+        tooltip.add(TextFormatting.DARK_PURPLE + I18n.format(
+                "justdirethings.boundto",
+                boundLocation.getDimensionName(),
+                "[" + boundLocation.toShortString() + "]"
+        ));
+        EnumFacing side = boundLocation.getSide();
+        if (side != null) {
+            tooltip.add(TextFormatting.DARK_PURPLE
+                    + I18n.format("justdirethings.boundside")
+                    + I18n.format("justdirethings.screen.direction-" + side.getName()));
+        }
     }
 
     private static void appendIfTranslated(List<String> tooltip, String key, Object colorPrefix) {

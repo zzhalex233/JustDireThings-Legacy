@@ -185,6 +185,9 @@ public final class ModContentItems {
 
     private static void registerBlockItem(Block block) {
         ItemBlock itemBlock = createBlockItem(block);
+        if (itemBlock == null) {
+            return;
+        }
         itemBlock.setRegistryName(block.getRegistryName());
         itemBlock.setCreativeTab(ModCreativeTabs.JUST_DIRE_THINGS);
         BLOCK_ITEMS.put(block.getRegistryName().getPath(), itemBlock);
@@ -219,6 +222,8 @@ public final class ModContentItems {
     private static ItemBlock createBlockItem(Block block) {
         String id = block.getRegistryName().getPath();
         switch (id) {
+            case "goopatternblock":
+                return null;
             case "coalblock_t1":
                 return new ItemDireFuelBlock(block, 48000, 2);
             case "coalblock_t2":

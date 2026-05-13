@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.common.item.ability;
 
 import com.zzhalex.justdirethings.Reference;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -110,6 +111,7 @@ public enum Ability {
     private final int tier;
     private final String id;
     private final String translationKey;
+    private final ResourceLocation cooldownIcon;
     private final SettingType settingType;
     private final int durabilityCost;
     private final int feCost;
@@ -129,6 +131,7 @@ public enum Ability {
         this.tier = tier;
         this.id = name().toLowerCase(Locale.ROOT);
         this.translationKey = Reference.MOD_ID + ".ability." + id;
+        this.cooldownIcon = new ResourceLocation(Reference.MOD_ID, "textures/gui/overlay/" + id + ".png");
         this.settingType = settingType;
         this.durabilityCost = durabilityCost;
         this.feCost = feCost;
@@ -147,6 +150,10 @@ public enum Ability {
 
     public String getTranslationKey() {
         return translationKey;
+    }
+
+    public ResourceLocation getCooldownIcon() {
+        return cooldownIcon;
     }
 
     public SettingType getSettingType() {
@@ -191,6 +198,30 @@ public enum Ability {
 
     public boolean usesCooldown() {
         return useType.usesCooldown();
+    }
+
+    public boolean requiresUpgrade() {
+        switch (this) {
+            case LAVAREPAIR:
+            case AIRBURST:
+            case POLYMORPH_RANDOM:
+            case VOIDSHIFT:
+            case ECLIPSEGATE:
+            case POLYMORPH_TARGET:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    public String getUpgradeItemId() {
+        if (!requiresUpgrade()) {
+            return "";
+        }
+        if (this == TIMEPROTECTION) {
+            return "upgrade_time_protection";
+        }
+        return "upgrade_" + id;
     }
 
     public static Ability byId(String id) {

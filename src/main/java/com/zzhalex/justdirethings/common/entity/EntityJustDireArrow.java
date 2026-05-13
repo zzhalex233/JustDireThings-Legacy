@@ -1,11 +1,13 @@
 package com.zzhalex.justdirethings.common.entity;
 
+import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.projectile.EntityTippedArrow;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -13,9 +15,13 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EntityJustDireArrow extends EntityTippedArrow {
@@ -31,8 +37,10 @@ public class EntityJustDireArrow extends EntityTippedArrow {
     private static final DataParameter<Boolean> EPIC_ARROW = EntityDataManager.createKey(EntityJustDireArrow.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> PHASE = EntityDataManager.createKey(EntityJustDireArrow.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> TARGET_ANGRY = EntityDataManager.createKey(EntityJustDireArrow.class, DataSerializers.BOOLEAN);
+    private static final String NBT_JDT_POTION_EFFECTS = "jdt_potion_effects";
 
     private EntityLivingBase targetEntity;
+    private final List<PotionEffect> jdtPotionEffects = new ArrayList<>();
 
     private enum ArrowState {
         NORMAL,
@@ -78,6 +86,16 @@ public class EntityJustDireArrow extends EntityTippedArrow {
             return;
         }
 
+        if (!world.isRemote && isPhase()) {
+            Entity entityHit = findEntityOnPath(getPositionVector(), getPositionVector().add(motionX, motionY, motionZ));
+            if (entityHit != null) {
+                onHit(new RayTraceResult(entityHit));
+                if (isDead) {
+                    return;
+                }
+            }
+        }
+
         super.onUpdate();
 
         if (!world.isRemote && getOriginalVelocity() == 0.0F) {
@@ -96,6 +114,9 @@ public class EntityJustDireArrow extends EntityTippedArrow {
             return;
         }
         super.onHit(raytraceResultIn);
+        if (!world.isRemote && raytraceResultIn != null && !jdtPotionEffects.isEmpty()) {
+            applyPotionImpact(raytraceResultIn);
+        }
     }
 
     @Override
@@ -183,8 +204,91 @@ public class EntityJustDireArrow extends EntityTippedArrow {
         this.targetEntity = targetEntity;
     }
 
+    @Override
+    public void addEffect(PotionEffect effect) {
+        super.addEffect(effect);
+        jdtPotionEffects.add(new PotionEffect(effect));
+    }
+
     public double searchRadius() {
         return JustDireArrowRules.searchRadius(isEpic());
+    }
+
+    private void applyPotionImpact(RayTraceResult result) {
+        if (isLingering()) {
+            makeAreaOfEffectCloud();
+        }
+        if (isSplash()) {
+            Entity directHit = result.typeOfHit == RayTraceResult.Type.ENTITY ? result.entityHit : null;
+            applySplashEffects(directHit);
+            world.playEvent(isInstantPotionImpact() ? 2007 : 2002, getPosition(), getColor());
+        }
+    }
+
+    private void applySplashEffects(@Nullable Entity directHit) {
+        AxisAlignedBB area = getEntityBoundingBox().grow(4.0D, 2.0D, 4.0D);
+        List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, area);
+        for (EntityLivingBase entity : entities) {
+            double distanceSq = getDistanceSq(entity);
+            if (distanceSq >= 16.0D) {
+                continue;
+            }
+            double strength = entity == directHit ? 1.0D : 1.0D - Math.sqrt(distanceSq) / 4.0D;
+            applySplashEffectList(entity, jdtPotionEffects, strength);
+        }
+    }
+
+    private void applySplashEffectList(EntityLivingBase target, List<PotionEffect> effects, double strength) {
+        for (PotionEffect effect : effects) {
+            Potion potion = effect.getPotion();
+            if (potion.isBadEffect() && shootingEntity != null && target == shootingEntity) {
+                continue;
+            }
+            if (!potion.isBadEffect() && shootingEntity != null && target != shootingEntity) {
+                continue;
+            }
+            if (!target.isPotionApplicable(effect)) {
+                continue;
+            }
+            if (potion.isInstant()) {
+                potion.affectEntity(this, shootingEntity, target, effect.getAmplifier(), strength);
+            } else {
+                int duration = (int) (strength * effect.getDuration() + 0.5D);
+                if (duration > 20) {
+                    target.addPotionEffect(new PotionEffect(
+                            potion,
+                            duration,
+                            effect.getAmplifier(),
+                            effect.getIsAmbient(),
+                            effect.doesShowParticles()
+                    ));
+                }
+            }
+        }
+    }
+
+    private void makeAreaOfEffectCloud() {
+        EntityAreaEffectCloud cloud = new EntityJustDireAreaEffectCloud(world, posX, posY, posZ);
+        if (shootingEntity instanceof EntityLivingBase) {
+            cloud.setOwner((EntityLivingBase) shootingEntity);
+        }
+        cloud.setRadius(3.0F);
+        cloud.setRadiusOnUse(-0.1F);
+        cloud.setWaitTime(10);
+        cloud.setRadiusPerTick(-cloud.getRadius() / cloud.getDuration());
+        for (PotionEffect effect : jdtPotionEffects) {
+            cloud.addEffect(new PotionEffect(effect));
+        }
+        world.spawnEntity(cloud);
+    }
+
+    private boolean isInstantPotionImpact() {
+        for (PotionEffect effect : jdtPotionEffects) {
+            if (effect.getPotion().isInstant()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isHostileEntity(EntityLivingBase entity) {
@@ -215,6 +319,11 @@ public class EntityJustDireArrow extends EntityTippedArrow {
         compound.setBoolean("is_phase", isPhase());
         compound.setBoolean("hostile_only", getHostileOnly());
         compound.setBoolean("is_target_angry", getTargetAngry());
+        NBTTagList effectList = new NBTTagList();
+        for (PotionEffect effect : jdtPotionEffects) {
+            effectList.appendTag(effect.writeCustomPotionEffectToNBT(new NBTTagCompound()));
+        }
+        compound.setTag(NBT_JDT_POTION_EFFECTS, effectList);
     }
 
     @Override
@@ -233,6 +342,14 @@ public class EntityJustDireArrow extends EntityTippedArrow {
             setHostileOnly(compound.getBoolean("hostile_only"));
         }
         setTargetAngry(compound.getBoolean("is_target_angry"));
+        jdtPotionEffects.clear();
+        NBTTagList effectList = compound.getTagList(NBT_JDT_POTION_EFFECTS, 10);
+        for (int i = 0; i < effectList.tagCount(); i++) {
+            PotionEffect effect = PotionEffect.readCustomPotionEffectFromNBT(effectList.getCompoundTagAt(i));
+            if (effect != null) {
+                jdtPotionEffects.add(effect);
+            }
+        }
     }
 
     private void updateHomingTarget() {

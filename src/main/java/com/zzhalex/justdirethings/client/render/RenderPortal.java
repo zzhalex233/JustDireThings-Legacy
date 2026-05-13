@@ -17,7 +17,7 @@ import java.util.List;
 public class RenderPortal extends Render<EntityPortal> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/block/portal_shader.png");
-    private static final double FRAME_EDGE_THICKNESS = 0.04D;
+    private static final double FRAME_EDGE_THICKNESS = 0.025D;
 
     public RenderPortal(RenderManager renderManager) {
         super(renderManager);

@@ -37,6 +37,8 @@ public class AbilityInstallRecipe extends UpgradeStationRecipe {
         Ability ability = Ability.byId(abilityId);
         return template.isEmpty()
                 && !base.isEmpty()
+                && ability != null
+                && ability.requiresUpgrade()
                 && allowedBaseItems.contains(base.getItem())
                 && sameItem(addition, upgradeItem)
                 && base.getItem() instanceof ToggleableTool

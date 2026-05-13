@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings.common.item.base;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.data.tool.AbilityBinding;
 import com.zzhalex.justdirethings.data.tool.ToolState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
@@ -94,5 +95,39 @@ public interface LeftClickableTool {
 
     static List<AbilityBinding> getCustomBindingList(ItemStack stack) {
         return new ArrayList<>(ToggleableTool.readToolState(stack).getAbilityBindings());
+    }
+
+    static List<Ability> getCustomBindingListFor(ItemStack stack, int key, boolean isMouse, EntityPlayer player) {
+        return getCustomBindingListFor(stack, key, isMouse, isItemEquipped(stack, player));
+    }
+
+    static List<Ability> getCustomBindingListFor(ItemStack stack, int key, boolean isMouse, boolean isEquipped) {
+        List<Ability> abilities = new ArrayList<>();
+        for (AbilityBinding binding : getCustomBindingList(stack)) {
+            Ability ability = Ability.byId(binding.getAbilityId());
+            if (ability == null) {
+                continue;
+            }
+            if (binding.isMouseBinding() != isMouse || binding.getKeyCode() != key) {
+                continue;
+            }
+            if (getBindingMode(stack, ability) != 2) {
+                continue;
+            }
+            if (binding.isRequireEquipped() && !isEquipped) {
+                continue;
+            }
+            abilities.add(ability);
+        }
+        return abilities;
+    }
+
+    static boolean isItemEquipped(ItemStack stack, EntityPlayer player) {
+        if (stack == null || stack.isEmpty() || player == null) {
+            return false;
+        }
+        return player.getHeldItemMainhand() == stack
+                || player.getHeldItemOffhand() == stack
+                || player.inventory.armorInventory.contains(stack);
     }
 }

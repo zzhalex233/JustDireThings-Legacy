@@ -31,7 +31,7 @@ public class ItemPortalGun extends ItemPoweredTool {
         ItemStack stack = player.getHeldItem(hand);
         if (!world.isRemote) {
             if (player.isSneaking()) {
-                closePortals(stack);
+                closePortals(stack, player);
             } else {
                 spawnProjectile(world, player, stack, false);
             }
@@ -56,14 +56,17 @@ public class ItemPortalGun extends ItemPoweredTool {
         return true;
     }
 
-    public int closePortals(ItemStack stack) {
+    public int closePortals(ItemStack stack, EntityPlayer player) {
         UUID portalGunId = getOrCreatePortalGunId(stack);
         int closed = 0;
         for (World loadedWorld : DimensionManager.getWorlds()) {
             for (Entity entity : loadedWorld.loadedEntityList) {
-                if (entity instanceof EntityPortal && portalGunId.equals(((EntityPortal) entity).getPortalGunUuid())) {
-                    ((EntityPortal) entity).markDying();
-                    closed++;
+                if (entity instanceof EntityPortal) {
+                    EntityPortal portal = (EntityPortal) entity;
+                    if (portalGunId.equals(portal.getPortalGunUuid()) || (player != null && player.getUniqueID().equals(portal.getOwnerUuid()))) {
+                        portal.markDying();
+                        closed++;
+                    }
                 }
             }
         }

@@ -95,7 +95,7 @@ public abstract class ItemToggleableTool extends Item implements ToggleableTool 
     }
 
     public boolean hasInstalledAbility(ItemStack stack, Ability ability) {
-        return ability != null && getToolState(stack).hasInstalledAbility(ability.getId());
+        return ability != null && (!ability.requiresUpgrade() || getToolState(stack).hasInstalledAbility(ability.getId()));
     }
 
     public void installAbility(ItemStack stack, Ability ability) {

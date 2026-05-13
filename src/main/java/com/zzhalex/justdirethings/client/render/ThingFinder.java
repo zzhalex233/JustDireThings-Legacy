@@ -7,6 +7,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -14,10 +17,12 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -26,7 +31,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @SideOnly(Side.CLIENT)
 public enum ThingFinder {
@@ -38,7 +42,6 @@ public enum ThingFinder {
 
     private static final List<BlockPos> oreBlocksList = new ArrayList<>();
     private static final List<Entity> entityList = new ArrayList<>();
-    private static final Random RANDOM = new Random();
 
     private static long xRayStartTime;
     private static long blockParticlesStartTime;
@@ -67,25 +70,26 @@ public enum ThingFinder {
         EntityPlayer player = minecraft.player;
         long currentTime = System.currentTimeMillis();
         if (!oreBlocksList.isEmpty() && currentTime - xRayStartTime < SCAN_DURATION_MILLIS) {
-            drawXRayOreBoxes(event);
+            drawXRayOreBlocks(event);
         }
         if (!oreBlocksList.isEmpty() && currentTime - blockParticlesStartTime < SCAN_DURATION_MILLIS
                 && currentTime - lastBlockDrawTime >= PARTICLE_INTERVAL_MILLIS) {
-            drawParticlesOre(player);
+            AlwaysVisibleParticleHelper.addBlockParticles(event, oreBlocksList, 2, 90, 255, 90, 220);
             lastBlockDrawTime = currentTime;
         }
         if (!entityList.isEmpty() && currentTime - entityParticlesStartTime < SCAN_DURATION_MILLIS
                 && currentTime - lastEntityDrawTime >= PARTICLE_INTERVAL_MILLIS) {
             discoverMobs(player, false);
-            drawParticlesEntity(player);
+            AlwaysVisibleParticleHelper.addEntityParticles(event, entityList, 5, 120, 220, 255, 230);
             lastEntityDrawTime = currentTime;
         }
+        AlwaysVisibleParticleHelper.renderActive(event);
         expireOldResults(currentTime);
     }
 
     private static void discoverOres(EntityPlayer player, Ability toolAbility, ItemStack stack) {
         oreBlocksList.clear();
-        BlockPos playerPos = player.getPosition();
+        BlockPos playerPos = getPlayerOnPos(player);
         for (BlockPos blockPos : BlockPos.getAllInBox(playerPos.add(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
                 playerPos.add(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS))) {
             if (isValidBlock(blockPos, player, stack)) {
@@ -96,7 +100,7 @@ public enum ThingFinder {
         long currentTime = System.currentTimeMillis();
         if (toolAbility == Ability.OREXRAY) {
             xRayStartTime = currentTime;
-        } else {
+        } else if (toolAbility == Ability.ORESCANNER) {
             blockParticlesStartTime = currentTime;
         }
     }
@@ -133,7 +137,7 @@ public enum ThingFinder {
 
     private static void discoverMobs(EntityPlayer player, boolean startTimer) {
         entityList.clear();
-        BlockPos playerPos = player.getPosition();
+        BlockPos playerPos = getPlayerOnPos(player);
         AxisAlignedBB searchArea = new AxisAlignedBB(playerPos.add(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
                 playerPos.add(SCAN_RADIUS + 1, SCAN_RADIUS + 1, SCAN_RADIUS + 1));
         entityList.addAll(player.world.getEntitiesWithinAABB(EntityLiving.class, searchArea, entity -> entity instanceof IMob));
@@ -142,38 +146,14 @@ public enum ThingFinder {
         }
     }
 
-    private static void drawParticlesOre(EntityPlayer player) {
-        for (BlockPos pos : oreBlocksList) {
-            for (int i = 0; i < 2; i++) {
-                player.world.spawnParticle(EnumParticleTypes.VILLAGER_HAPPY,
-                        pos.getX() + RANDOM.nextDouble(),
-                        pos.getY() + RANDOM.nextDouble(),
-                        pos.getZ() + RANDOM.nextDouble(),
-                        0.0D, 0.0D, 0.0D);
-            }
-        }
-    }
-
-    private static void drawParticlesEntity(EntityPlayer player) {
-        for (Entity entity : entityList) {
-            AxisAlignedBB bounds = entity.getEntityBoundingBox();
-            for (int i = 0; i < 5; i++) {
-                player.world.spawnParticle(EnumParticleTypes.PORTAL,
-                        randomBetween(bounds.minX, bounds.maxX),
-                        randomBetween(bounds.minY, bounds.maxY),
-                        randomBetween(bounds.minZ, bounds.maxZ),
-                        0.0D, 0.0D, 0.0D);
-            }
-        }
-    }
-
-    private static double randomBetween(double min, double max) {
-        return min + (max - min) * RANDOM.nextDouble();
-    }
-
-    private static void drawXRayOreBoxes(RenderWorldLastEvent event) {
+    private static void drawXRayOreBlocks(RenderWorldLastEvent event) {
         Minecraft minecraft = Minecraft.getMinecraft();
         Entity viewer = minecraft.getRenderViewEntity();
+        World world = minecraft.world;
+        if (viewer == null || world == null) {
+            return;
+        }
+
         double viewerX = viewer.lastTickPosX + (viewer.posX - viewer.lastTickPosX) * event.getPartialTicks();
         double viewerY = viewer.lastTickPosY + (viewer.posY - viewer.lastTickPosY) * event.getPartialTicks();
         double viewerZ = viewer.lastTickPosZ + (viewer.posZ - viewer.lastTickPosZ) * event.getPartialTicks();
@@ -182,8 +162,21 @@ public enum ThingFinder {
         GlStateManager.translate(-viewerX, -viewerY, -viewerZ);
         prepareXRayState();
         try {
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder buffer = tessellator.getBuffer();
+            minecraft.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             for (BlockPos pos : oreBlocksList) {
-                drawOreBox(new AxisAlignedBB(pos).grow(0.002D));
+                IBlockState state = world.getBlockState(pos);
+                if (!isOreBlock(state)) {
+                    continue;
+                }
+                GlStateManager.pushMatrix();
+                GlStateManager.translate(pos.getX() + 0.0005D, pos.getY() + 0.0005D, pos.getZ() + 0.0005D);
+                GlStateManager.scale(0.999F, 0.999F, 0.999F);
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+                renderXRayModelQuads(buffer, minecraft.getBlockRendererDispatcher().getModelForState(state), state);
+                tessellator.draw();
+                GlStateManager.popMatrix();
             }
         } finally {
             restoreXRayState();
@@ -192,10 +185,11 @@ public enum ThingFinder {
     }
 
     private static void prepareXRayState() {
-        GlStateManager.disableTexture2D();
+        GlStateManager.enableTexture2D();
         GlStateManager.disableLighting();
-        GlStateManager.disableCull();
-        GlStateManager.disableDepth();
+        GlStateManager.enableCull();
+        GlStateManager.enableDepth();
+        GlStateManager.depthFunc(GL11.GL_GREATER);
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(
                 GlStateManager.SourceFactor.SRC_ALPHA,
@@ -204,11 +198,12 @@ public enum ThingFinder {
                 GlStateManager.DestFactor.ZERO
         );
         GlStateManager.depthMask(false);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.35F, 1.35F, 1.35F, 0.82F);
     }
 
     private static void restoreXRayState() {
         GlStateManager.depthMask(true);
+        GlStateManager.depthFunc(GL11.GL_LEQUAL);
         GlStateManager.disableBlend();
         GlStateManager.enableDepth();
         GlStateManager.enableCull();
@@ -218,54 +213,15 @@ public enum ThingFinder {
         GL11.glLineWidth(1.0F);
     }
 
-    private static void drawOreBox(AxisAlignedBB box) {
-        drawSolidBox(box, 50, 210, 255, 54);
-        drawWireBox(box, 70, 255, 255, 210);
-    }
-
-    private static void drawWireBox(AxisAlignedBB box, int red, int green, int blue, int alpha) {
-        GL11.glLineWidth(2.0F);
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        addLine(buffer, box.minX, box.minY, box.minZ, box.maxX, box.minY, box.minZ, red, green, blue, alpha);
-        addLine(buffer, box.minX, box.minY, box.minZ, box.minX, box.maxY, box.minZ, red, green, blue, alpha);
-        addLine(buffer, box.minX, box.minY, box.minZ, box.minX, box.minY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.maxX, box.minY, box.minZ, box.maxX, box.maxY, box.minZ, red, green, blue, alpha);
-        addLine(buffer, box.maxX, box.maxY, box.minZ, box.minX, box.maxY, box.minZ, red, green, blue, alpha);
-        addLine(buffer, box.minX, box.maxY, box.minZ, box.minX, box.maxY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.minX, box.minY, box.maxZ, box.maxX, box.minY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.maxX, box.minY, box.maxZ, box.maxX, box.maxY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.maxX, box.maxY, box.maxZ, box.minX, box.maxY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.minX, box.maxY, box.maxZ, box.minX, box.minY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.maxX, box.minY, box.minZ, box.maxX, box.minY, box.maxZ, red, green, blue, alpha);
-        addLine(buffer, box.maxX, box.maxY, box.minZ, box.maxX, box.maxY, box.maxZ, red, green, blue, alpha);
-        tessellator.draw();
-    }
-
-    private static void drawSolidBox(AxisAlignedBB box, int red, int green, int blue, int alpha) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        addFace(buffer, box.minX, box.minY, box.minZ, box.maxX, box.minY, box.minZ, box.maxX, box.minY, box.maxZ, box.minX, box.minY, box.maxZ, red, green, blue, alpha);
-        addFace(buffer, box.minX, box.maxY, box.minZ, box.minX, box.maxY, box.maxZ, box.maxX, box.maxY, box.maxZ, box.maxX, box.maxY, box.minZ, red, green, blue, alpha);
-        addFace(buffer, box.minX, box.minY, box.minZ, box.minX, box.maxY, box.minZ, box.maxX, box.maxY, box.minZ, box.maxX, box.minY, box.minZ, red, green, blue, alpha);
-        addFace(buffer, box.minX, box.minY, box.maxZ, box.maxX, box.minY, box.maxZ, box.maxX, box.maxY, box.maxZ, box.minX, box.maxY, box.maxZ, red, green, blue, alpha);
-        addFace(buffer, box.minX, box.minY, box.minZ, box.minX, box.minY, box.maxZ, box.minX, box.maxY, box.maxZ, box.minX, box.maxY, box.minZ, red, green, blue, alpha);
-        addFace(buffer, box.maxX, box.minY, box.minZ, box.maxX, box.maxY, box.minZ, box.maxX, box.maxY, box.maxZ, box.maxX, box.minY, box.maxZ, red, green, blue, alpha);
-        tessellator.draw();
-    }
-
-    private static void addFace(BufferBuilder buffer, double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3, double x4, double y4, double z4, int red, int green, int blue, int alpha) {
-        buffer.pos(x1, y1, z1).color(red, green, blue, alpha).endVertex();
-        buffer.pos(x2, y2, z2).color(red, green, blue, alpha).endVertex();
-        buffer.pos(x3, y3, z3).color(red, green, blue, alpha).endVertex();
-        buffer.pos(x4, y4, z4).color(red, green, blue, alpha).endVertex();
-    }
-
-    private static void addLine(BufferBuilder buffer, double x1, double y1, double z1, double x2, double y2, double z2, int red, int green, int blue, int alpha) {
-        buffer.pos(x1, y1, z1).color(red, green, blue, alpha).endVertex();
-        buffer.pos(x2, y2, z2).color(red, green, blue, alpha).endVertex();
+    private static void renderXRayModelQuads(BufferBuilder buffer, IBakedModel model, IBlockState state) {
+        for (EnumFacing face : EnumFacing.values()) {
+            for (BakedQuad quad : model.getQuads(state, face, 0L)) {
+                LightUtil.renderQuadColor(buffer, quad, 0xD0FFFFFF);
+            }
+        }
+        for (BakedQuad quad : model.getQuads(state, null, 0L)) {
+            LightUtil.renderQuadColor(buffer, quad, 0xD0FFFFFF);
+        }
     }
 
     private static void expireOldResults(long currentTime) {
@@ -275,5 +231,9 @@ public enum ThingFinder {
         if (currentTime - entityParticlesStartTime >= SCAN_DURATION_MILLIS) {
             entityList.clear();
         }
+    }
+
+    private static BlockPos getPlayerOnPos(EntityPlayer player) {
+        return new BlockPos(player.posX, player.posY - 0.2D, player.posZ);
     }
 }

@@ -2,6 +2,8 @@ package com.zzhalex.justdirethings.common.item.misc;
 
 import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
+import com.zzhalex.justdirethings.common.container.handler.PotionCanisterHandler;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModContainers;
@@ -22,9 +24,11 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class PotionCanisterItem extends Item {
@@ -34,6 +38,11 @@ public class PotionCanisterItem extends Item {
     public PotionCanisterItem() {
         setMaxStackSize(1);
         setTranslationKey(Reference.MOD_ID + ".potion_canister");
+    }
+
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
+        return new StackItemCapabilityProvider(stack, null, null, new PotionCanisterHandler(stack, JDTDataKeys.TOOL_CONTENTS, 1));
     }
 
     @Override

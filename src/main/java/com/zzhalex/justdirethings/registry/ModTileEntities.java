@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.tile.TileEclipseGate;
 import com.zzhalex.justdirethings.common.tile.TileUpgradeStation;
 import com.zzhalex.justdirethings.common.tile.goo.TileGooBlock;
+import com.zzhalex.justdirethings.common.tile.goo.TileGooSoil;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockBreaker;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockPlacer;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockSwapper;
@@ -35,6 +36,7 @@ public final class ModTileEntities {
         GameRegistry.registerTileEntity(TileGooBlock.Tier2.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier2"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier3.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier3"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier4.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier4"));
+        GameRegistry.registerTileEntity(TileGooSoil.class, new ResourceLocation(Reference.MOD_ID, "goosoilbe"));
         GameRegistry.registerTileEntity(TileGenerator.class, new ResourceLocation(Reference.MOD_ID, "generatort1"));
         GameRegistry.registerTileEntity(TileFluidGenerator.class, new ResourceLocation(Reference.MOD_ID, "generatorfluidt1"));
         GameRegistry.registerTileEntity(TileItemCollector.class, new ResourceLocation(Reference.MOD_ID, "itemcollectorbe"));
