@@ -1,7 +1,6 @@
 package com.zzhalex.justdirethings.common.recipe;
 
 import com.zzhalex.justdirethings.data.tool.AbilityBinding;
-import com.zzhalex.justdirethings.data.tool.AbilityCooldown;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 
 public final class UpgradeRecipeLogic {
@@ -44,14 +43,6 @@ public final class UpgradeRecipeLogic {
             ));
         }
 
-        for (AbilityCooldown cooldown : source.getAbilityCooldowns()) {
-            copy.getAbilityCooldowns().add(new AbilityCooldown(
-                    cooldown.getAbilityId(),
-                    cooldown.getRemainingTicks(),
-                    cooldown.isActive()
-            ));
-        }
-
         return copy;
     }
 
@@ -76,12 +67,5 @@ public final class UpgradeRecipeLogic {
             ));
         }
 
-        for (AbilityCooldown cooldown : source.getAbilityCooldowns()) {
-            target.getAbilityCooldowns().add(new AbilityCooldown(
-                    cooldown.getAbilityId(),
-                    cooldown.getRemainingTicks(),
-                    cooldown.isActive()
-            ));
-        }
     }
 }

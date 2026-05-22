@@ -9,7 +9,6 @@ public final class JDTDataKeys {
     public static final String ABILITY_CUSTOM_SETTINGS = "AbilityCustomSettings";
     public static final String ABILITY_BINDING_MODES = "AbilityBindingModes";
     public static final String ABILITY_BINDINGS = "AbilityBindings";
-    public static final String ABILITY_COOLDOWNS = "AbilityCooldowns";
     public static final String STUPEFY_TARGETS = "StupefyTargets";
     public static final String LAVAREPAIR_FLOATING_TICKS = "LavaRepairFloatingTicks";
     public static final String LAVAREPAIR_LAVA_X = "LavaRepairLavaX";

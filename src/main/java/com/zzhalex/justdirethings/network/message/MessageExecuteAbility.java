@@ -5,6 +5,7 @@ import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
 import com.zzhalex.justdirethings.common.item.base.ToolSettingApplier;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
+import com.zzhalex.justdirethings.data.tool.AbilityBinding;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -152,8 +153,7 @@ public class MessageExecuteAbility implements IMessage {
                 return false;
             }
             if (slot >= 0) {
-                return stack.getItem() instanceof LeftClickableTool
-                        && LeftClickableTool.getCustomBindingListFor(stack, keyCode, mouse, player).contains(ability);
+                return stack.getItem() instanceof LeftClickableTool && canUseCustomBindingFromSlot(player, stack, ability, slot, keyCode, mouse);
             }
             if (player.getHeldItem(hand) != stack || ability.getBindingType() != Ability.BindingType.LEFT_AND_CUSTOM) {
                 return false;
@@ -163,6 +163,15 @@ public class MessageExecuteAbility implements IMessage {
             }
             int bindingMode = LeftClickableTool.getBindingMode(stack, ability);
             return bindingMode == 1;
+        }
+
+        private static boolean canUseCustomBindingFromSlot(EntityPlayerMP player, ItemStack stack, Ability ability, int slot, int keyCode, boolean mouse) {
+            AbilityBinding binding = LeftClickableTool.getAbilityBinding(stack, ability);
+            return binding != null
+                    && binding.getKeyCode() == keyCode
+                    && binding.isMouseBinding() == mouse
+                    && LeftClickableTool.getBindingMode(stack, ability) == 2
+                    && (!binding.isRequireEquipped() || LeftClickableTool.isInventorySlotEquipped(player, slot));
         }
 
         private static boolean canExecuteRequested(ToggleableTool tool, ItemStack stack, ToolState state, Ability ability) {

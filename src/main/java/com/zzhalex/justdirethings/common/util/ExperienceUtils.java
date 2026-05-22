@@ -35,10 +35,25 @@ public final class ExperienceUtils {
         return level >= 15 ? 37 + (level - 15) * 5 : 7 + level * 2;
     }
 
+    public static int getExpNeededForNextLevel(EntityPlayer player) {
+        return player.xpBarCap() - (int) (player.experience * player.xpBarCap());
+    }
+
     public static int getPlayerTotalExperience(EntityPlayer player) {
         int base = getTotalExperienceForLevel(player.experienceLevel);
         int partial = Math.round(player.experience * player.xpBarCap());
         return Math.max(0, base + partial);
+    }
+
+    public static int removeLevels(EntityPlayer player, int levelsToRemove) {
+        int currentTotalExp = getPlayerTotalExperience(player);
+        int targetLevel = Math.max(0, player.experienceLevel - Math.max(0, levelsToRemove));
+        int targetTotalExp = getTotalExperienceForLevel(targetLevel);
+        int expToRemove = Math.max(0, currentTotalExp - targetTotalExp);
+        if (levelsToRemove > 0) {
+            player.addExperienceLevel(-levelsToRemove);
+        }
+        return expToRemove;
     }
 
     public static float getProgressToNextLevel(int totalExperience) {

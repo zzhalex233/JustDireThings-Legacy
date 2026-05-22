@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.registry;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.config.JDTConfig;
 import com.zzhalex.justdirethings.common.item.ItemGooBlock;
 import com.zzhalex.justdirethings.common.item.ItemPolymorphicCatalyst;
 import com.zzhalex.justdirethings.common.item.ItemSimpleContent;
@@ -122,11 +123,11 @@ public final class ModContentItems {
     }
 
     public static List<String> templateItemIds() {
-        return new ArrayList<>(TEMPLATE_ITEMS.keySet());
+        return JDTConfig.enableSmithingTemplates ? new ArrayList<>(TEMPLATE_ITEMS.keySet()) : Collections.emptyList();
     }
 
     public static Collection<Item> templateItems() {
-        return Collections.unmodifiableCollection(TEMPLATE_ITEMS.values());
+        return JDTConfig.enableSmithingTemplates ? Collections.unmodifiableCollection(TEMPLATE_ITEMS.values()) : Collections.emptyList();
     }
 
     public static List<String> upgradeItemIds() {
@@ -144,7 +145,7 @@ public final class ModContentItems {
         }
         item = TEMPLATE_ITEMS.get(id);
         if (item != null) {
-            return item;
+            return JDTConfig.enableSmithingTemplates ? item : null;
         }
         item = UPGRADE_ITEMS.get(id);
         if (item != null) {
@@ -157,7 +158,9 @@ public final class ModContentItems {
     public static void onRegisterItems(RegistryEvent.Register<Item> event) {
         registerAll(event, BLOCK_ITEMS.values());
         registerAll(event, RESOURCE_ITEMS.values());
-        registerAll(event, TEMPLATE_ITEMS.values());
+        if (JDTConfig.enableSmithingTemplates) {
+            registerAll(event, TEMPLATE_ITEMS.values());
+        }
         registerAll(event, UPGRADE_ITEMS.values());
     }
 
@@ -166,7 +169,9 @@ public final class ModContentItems {
     public static void onModelRegistry(ModelRegistryEvent event) {
         registerModels(BLOCK_ITEMS.values());
         registerModels(RESOURCE_ITEMS.values());
-        registerModels(TEMPLATE_ITEMS.values());
+        if (JDTConfig.enableSmithingTemplates) {
+            registerModels(TEMPLATE_ITEMS.values());
+        }
         registerModels(UPGRADE_ITEMS.values());
     }
 

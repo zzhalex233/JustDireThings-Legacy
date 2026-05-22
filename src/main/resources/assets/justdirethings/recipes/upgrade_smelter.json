@@ -1,13 +1,4 @@
 ﻿{
-    "conditions":  [
-                       {
-                           "type":  "forge:not",
-                           "value":  {
-                                         "type":  "minecraft:item_exists",
-                                         "item":  "futuremc:blast_furnace"
-                                     }
-                       }
-                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     " e ",

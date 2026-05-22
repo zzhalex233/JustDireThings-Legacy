@@ -6,19 +6,24 @@ import com.zzhalex.justdirethings.common.portal.PortalDirectTeleporter;
 import com.zzhalex.justdirethings.common.portal.PortalTransformRules;
 import com.zzhalex.justdirethings.common.portal.PortalVelocityRules;
 import com.zzhalex.justdirethings.common.world.PortalChunkKeeper;
+import com.zzhalex.justdirethings.registry.ModSounds;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.play.server.SPacketEntityTeleport;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 import java.util.HashMap;
@@ -45,6 +50,9 @@ public class EntityPortal extends Entity {
     private int deathCounter;
     private boolean chunkTracked;
     private boolean portalDataReady;
+    private boolean advanced;
+    private int expirationTime = -99;
+    private boolean openSoundPlayed;
 
     public EntityPortal(World worldIn) {
         super(worldIn);
@@ -54,12 +62,20 @@ public class EntityPortal extends Entity {
     }
 
     public EntityPortal(World worldIn, EnumFacing facing, EnumFacing.Axis alignment, UUID portalGunUuid, boolean primary, UUID ownerUuid) {
+        this(worldIn, facing, alignment, portalGunUuid, primary, false, ownerUuid);
+    }
+
+    public EntityPortal(World worldIn, EnumFacing facing, EnumFacing.Axis alignment, UUID portalGunUuid, boolean primary, boolean advanced, UUID ownerUuid) {
         this(worldIn);
         dataManager.set(FACING, facing.ordinal());
         dataManager.set(ALIGNMENT, alignment.ordinal());
         dataManager.set(PRIMARY, primary);
         this.portalGunUuid = portalGunUuid;
         this.ownerUuid = ownerUuid;
+        this.advanced = advanced;
+        if (advanced) {
+            expirationTime = 100;
+        }
         updatePortalBounds();
     }
 
@@ -126,7 +142,13 @@ public class EntityPortal extends Entity {
         if (!isPortalDataReady()) {
             return;
         }
+        if (isDying()) {
+            return;
+        }
         dataManager.set(DYING, true);
+        if (world != null && !world.isRemote) {
+            world.playSound(null, posX, posY, posZ, ModSounds.PORTAL_GUN_CLOSE, SoundCategory.NEUTRAL, 0.5F, 0.2F);
+        }
     }
 
     @Override
@@ -134,23 +156,21 @@ public class EntityPortal extends Entity {
         super.onUpdate();
         updatePortalBounds();
 
+        if (isDying()) {
+            tickDyingAnimation();
+            return;
+        }
+
         if (world.isRemote) {
             return;
         }
 
-        PortalChunkKeeper.track(getUniqueID(), world, getPosition());
-        chunkTracked = true;
+        playOpenSoundOnce();
+        trackPortalChunkOnce();
 
         PortalLifecycleRules.tickCooldowns(entityCooldowns);
         tickVelocityCooldowns();
-
-        if (isDying()) {
-            deathCounter++;
-            if (deathCounter > ANIMATION_COOLDOWN) {
-                setDead();
-            }
-            return;
-        }
+        tickAdvancedExpiration();
 
         EntityPortal linkedPortal = getLinkedPortal();
         if (linkedPortal == null || linkedPortal.isDying()) {
@@ -163,6 +183,45 @@ public class EntityPortal extends Entity {
             }
         }
         captureVelocity();
+    }
+
+    private void tickDyingAnimation() {
+        deathCounter++;
+        if (!world.isRemote && deathCounter > ANIMATION_COOLDOWN) {
+            setDead();
+        }
+    }
+
+    public boolean isAdvanced() {
+        return advanced;
+    }
+
+    private void playOpenSoundOnce() {
+        if (!openSoundPlayed) {
+            openSoundPlayed = true;
+            world.playSound(null, posX, posY, posZ, ModSounds.PORTAL_GUN_OPEN, SoundCategory.NEUTRAL, 0.75F, 0.4F);
+        }
+    }
+
+    private void trackPortalChunkOnce() {
+        if (!chunkTracked) {
+            PortalChunkKeeper.track(getUniqueID(), world, getPosition());
+            chunkTracked = true;
+        }
+    }
+
+    private void tickAdvancedExpiration() {
+        if (!advanced || expirationTime <= 0) {
+            return;
+        }
+        expirationTime--;
+        if (expirationTime == 0) {
+            EntityPortal linkedPortal = getLinkedPortal();
+            if (linkedPortal != null) {
+                linkedPortal.markDying();
+            }
+            markDying();
+        }
     }
 
     private boolean canTeleport(Entity entity) {
@@ -203,6 +262,8 @@ public class EntityPortal extends Entity {
             player.connection.setPlayerLocation(exit.x, exit.y, exit.z, rotation.getYaw(), rotation.getPitch());
         } else {
             teleportedEntity.setLocationAndAngles(exit.x, exit.y, exit.z, rotation.getYaw(), rotation.getPitch());
+            EntityTracker.updateServerPosition(teleportedEntity, exit.x, exit.y, exit.z);
+            broadcastTeleportedEntity(teleportedEntity, new SPacketEntityTeleport(teleportedEntity));
         }
         if (hasInheritedMotion) {
             teleportedEntity.motionX = inheritedMotion.x;
@@ -210,6 +271,8 @@ public class EntityPortal extends Entity {
             teleportedEntity.motionZ = inheritedMotion.z;
             if (teleportedEntity instanceof EntityPlayerMP) {
                 ((EntityPlayerMP) teleportedEntity).connection.sendPacket(new SPacketEntityVelocity(teleportedEntity));
+            } else {
+                broadcastTeleportedEntity(teleportedEntity, new SPacketEntityVelocity(teleportedEntity));
             }
         }
         teleportedEntity.setRotationYawHead(rotation.getYaw());
@@ -217,6 +280,12 @@ public class EntityPortal extends Entity {
         teleportedEntity.velocityChanged = true;
         entityCooldowns.put(teleportedEntity.getUniqueID(), TELEPORT_COOLDOWN);
         linkedPortal.entityCooldowns.put(teleportedEntity.getUniqueID(), TELEPORT_COOLDOWN);
+    }
+
+    private void broadcastTeleportedEntity(Entity entity, net.minecraft.network.Packet<?> packet) {
+        if (entity.world instanceof WorldServer) {
+            ((WorldServer) entity.world).getEntityTracker().sendToTracking(entity, packet);
+        }
     }
 
     private Entity moveAcrossDimensions(Entity entity, int targetDimension) {
@@ -348,6 +417,8 @@ public class EntityPortal extends Entity {
         dataManager.set(PRIMARY, compound.getBoolean("Primary"));
         dataManager.set(DYING, compound.getBoolean("Dying"));
         deathCounter = compound.getInteger("DeathCounter");
+        advanced = compound.getBoolean("Advanced");
+        expirationTime = compound.hasKey("ExpirationTime") ? compound.getInteger("ExpirationTime") : -99;
         if (compound.hasKey("PortalGunUuid")) {
             portalGunUuid = UUID.fromString(compound.getString("PortalGunUuid"));
         }
@@ -367,6 +438,8 @@ public class EntityPortal extends Entity {
         compound.setBoolean("Primary", isPrimary());
         compound.setBoolean("Dying", isDying());
         compound.setInteger("DeathCounter", deathCounter);
+        compound.setBoolean("Advanced", advanced);
+        compound.setInteger("ExpirationTime", expirationTime);
         if (portalGunUuid != null) {
             compound.setString("PortalGunUuid", portalGunUuid.toString());
         }

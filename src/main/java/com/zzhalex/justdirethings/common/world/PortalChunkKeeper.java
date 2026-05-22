@@ -58,7 +58,6 @@ public final class PortalChunkKeeper {
         if (current == null) {
             ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(JustDireThingsLegacy.INSTANCE, world, ForgeChunkManager.Type.NORMAL);
             if (ticket == null) {
-                JustDireThingsLegacy.LOGGER.warn("Unable to acquire portal chunk ticket for {}", portalId);
                 return;
             }
             ticket.setChunkListDepth(1);

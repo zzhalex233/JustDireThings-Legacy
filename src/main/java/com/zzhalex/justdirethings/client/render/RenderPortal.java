@@ -44,7 +44,7 @@ public class RenderPortal extends Render<EntityPortal> {
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         bindEntityTexture(entity);
         GlStateManager.color(1.0F, 1.0F, 1.0F, alpha);
-        boolean shaderBound = PortalShaderProgram.bind((entity.ticksExisted + partialTicks) / 24000.0F, 16);
+        boolean shaderBound = PortalShaderProgram.bind(shaderGameTime(entity, partialTicks), 16);
         drawPortalPlane(entity, bounds, progress);
         if (shaderBound) {
             PortalShaderProgram.unbind();
@@ -57,6 +57,10 @@ public class RenderPortal extends Render<EntityPortal> {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
+    }
+
+    private static float shaderGameTime(EntityPortal entity, float partialTicks) {
+        return entity.world == null ? partialTicks / 24000.0F : (entity.world.getTotalWorldTime() + partialTicks) / 24000.0F;
     }
 
     @Override

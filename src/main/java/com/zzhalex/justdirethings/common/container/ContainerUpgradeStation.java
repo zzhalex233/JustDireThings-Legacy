@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.common.container;
 
 import com.zzhalex.justdirethings.common.tile.TileUpgradeStation;
+import com.zzhalex.justdirethings.registry.ModRecipes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -11,16 +12,38 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerUpgradeStation extends Container {
 
     public static final int SLOT_COUNT = 4;
+    public static final int TEMPLATE_SLOT_X = 8;
+    public static final int BASE_SLOT_X = 26;
+    public static final int ADDITION_SLOT_X = 44;
+    public static final int OUTPUT_SLOT_X = 98;
+    public static final int SMITHING_SLOT_Y = 48;
+    public static final int ARROW_X = 67;
+    public static final int ARROW_Y = 51;
 
     private final TileUpgradeStation tile;
 
     public ContainerUpgradeStation(InventoryPlayer playerInventory, TileUpgradeStation tile) {
         this.tile = tile;
 
-        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_TEMPLATE, 44, 20));
-        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_BASE, 62, 20));
-        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_ADDITION, 80, 20));
-        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_OUTPUT, 134, 38) {
+        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_TEMPLATE, TEMPLATE_SLOT_X, SMITHING_SLOT_Y) {
+            @Override
+            public boolean isItemValid(ItemStack stack) {
+                return ModRecipes.isUpgradeStationTemplate(stack);
+            }
+        });
+        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_BASE, BASE_SLOT_X, SMITHING_SLOT_Y) {
+            @Override
+            public boolean isItemValid(ItemStack stack) {
+                return ModRecipes.isUpgradeStationBase(stack);
+            }
+        });
+        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_ADDITION, ADDITION_SLOT_X, SMITHING_SLOT_Y) {
+            @Override
+            public boolean isItemValid(ItemStack stack) {
+                return ModRecipes.isUpgradeStationAddition(stack);
+            }
+        });
+        addSlotToContainer(new SlotItemHandler(tile.getItemHandler(), TileUpgradeStation.SLOT_OUTPUT, OUTPUT_SLOT_X, SMITHING_SLOT_Y) {
             @Override
             public boolean isItemValid(ItemStack stack) {
                 return false;

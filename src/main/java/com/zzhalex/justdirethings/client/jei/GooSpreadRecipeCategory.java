@@ -30,7 +30,7 @@ public class GooSpreadRecipeCategory implements IRecipeCategory<GooSpreadRecipeW
 
     public GooSpreadRecipeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.arrow = guiHelper.drawableBuilder(JEI_VANILLA, 82, 128, 24, 17).setTextureSize(256, 256).build();
+        this.arrow = guiHelper.drawableBuilder(JEI_VANILLA, 24, 132, 24, 17).setTextureSize(256, 256).build();
         this.icon = guiHelper.createDrawableIngredient(new ItemStack(ModContentBlocks.GOO_BLOCK_TIER1));
     }
 

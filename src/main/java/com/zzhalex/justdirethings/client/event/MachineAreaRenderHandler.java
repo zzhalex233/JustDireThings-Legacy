@@ -35,7 +35,7 @@ public enum MachineAreaRenderHandler {
         try {
             for (TileEntity tileEntity : new ArrayList<>(minecraft.world.loadedTileEntityList)) {
                 if (tileEntity instanceof TileMachineBase) {
-                    RenderMachineArea.render((TileMachineBase) tileEntity);
+                    RenderMachineArea.render((TileMachineBase) tileEntity, event.getPartialTicks());
                 }
             }
         } finally {

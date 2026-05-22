@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.block.group;
 
+import com.zzhalex.justdirethings.Reference;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockBed;
@@ -47,6 +48,33 @@ public final class JDTBlockGroups {
 
     public static boolean isNoAutoClick(Block block) {
         return false;
+    }
+
+    public static boolean isTickSpeedDenied(Block block) {
+        ResourceLocation id = block == null ? null : block.getRegistryName();
+        if (id == null) {
+            return false;
+        }
+        return Reference.MOD_ID.equals(id.getNamespace()) && "inventory_holder".equals(id.getPath());
+    }
+
+    public static boolean isPhaseDenied(Block block) {
+        if (block == null) {
+            return false;
+        }
+        return block == Blocks.BARRIER
+                || block == Blocks.BEDROCK
+                || block == Blocks.END_PORTAL
+                || block == Blocks.END_PORTAL_FRAME
+                || block == Blocks.END_GATEWAY
+                || block == Blocks.STRUCTURE_BLOCK
+                || isModernJigsawFallback(block)
+                || block == Blocks.PORTAL;
+    }
+
+    private static boolean isModernJigsawFallback(Block block) {
+        ResourceLocation id = block.getRegistryName();
+        return id != null && "minecraft".equals(id.getNamespace()) && "jigsaw".equals(id.getPath());
     }
 
     private static boolean isOptionalPowahPlayerTransmitter(Block block) {

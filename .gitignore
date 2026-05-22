@@ -32,8 +32,10 @@ gradle-app.setting
 # IDEA config
 .idea
 
-# Claude
+# Agents
+AGENTS.md
 CLAUDE.md
+.codex/
 .claude/
 
 # Tests

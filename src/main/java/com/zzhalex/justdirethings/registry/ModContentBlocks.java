@@ -7,6 +7,7 @@ import com.zzhalex.justdirethings.common.block.goo.BlockGooSoil;
 import com.zzhalex.justdirethings.common.block.BlockEclipseGate;
 import com.zzhalex.justdirethings.common.block.BlockRawOre;
 import com.zzhalex.justdirethings.common.block.BlockSimpleContent;
+import com.zzhalex.justdirethings.common.block.BlockTimeCrystalBlock;
 import com.zzhalex.justdirethings.common.block.BlockTimeCrystalBudding;
 import com.zzhalex.justdirethings.common.block.BlockTimeCrystalCluster;
 import net.minecraft.block.Block;
@@ -57,12 +58,12 @@ public final class ModContentBlocks {
     public static final Block RAW_COAL_T3_ORE = registerRawOre("raw_coal_t3_ore", Material.ROCK, SoundType.STONE, 4.0F, 6.0F, 2);
     public static final Block RAW_COAL_T4_ORE = registerRawOre("raw_coal_t4_ore", Material.ROCK, SoundType.STONE, 5.0F, 6.0F, 3);
 
-    public static final Block TIME_CRYSTAL_BLOCK = registerSimple("time_crystal_block", Material.GLASS, SoundType.GLASS, 1.5F, 3.0F, 1);
+    public static final Block TIME_CRYSTAL_BLOCK = register(new BlockTimeCrystalBlock());
     public static final Block TIME_CRYSTAL_BUDDING_BLOCK = register(new BlockTimeCrystalBudding());
-    public static final Block TIME_CRYSTAL_CLUSTER = register(new BlockTimeCrystalCluster("time_crystal_cluster", 0.1875F, 0.375F));
-    public static final Block TIME_CRYSTAL_CLUSTER_SMALL = register(new BlockTimeCrystalCluster("time_crystal_cluster_small", 0.125F, 0.25F));
-    public static final Block TIME_CRYSTAL_CLUSTER_MEDIUM = register(new BlockTimeCrystalCluster("time_crystal_cluster_medium", 0.15625F, 0.3125F));
-    public static final Block TIME_CRYSTAL_CLUSTER_LARGE = register(new BlockTimeCrystalCluster("time_crystal_cluster_large", 0.21875F, 0.4375F));
+    public static final Block TIME_CRYSTAL_CLUSTER = register(new BlockTimeCrystalCluster("time_crystal_cluster", 7.0F, 3.0F, 5, true, com.zzhalex.justdirethings.common.block.JDTSoundTypes.AMETHYST_CLUSTER));
+    public static final Block TIME_CRYSTAL_CLUSTER_SMALL = register(new BlockTimeCrystalCluster("time_crystal_cluster_small", 3.0F, 4.0F, 1, false, com.zzhalex.justdirethings.common.block.JDTSoundTypes.SMALL_AMETHYST_BUD));
+    public static final Block TIME_CRYSTAL_CLUSTER_MEDIUM = register(new BlockTimeCrystalCluster("time_crystal_cluster_medium", 4.0F, 3.0F, 2, false, com.zzhalex.justdirethings.common.block.JDTSoundTypes.MEDIUM_AMETHYST_BUD));
+    public static final Block TIME_CRYSTAL_CLUSTER_LARGE = register(new BlockTimeCrystalCluster("time_crystal_cluster_large", 5.0F, 3.0F, 4, false, com.zzhalex.justdirethings.common.block.JDTSoundTypes.LARGE_AMETHYST_BUD));
 
     private ModContentBlocks() {
     }

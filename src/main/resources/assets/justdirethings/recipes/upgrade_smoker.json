@@ -1,13 +1,4 @@
 ﻿{
-    "conditions":  [
-                       {
-                           "type":  "forge:not",
-                           "value":  {
-                                         "type":  "minecraft:item_exists",
-                                         "item":  "futuremc:smoker"
-                                     }
-                       }
-                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     " e ",

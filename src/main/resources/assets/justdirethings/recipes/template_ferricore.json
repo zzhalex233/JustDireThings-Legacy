@@ -1,4 +1,10 @@
 ﻿{
+    "conditions":  [
+                       {
+                           "type":  "justdirethings:config_enabled",
+                           "key":  "enableSmithingTemplates"
+                       }
+                   ],
     "type":  "minecraft:crafting_shaped",
     "pattern":  [
                     "f f",

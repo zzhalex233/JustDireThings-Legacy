@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -52,6 +53,29 @@ public class AbilityInstallRecipe extends UpgradeStationRecipe {
         output.setCount(1);
         writeToolState(output, createOutput(readToolState(base)));
         return output;
+    }
+
+    @Override
+    public List<ItemStack> getBaseStacks() {
+        java.util.List<ItemStack> stacks = new java.util.ArrayList<>();
+        for (Item item : allowedBaseItems) {
+            if (item != null) {
+                stacks.add(new ItemStack(item));
+            }
+        }
+        return stacks;
+    }
+
+    @Override
+    public List<ItemStack> getAdditionStacks() {
+        return stackList(upgradeItem);
+    }
+
+    @Override
+    public ItemStack getJeiOutputStack() {
+        ItemStack base = firstOrEmpty(getBaseStacks());
+        ItemStack addition = firstOrEmpty(getAdditionStacks());
+        return base.isEmpty() || addition.isEmpty() ? ItemStack.EMPTY : createOutputStack(ItemStack.EMPTY, base, addition);
     }
 
     @Override

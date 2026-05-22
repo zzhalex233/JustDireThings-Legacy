@@ -73,7 +73,7 @@ public class GuiBlockSwapper extends GuiMachineBase {
         TextFormatting color = partnerExists ? TextFormatting.BLUE : TextFormatting.DARK_RED;
         String text = I18n.format(
                 key,
-                DimensionDisplayHelper.getDimensionName(tile.getBoundDimension()),
+                DimensionDisplayHelper.getTranslatedDimensionName(tile.getBoundDimension()),
                 "[" + tile.getBoundTo().getX() + ", " + tile.getBoundTo().getY() + ", " + tile.getBoundTo().getZ() + "]"
         );
         drawHoveringText(Collections.singletonList(color + text), mouseX, mouseY);

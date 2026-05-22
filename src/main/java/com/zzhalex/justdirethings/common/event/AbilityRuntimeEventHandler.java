@@ -1,12 +1,12 @@
 package com.zzhalex.justdirethings.common.event;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.ability.AbilityCooldownTracker;
 import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
 import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.equipment.ItemJDTArmor;
-import com.zzhalex.justdirethings.data.tool.AbilityCooldown;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import com.zzhalex.justdirethings.registry.ModContentItems;
 import net.minecraft.entity.EntityLivingBase;
@@ -74,8 +74,9 @@ public final class AbilityRuntimeEventHandler {
         if (!event.player.world.isRemote) {
             applyFlight(event.player);
             for (ItemStack stack : inventoryStacks(event.player)) {
-                tickCooldowns(stack, event.player);
+                AbilityCooldownTracker.tickCooldowns(stack, event.player);
             }
+            AbilityCooldownTracker.syncEquippedCooldowns(event.player, false);
             resolveArmorBreakSnapshot(event.player);
         }
     }
@@ -231,7 +232,7 @@ public final class AbilityRuntimeEventHandler {
         }
 
         ToggleableTool tool = (ToggleableTool) chest.getItem();
-        ToggleableTool.addCooldown(chest, Ability.DEATHPROTECTION, cooldownTicks(tool, Ability.DEATHPROTECTION, false, 6000), false);
+        AbilityCooldownTracker.addCooldown(player, chest, Ability.DEATHPROTECTION, cooldownTicks(tool, Ability.DEATHPROTECTION, false, 6000), false);
         AbilityMethods.damageTool(chest, player, Ability.DEATHPROTECTION);
         player.setHealth(Math.min(10.0F, player.getMaxHealth()));
         player.extinguish();
@@ -243,16 +244,19 @@ public final class AbilityRuntimeEventHandler {
     @SubscribeEvent
     public void onPlayerClone(PlayerEvent.Clone event) {
         clearPlayerPassiveState(event.getOriginal());
+        AbilityCooldownTracker.forgetPlayer(event.getOriginal());
     }
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerChangedDimensionEvent event) {
         clearPlayerPassiveState(event.player);
+        AbilityCooldownTracker.forgetPlayer(event.player);
     }
 
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerLoggedOutEvent event) {
         clearPlayerPassiveState(event.player);
+        AbilityCooldownTracker.forgetPlayer(event.player);
     }
 
     @SubscribeEvent
@@ -317,11 +321,11 @@ public final class AbilityRuntimeEventHandler {
         }
 
         ToggleableTool tool = (ToggleableTool) chest.getItem();
-        ToggleableTool.addCooldown(chest, Ability.EXTINGUISH, tool.getAbilityParams(Ability.EXTINGUISH).cooldown, false);
+        AbilityCooldownTracker.addCooldown(player, chest, Ability.EXTINGUISH, tool.getAbilityParams(Ability.EXTINGUISH).cooldown, false);
         player.extinguish();
-        player.world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.5F, 1.0F);
+        player.world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.PLAYERS, 0.5F, 1.0F);
         if (player.world instanceof WorldServer) {
-            ((WorldServer) player.world).spawnParticle(EnumParticleTypes.FLAME, player.posX, player.posY + 0.8D, player.posZ, 20, 0.5D, 0.75D, 0.5D, 0.0D);
+            ((WorldServer) player.world).spawnParticle(EnumParticleTypes.SMOKE_NORMAL, player.posX, player.posY + 0.8D, player.posZ, 20, 0.5D, 0.75D, 0.5D, 0.0D);
         }
         AbilityMethods.damageTool(chest, player, Ability.EXTINGUISH);
     }
@@ -488,43 +492,6 @@ public final class AbilityRuntimeEventHandler {
         return 2;
     }
 
-    private static void tickCooldowns(ItemStack stack, EntityPlayer player) {
-        if (stack == null || stack.isEmpty()) {
-            return;
-        }
-
-        ToolState state = ToggleableTool.readToolState(stack);
-        if (state.getAbilityCooldowns().isEmpty()) {
-            return;
-        }
-
-        List<AbilityCooldown> updated = new ArrayList<>();
-        boolean changed = false;
-        for (AbilityCooldown cooldown : state.getAbilityCooldowns()) {
-            int remaining = cooldown.getRemainingTicks() - 1;
-            changed = true;
-            if (remaining > 0) {
-                updated.add(new AbilityCooldown(cooldown.getAbilityId(), remaining, cooldown.isActive()));
-            } else if (cooldown.isActive()) {
-                Ability ability = Ability.byId(cooldown.getAbilityId());
-                int followupTicks = cooldownTicks(stack, ability, false, 0);
-                if (followupTicks > 0) {
-                    updated.add(new AbilityCooldown(cooldown.getAbilityId(), followupTicks, false));
-                    playCooldownTransitionSound(player, true);
-                }
-                clearCooldownData(stack, ability);
-            } else {
-                playCooldownTransitionSound(player, false);
-            }
-        }
-
-        if (changed) {
-            state.getAbilityCooldowns().clear();
-            state.getAbilityCooldowns().addAll(updated);
-            ToggleableTool.writeToolState(stack, state);
-        }
-    }
-
     private static int cooldownTicks(ItemStack stack, Ability ability, boolean active, int fallbackTicks) {
         if (stack == null || stack.isEmpty() || ability == null || !(stack.getItem() instanceof ToggleableTool)) {
             return fallbackTicks;
@@ -539,28 +506,6 @@ public final class AbilityRuntimeEventHandler {
         AbilityParams params = tool.getAbilityParams(ability);
         int configured = active ? params.activeCooldown : params.cooldown;
         return configured > 0 ? configured : fallbackTicks;
-    }
-
-    private static void clearCooldownData(ItemStack stack, Ability ability) {
-        if (ability == Ability.STUPEFY) {
-            AbilityMethods.clearStupefyTargets(stack);
-        }
-    }
-
-    private static void playCooldownTransitionSound(EntityPlayer player, boolean activeEnded) {
-        if (player == null || player.world == null) {
-            return;
-        }
-        player.world.playSound(
-                null,
-                player.posX,
-                player.posY,
-                player.posZ,
-                activeEnded ? SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE : SoundEvents.ENTITY_ENDEREYE_DEATH,
-                SoundCategory.PLAYERS,
-                1.0F,
-                1.0F
-        );
     }
 
     private static boolean hasActiveInvulnerability(EntityPlayer player) {
@@ -603,13 +548,7 @@ public final class AbilityRuntimeEventHandler {
             return false;
         }
 
-        ToolState state = ToggleableTool.readToolState(stack);
-        for (AbilityCooldown cooldown : state.getAbilityCooldowns()) {
-            if (ability.getId().equals(cooldown.getAbilityId()) && cooldown.isActive() && cooldown.getRemainingTicks() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return AbilityCooldownTracker.hasActiveCooldown(stack, ability);
     }
 
     private static boolean canUsePhase(EntityPlayer player) {
@@ -622,13 +561,7 @@ public final class AbilityRuntimeEventHandler {
             return false;
         }
 
-        ToolState state = ToggleableTool.readToolState(stack);
-        for (AbilityCooldown cooldown : state.getAbilityCooldowns()) {
-            if (ability.getId().equals(cooldown.getAbilityId()) && cooldown.getRemainingTicks() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return AbilityCooldownTracker.hasCooldown(stack, ability);
     }
 
     private static boolean canUseAbility(ItemStack stack, Ability ability) {

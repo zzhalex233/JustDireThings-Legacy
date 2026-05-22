@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.item.misc;
 
+import com.zzhalex.justdirethings.common.util.DimensionDisplayHelper;
 import com.zzhalex.justdirethings.registry.ModCreativeTabs;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -103,7 +104,7 @@ public class ItemTotemOfDeathRecall extends Item {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         BoundLocation boundLocation = getBoundLocation(stack);
         if (boundLocation != null) {
-            tooltip.add(TextFormatting.DARK_PURPLE + I18n.format("justdirethings.boundto", boundLocation.dimension, boundLocation.toShortString()));
+            tooltip.add(TextFormatting.DARK_PURPLE + I18n.format("justdirethings.boundto", DimensionDisplayHelper.getTranslatedDimensionName(boundLocation.dimension), boundLocation.toShortString()));
         }
     }
 

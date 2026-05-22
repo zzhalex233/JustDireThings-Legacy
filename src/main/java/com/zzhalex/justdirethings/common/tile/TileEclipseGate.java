@@ -42,14 +42,11 @@ public class TileEclipseGate extends TileEntity implements ITickable {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
             return;
         }
-        if (!sourceBlock.getBlock().canPlaceBlockAt(world, pos)) {
-            sourceBlock.getBlock().dropBlockAsItem(world, pos, sourceBlock, 0);
-            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
-            return;
+        IBlockState adjustedState = sourceBlock.getBlock().getActualState(sourceBlock, world, pos);
+        if (!world.setBlockState(pos, adjustedState, 3)) {
+            world.markAndNotifyBlock(pos, world.getChunk(pos), adjustedState, adjustedState, 3);
         }
-        IBlockState adjustedState = sourceBlock.getActualState(world, pos);
-        world.setBlockState(pos, adjustedState, 3);
-        world.notifyNeighborsOfStateChange(pos, sourceBlock.getBlock(), true);
+        world.notifyNeighborsOfStateChange(pos, adjustedState.getBlock(), false);
     }
 
     @Override

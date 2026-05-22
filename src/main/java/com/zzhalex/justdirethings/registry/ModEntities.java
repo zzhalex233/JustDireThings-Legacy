@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings.registry;
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.entity.EntityCreatureCatcher;
 import com.zzhalex.justdirethings.common.entity.EntityDecoy;
+import com.zzhalex.justdirethings.common.entity.EntityFireResistantItem;
 import com.zzhalex.justdirethings.common.entity.EntityJustDireAreaEffectCloud;
 import com.zzhalex.justdirethings.common.entity.EntityJustDireArrow;
 import com.zzhalex.justdirethings.common.entity.EntityParadox;
@@ -28,6 +29,7 @@ public final class ModEntities {
     public static final ResourceLocation PORTAL_PROJECTILE_ENTITY_ID = new ResourceLocation(Reference.MOD_ID, "portal_projectile");
     public static final ResourceLocation PORTAL_ENTITY_ID = new ResourceLocation(Reference.MOD_ID, "portal_entity");
     public static final ResourceLocation PARADOX_ENTITY_ID = new ResourceLocation(Reference.MOD_ID, "paradox_entity");
+    public static final ResourceLocation FIRE_RESISTANT_ITEM_ENTITY_ID = new ResourceLocation(Reference.MOD_ID, "fire_resistant_item");
 
     private ModEntities() {
     }
@@ -98,6 +100,14 @@ public final class ModEntities {
                         .tracker(128, 1, false)
                         .build()
         );
+        event.getRegistry().register(
+                EntityEntryBuilder.create()
+                        .entity(EntityFireResistantItem.class)
+                        .id(FIRE_RESISTANT_ITEM_ENTITY_ID, nextEntityId++)
+                        .name(FIRE_RESISTANT_ITEM_ENTITY_ID.toString())
+                        .tracker(64, 20, true)
+                        .build()
+        );
     }
 
     public static ResourceLocation[] coreEntityIds() {
@@ -109,7 +119,8 @@ public final class ModEntities {
                 DECOY_ENTITY_ID,
                 AREA_EFFECT_CLOUD_ENTITY_ID,
                 TIME_WAND_ENTITY_ID,
-                PARADOX_ENTITY_ID
+                PARADOX_ENTITY_ID,
+                FIRE_RESISTANT_ITEM_ENTITY_ID
         };
     }
 }

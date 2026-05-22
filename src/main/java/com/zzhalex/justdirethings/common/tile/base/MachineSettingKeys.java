@@ -35,6 +35,9 @@ public final class MachineSettingKeys {
     public static final String AUTOMATED_FILTER_ONLY = "automated_filter_only";
     public static final String AUTOMATED_COMPARE_COUNTS = "automated_compare_counts";
     public static final String RENDER_PLAYER = "render_player";
+    public static final String INVENTORY_COMPARE_NBT = "inventory_compare_nbt";
+    public static final String INVENTORY_RENDERED_SLOT = "inventory_rendered_slot";
+    public static final String INVENTORY_SAVE_SLOT = "inventory_save_slot";
     public static final String SEND_INVENTORY = "send_inventory";
     public static final String PULL_INVENTORY = "pull_inventory";
     public static final String SWAP_INVENTORY = "swap_inventory";
@@ -50,6 +53,7 @@ public final class MachineSettingKeys {
     public static final String EQUALITY = "equality";
     public static final String RENDER_PARADOX = "render_paradox";
     public static final String PARADOX_TARGET_TYPE = "paradox_target_type";
+    public static final String PARADOX_SNAPSHOT_AREA = "paradox_snapshot_area";
 
     private MachineSettingKeys() {
     }

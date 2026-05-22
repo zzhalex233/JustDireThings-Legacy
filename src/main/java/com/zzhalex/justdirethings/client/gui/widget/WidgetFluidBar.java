@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.client.gui.widget;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.util.FluidDisplayHelper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -53,11 +54,12 @@ public class WidgetFluidBar {
     }
 
     public void draw(int guiLeft, int guiTop) {
-        int filled = (int) Math.round((double) current / (double) max * height);
+        int innerHeight = height - 2;
+        int filled = Math.max(0, Math.min(innerHeight, (current * innerHeight) / max));
         Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
         Gui.drawModalRectWithCustomSizedTexture(guiLeft + x, guiTop + y, 0, 0, width, height, 36, 72);
         if (filled > 0) {
-            drawFluid(guiLeft + x + 1, guiTop + y + height - filled - 1, width - 2, filled);
+            drawFluid(guiLeft + x + 1, guiTop + y + height - 1 - filled, width - 2, filled);
         }
         Gui.drawModalRectWithCustomSizedTexture(guiLeft + x, guiTop + y, 18, 0, width, height, 36, 72);
     }
@@ -69,9 +71,13 @@ public class WidgetFluidBar {
     }
 
     public List<String> getTooltipLines() {
+        String displayName = getFluidDisplayName();
+        if (displayName.isEmpty()) {
+            return Collections.emptyList();
+        }
         return Collections.singletonList(I18n.format(
                 "justdirethings.screen.fluid",
-                getFluidDisplayName(),
+                displayName,
                 formatAmount(current),
                 formatAmount(max)
         ));
@@ -116,11 +122,7 @@ public class WidgetFluidBar {
     }
 
     private String getFluidDisplayName() {
-        Fluid fluid = FluidRegistry.getFluid(fluidName);
-        if (fluid == null || current <= 0) {
-            return "Empty";
-        }
-        return new FluidStack(fluid, current).getLocalizedName();
+        return FluidDisplayHelper.getLocalizedName(fluidName, current);
     }
 
     private static String formatAmount(int amount) {

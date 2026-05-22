@@ -1,7 +1,5 @@
 package com.zzhalex.justdirethings.data.tool;
 
-import net.minecraft.nbt.NBTTagCompound;
-
 public final class AbilityCooldown {
 
     private final String abilityId;
@@ -26,19 +24,4 @@ public final class AbilityCooldown {
         return active;
     }
 
-    public NBTTagCompound writeToNbt() {
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setString("AbilityId", abilityId);
-        tag.setInteger("RemainingTicks", remainingTicks);
-        tag.setBoolean("Active", active);
-        return tag;
-    }
-
-    public static AbilityCooldown readFromNbt(NBTTagCompound tag) {
-        return new AbilityCooldown(
-                tag.getString("AbilityId"),
-                tag.getInteger("RemainingTicks"),
-                tag.getBoolean("Active")
-        );
-    }
 }

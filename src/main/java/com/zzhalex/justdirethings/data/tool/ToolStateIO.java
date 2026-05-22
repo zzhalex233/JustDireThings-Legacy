@@ -22,7 +22,6 @@ public final class ToolStateIO {
         tag.setTag(JDTDataKeys.ABILITY_CUSTOM_SETTINGS, writeIntMap(state.getAbilityCustomSettings()));
         tag.setTag(JDTDataKeys.ABILITY_BINDING_MODES, writeIntMap(state.getAbilityBindingModes()));
         tag.setTag(JDTDataKeys.ABILITY_BINDINGS, writeBindings(state));
-        tag.setTag(JDTDataKeys.ABILITY_COOLDOWNS, writeCooldowns(state));
         return tag;
     }
 
@@ -35,7 +34,6 @@ public final class ToolStateIO {
         readIntMap(tag.getCompoundTag(JDTDataKeys.ABILITY_CUSTOM_SETTINGS), state.getAbilityCustomSettings());
         readIntMap(tag.getCompoundTag(JDTDataKeys.ABILITY_BINDING_MODES), state.getAbilityBindingModes());
         readBindings(tag.getTagList(JDTDataKeys.ABILITY_BINDINGS, Constants.NBT.TAG_COMPOUND), state);
-        readCooldowns(tag.getTagList(JDTDataKeys.ABILITY_COOLDOWNS, Constants.NBT.TAG_COMPOUND), state);
         return state;
     }
 
@@ -81,17 +79,4 @@ public final class ToolStateIO {
         }
     }
 
-    private static NBTTagList writeCooldowns(ToolState state) {
-        NBTTagList list = new NBTTagList();
-        for (AbilityCooldown cooldown : state.getAbilityCooldowns()) {
-            list.appendTag(cooldown.writeToNbt());
-        }
-        return list;
-    }
-
-    private static void readCooldowns(NBTTagList list, ToolState state) {
-        for (int i = 0; i < list.tagCount(); i++) {
-            state.getAbilityCooldowns().add(AbilityCooldown.readFromNbt(list.getCompoundTagAt(i)));
-        }
-    }
 }

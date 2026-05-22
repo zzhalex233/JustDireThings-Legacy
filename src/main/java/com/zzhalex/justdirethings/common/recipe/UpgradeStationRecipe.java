@@ -7,6 +7,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.Collections;
+import java.util.List;
+
 public abstract class UpgradeStationRecipe {
 
     private final String id;
@@ -25,6 +28,26 @@ public abstract class UpgradeStationRecipe {
 
     public ItemStack createOutputStack(ItemStack template, ItemStack base, ItemStack addition) {
         return ItemStack.EMPTY;
+    }
+
+    public List<ItemStack> getTemplateStacks() {
+        return Collections.emptyList();
+    }
+
+    public boolean usesSmithingTemplate() {
+        return false;
+    }
+
+    public List<ItemStack> getBaseStacks() {
+        return Collections.emptyList();
+    }
+
+    public List<ItemStack> getAdditionStacks() {
+        return Collections.emptyList();
+    }
+
+    public ItemStack getJeiOutputStack() {
+        return createOutputStack(firstOrEmpty(getTemplateStacks()), firstOrEmpty(getBaseStacks()), firstOrEmpty(getAdditionStacks()));
     }
 
     public abstract ToolState createOutput(ToolState... inputs);
@@ -64,5 +87,13 @@ public abstract class UpgradeStationRecipe {
         }
         root.setTag(JDTDataKeys.TOOL_STATE, ToolStateIO.write(state));
         stack.setTagCompound(root);
+    }
+
+    protected static List<ItemStack> stackList(Item item) {
+        return item == null ? Collections.emptyList() : Collections.singletonList(new ItemStack(item));
+    }
+
+    protected static ItemStack firstOrEmpty(List<ItemStack> stacks) {
+        return stacks.isEmpty() ? ItemStack.EMPTY : stacks.get(0);
     }
 }

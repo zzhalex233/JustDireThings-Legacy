@@ -38,7 +38,7 @@ public class TileEnergyTransmitter extends TileInventoryMachineBase implements I
         getEnergyState().setMaxExtract(JDTConfig.energyTransmitterT1MaxRf);
         getFilterState().setAllowList(false);
         setTickSpeed(50);
-        getAreaState().setArea(2.0D, 2.0D, 2.0D);
+        getAreaState().setOffset(0, 1, 0);
     }
 
     public int getLastTransferAmount() {

@@ -5,6 +5,7 @@ import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
 import com.zzhalex.justdirethings.common.item.base.PoweredEnergyCostHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.util.MiningCollect;
+import com.zzhalex.justdirethings.common.util.OreDetection;
 import com.zzhalex.justdirethings.config.JDTConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
@@ -16,7 +17,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -30,7 +30,6 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -52,6 +51,7 @@ public final class ToolMiningAbilityHandler {
     private static boolean alreadyBreaking = false;
     private static BlockPos spawnDropsAtPos = BlockPos.ORIGIN;
     private static List<ItemStack> batchedDrops = null;
+    private static Set<BlockPos> batchedBreakPositions = null;
 
     private ToolMiningAbilityHandler() {
     }
@@ -198,12 +198,53 @@ public final class ToolMiningAbilityHandler {
         }
     }
 
+    public static void beginManualDropBatch(BlockPos origin) {
+        alreadyBreaking = true;
+        spawnDropsAtPos = origin == null ? BlockPos.ORIGIN : origin.toImmutable();
+        batchedDrops = new ArrayList<>();
+        batchedBreakPositions = new HashSet<>();
+    }
+
+    public static void finishManualDropBatch(ItemStack stack, World world, BlockPos origin, EntityPlayer player) {
+        List<ItemStack> collectedDrops = batchedDrops;
+        Set<BlockPos> breakPositions = batchedBreakPositions;
+        alreadyBreaking = false;
+        spawnDropsAtPos = BlockPos.ORIGIN;
+        batchedDrops = null;
+        batchedBreakPositions = null;
+        if (collectedDrops != null && !collectedDrops.isEmpty() && stack != null && !stack.isEmpty() && world != null && origin != null && player != null) {
+            if (breakPositions == null || breakPositions.isEmpty()) {
+                breakPositions = new HashSet<>();
+                breakPositions.add(origin.toImmutable());
+            }
+            AbilityMethods.handleAbilityDrops(stack, world, origin, player, collectedDrops, breakPositions);
+        }
+    }
+
+    public static boolean breakBlockForAbilities(World world, BlockPos pos, EntityPlayer player, ItemStack tool, boolean instaBreak) {
+        boolean broken = breakBlock(world, pos, player, tool, instaBreak);
+        if (broken && batchedBreakPositions != null && pos != null) {
+            batchedBreakPositions.add(pos.toImmutable());
+        }
+        return broken;
+    }
+
+    public static Set<BlockPos> getBreakBlockPositionsForPreview(ItemStack stack, World world, BlockPos origin, EntityPlayer player, IBlockState state) {
+        if (stack == null || stack.isEmpty() || world == null || origin == null || player == null || state == null) {
+            return new HashSet<>();
+        }
+        if (!(stack.getItem() instanceof ToggleableTool) || !isCorrectToolForDrops(stack, world, origin, state, player)) {
+            return new HashSet<>();
+        }
+        return getBreakBlockPositions(stack, world, origin, player, state);
+    }
+
     private static Set<BlockPos> getBreakBlockPositions(ItemStack stack, World world, BlockPos origin, EntityPlayer player, IBlockState state) {
         Set<BlockPos> breakPositions = new HashSet<>();
         int maxBreak = getMaxBreak(stack);
 
         if (AbilityMethods.canUseAbilityAndDurability(stack, Ability.OREMINER)
-                && isOreBlock(state)
+                && OreDetection.isOreBlock(state)
                 && isCorrectToolForDrops(stack, world, origin, state, player)) {
             breakPositions.addAll(findLikeBlocks(world, state, origin, maxBreak, 2));
         }
@@ -349,32 +390,16 @@ public final class ToolMiningAbilityHandler {
     }
 
     private static boolean isCorrectToolForDrops(ItemStack stack, World world, BlockPos pos, IBlockState state, EntityPlayer player) {
-        return stack.canHarvestBlock(state) || state.getBlock().canHarvestBlock(world, pos, player);
-    }
-
-    private static boolean isOreBlock(IBlockState state) {
-        Block block = state.getBlock();
-        Item item = Item.getItemFromBlock(block);
-        if (item == Items.AIR) {
-            return false;
-        }
-
-        ItemStack oreStack = new ItemStack(item, 1, block.getMetaFromState(state));
-        ItemStack wildcardStack = new ItemStack(item, 1, OreDictionary.WILDCARD_VALUE);
-        if (hasOreDictionaryPrefix(oreStack, "ore") || hasOreDictionaryPrefix(wildcardStack, "ore")
-                || hasOreDictionaryPrefix(oreStack, "cluster") || hasOreDictionaryPrefix(wildcardStack, "cluster")) {
-            return true;
-        }
-        return block.getRegistryName() != null && block.getRegistryName().getPath().contains("_ore");
+        return stack.canHarvestBlock(state) || stack.getDestroySpeed(state) > 1.0F;
     }
 
     private static boolean isLogBlock(IBlockState state) {
         Block block = state.getBlock();
         if (block instanceof BlockLog || state.getMaterial() == Material.WOOD) {
-            Item item = Item.getItemFromBlock(block);
+            net.minecraft.item.Item item = net.minecraft.item.Item.getItemFromBlock(block);
             if (item != Items.AIR) {
                 ItemStack stack = new ItemStack(item, 1, block.getMetaFromState(state));
-                ItemStack wildcardStack = new ItemStack(item, 1, OreDictionary.WILDCARD_VALUE);
+                ItemStack wildcardStack = new ItemStack(item, 1, net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE);
                 return hasOreDictionaryName(stack, "logWood") || hasOreDictionaryName(wildcardStack, "logWood") || block instanceof BlockLog;
             }
         }
@@ -386,8 +411,8 @@ public final class ToolMiningAbilityHandler {
     }
 
     private static boolean hasOreDictionaryPrefix(ItemStack stack, String prefix) {
-        for (int oreId : OreDictionary.getOreIDs(stack)) {
-            if (OreDictionary.getOreName(oreId).startsWith(prefix)) {
+        for (int oreId : net.minecraftforge.oredict.OreDictionary.getOreIDs(stack)) {
+            if (net.minecraftforge.oredict.OreDictionary.getOreName(oreId).startsWith(prefix)) {
                 return true;
             }
         }
@@ -395,8 +420,8 @@ public final class ToolMiningAbilityHandler {
     }
 
     private static boolean hasOreDictionaryName(ItemStack stack, String name) {
-        for (int oreId : OreDictionary.getOreIDs(stack)) {
-            if (OreDictionary.getOreName(oreId).equals(name)) {
+        for (int oreId : net.minecraftforge.oredict.OreDictionary.getOreIDs(stack)) {
+            if (net.minecraftforge.oredict.OreDictionary.getOreName(oreId).equals(name)) {
                 return true;
             }
         }

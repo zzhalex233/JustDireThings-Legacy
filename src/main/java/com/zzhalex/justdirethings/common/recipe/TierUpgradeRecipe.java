@@ -1,8 +1,11 @@
 package com.zzhalex.justdirethings.common.recipe;
 
+import com.zzhalex.justdirethings.config.JDTConfig;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+
+import java.util.List;
 
 public class TierUpgradeRecipe extends UpgradeStationRecipe {
 
@@ -25,7 +28,7 @@ public class TierUpgradeRecipe extends UpgradeStationRecipe {
 
     @Override
     public boolean matches(ItemStack template, ItemStack base, ItemStack addition) {
-        return sameItem(template, templateItem)
+        return templateMatches(template)
                 && sameItem(base, baseItem)
                 && sameItem(addition, additionItem);
     }
@@ -38,7 +41,36 @@ public class TierUpgradeRecipe extends UpgradeStationRecipe {
     }
 
     @Override
+    public List<ItemStack> getTemplateStacks() {
+        return usesSmithingTemplate() ? stackList(templateItem) : java.util.Collections.emptyList();
+    }
+
+    @Override
+    public List<ItemStack> getBaseStacks() {
+        return stackList(baseItem);
+    }
+
+    @Override
+    public List<ItemStack> getAdditionStacks() {
+        return stackList(additionItem);
+    }
+
+    @Override
+    public ItemStack getJeiOutputStack() {
+        return resultItem == null ? ItemStack.EMPTY : new ItemStack(resultItem);
+    }
+
+    @Override
     public ToolState createOutput(ToolState... inputs) {
         return UpgradeRecipeLogic.upgradeTier(inputs[0]);
+    }
+
+    @Override
+    public boolean usesSmithingTemplate() {
+        return JDTConfig.enableSmithingTemplates;
+    }
+
+    private boolean templateMatches(ItemStack template) {
+        return usesSmithingTemplate() ? sameItem(template, templateItem) : template.isEmpty();
     }
 }

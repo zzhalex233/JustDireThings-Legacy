@@ -4,7 +4,6 @@ import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.data.tool.AbilityCooldown;
-import com.zzhalex.justdirethings.data.tool.ToolState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
@@ -51,6 +50,7 @@ public final class AbilityCooldownOverlay extends Gui {
             return;
         }
 
+        ClientAbilityCooldowns.updateForClientTick(minecraft.player.ticksExisted);
         ScaledResolution resolution = new ScaledResolution(minecraft);
         int renderedIcons = 0;
         for (EntityEquipmentSlot slot : EQUIPMENT_ORDER) {
@@ -60,8 +60,7 @@ public final class AbilityCooldownOverlay extends Gui {
             }
 
             ToggleableTool tool = (ToggleableTool) stack.getItem();
-            ToolState state = tool.getToolState(stack);
-            List<AbilityCooldown> cooldowns = state.getAbilityCooldowns();
+            List<AbilityCooldown> cooldowns = ClientAbilityCooldowns.getCooldowns(slot);
             if (cooldowns == null || cooldowns.isEmpty()) {
                 continue;
             }

@@ -179,7 +179,7 @@ public class ItemTimeWand extends ItemFluidPoweredTool {
     private boolean canAccelerate(World world, BlockPos pos) {
         IBlockState state = world.getBlockState(pos);
         TileEntity tileEntity = world.getTileEntity(pos);
-        return tileEntity instanceof net.minecraft.util.ITickable || state.getBlock().getTickRandomly();
+        return TickAccelerationRules.isValidTickAccelBlock(world, state, tileEntity);
     }
 
     private EntityTimeWand findExistingEntity(World world, BlockPos pos) {

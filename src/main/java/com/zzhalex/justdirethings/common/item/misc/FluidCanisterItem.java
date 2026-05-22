@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.item.base.FluidBackedItem;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
+import com.zzhalex.justdirethings.common.util.FluidDisplayHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -52,14 +53,14 @@ public class FluidCanisterItem extends Item implements FluidBackedItem {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         int amount = getFluidAmount(stack);
         Fluid fluid = getContainedFluid(stack);
-        String fluidName = fluid == null || amount <= 0
-                ? I18n.format("justdirethings.fluid.empty")
-                : new FluidStack(fluid, amount).getLocalizedName();
+        String fluidName = FluidDisplayHelper.getLocalizedName(fluid, amount);
 
-        tooltip.add(TextFormatting.DARK_AQUA
-                + I18n.format("justdirethings.fluidname")
-                + TextFormatting.GREEN
-                + fluidName);
+        if (!fluidName.isEmpty()) {
+            tooltip.add(TextFormatting.DARK_AQUA
+                    + I18n.format("justdirethings.fluidname")
+                    + TextFormatting.GREEN
+                    + fluidName);
+        }
         tooltip.add(TextFormatting.DARK_AQUA
                 + I18n.format("justdirethings.fluidamt")
                 + TextFormatting.GREEN

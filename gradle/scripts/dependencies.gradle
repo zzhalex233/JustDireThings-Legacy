@@ -50,11 +50,11 @@ dependencies {
         compileOnly "com.cleanroommc:lwjglx:1.0.0"
     }
 
-    // Development/runtime integrations used while validating 1.12.2 parity.
     modCompileOnly "curse.maven:jei-238222:5846804"
     modRuntimeOnly "curse.maven:jei-238222:5846804"
 //    modRuntimeOnly "curse.maven:future-mc-310059:6162819"
     modRuntimeOnly "curse.maven:forgelin-continuous-456403:7883992"
+    modRuntimeOnly "curse.maven:spark-361579:3542217"
     mekanismRunClientSource "curse.maven:mekanism-ce-unofficial-840735:7904551"
     modRuntimeOnly "curse.maven:industrial-craft-242638:3078606"
     modRuntimeOnly "curse.maven:redstone-flux-270789:2920436"

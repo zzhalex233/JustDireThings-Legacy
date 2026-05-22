@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -96,6 +97,14 @@ public final class BoundInventoryHelper {
 
         public String getDimensionName() {
             return DimensionDisplayHelper.getDimensionName(dimension);
+        }
+
+        public ITextComponent getDimensionComponent() {
+            return DimensionDisplayHelper.getDimensionComponent(dimension);
+        }
+
+        public String getTranslatedDimensionName() {
+            return DimensionDisplayHelper.getTranslatedDimensionName(dimension);
         }
 
         public BlockPos getPos() {

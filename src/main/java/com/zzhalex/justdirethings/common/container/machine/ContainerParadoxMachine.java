@@ -12,7 +12,7 @@ public class ContainerParadoxMachine extends ContainerMachineBase {
     public ContainerParadoxMachine(InventoryPlayer playerInventory, TileParadoxMachine tile) {
         super(playerInventory, tile, new InventoryBasic("paradoxmachine", false, 0));
         this.tile = tile;
-        addPlayerInventory(playerInventory, 8, 94);
+        addPlayerInventory(playerInventory, 8, 84);
     }
 
     public TileParadoxMachine getTile() {

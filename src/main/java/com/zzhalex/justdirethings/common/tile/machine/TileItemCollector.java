@@ -27,7 +27,31 @@ public class TileItemCollector extends TileMachineBase implements ITickable, Til
 
     public TileItemCollector() {
         getFilterState().setAllowList(false);
-        getAreaState().setArea(2.0D, 2.0D, 2.0D);
+        getAreaState().setOffset(0, 1, 0);
+    }
+
+    @Override
+    public void setDirection(int direction) {
+        EnumFacing oldFacing = EnumFacing.byIndex(getDirection()).getOpposite();
+        boolean usingDefaultArea = getAreaState().getXRadius() == 0.0D
+                && getAreaState().getYRadius() == 0.0D
+                && getAreaState().getZRadius() == 0.0D
+                && (isAreaOffsetUnset() || isAreaOffset(oldFacing));
+        super.setDirection(direction);
+        EnumFacing facing = EnumFacing.byIndex(getDirection()).getOpposite();
+        if (usingDefaultArea) {
+            getAreaState().setOffset(facing.getXOffset(), facing.getYOffset(), facing.getZOffset());
+        }
+    }
+
+    private boolean isAreaOffsetUnset() {
+        return getAreaState().getXOffset() == 0 && getAreaState().getYOffset() == 0 && getAreaState().getZOffset() == 0;
+    }
+
+    private boolean isAreaOffset(EnumFacing facing) {
+        return getAreaState().getXOffset() == facing.getXOffset()
+                && getAreaState().getYOffset() == facing.getYOffset()
+                && getAreaState().getZOffset() == facing.getZOffset();
     }
 
     @Override

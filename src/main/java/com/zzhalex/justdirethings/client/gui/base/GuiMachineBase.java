@@ -397,7 +397,7 @@ public class GuiMachineBase extends GuiTooltipContainer {
         int top = getBaseGuiTop();
         drawBackgroundPanel(topSectionLeft + 20, topSectionTop - 20, topSectionWidth - 40, 20);
         drawBackgroundPanel(topSectionLeft, topSectionTop, topSectionWidth, topSectionHeight);
-        drawBackgroundPanel(left, top + 75, BASE_X_SIZE, baseYSize - 73);
+        drawInventorySectionBackground(left, top);
         drawAdditionalBackgroundLayer(partialTicks, mouseX, mouseY);
 
         drawSlotBackgrounds(guiLeft, guiTop);
@@ -411,6 +411,10 @@ public class GuiMachineBase extends GuiTooltipContainer {
     }
 
     protected void drawAdditionalBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+    }
+
+    protected void drawInventorySectionBackground(int left, int top) {
+        drawBackgroundPanel(left, top + 75, BASE_X_SIZE, baseYSize - 73);
     }
 
     @Override
@@ -443,7 +447,10 @@ public class GuiMachineBase extends GuiTooltipContainer {
 
     protected void drawAreaControlLabels() {
         TileMachineBase machine = getMachineTile();
-        if (!(machine instanceof TileItemCollector) && !(machine instanceof TileEnergyTransmitter) && !(machine instanceof TileAdvancedMachine)) {
+        if (!(machine instanceof TileItemCollector)
+                && !(machine instanceof TileExperienceHolder)
+                && !(machine instanceof TileEnergyTransmitter)
+                && !(machine instanceof TileAdvancedMachine)) {
             return;
         }
         if (machine instanceof TileDropper && machine instanceof TileAdvancedMachine) {
@@ -543,7 +550,7 @@ public class GuiMachineBase extends GuiTooltipContainer {
     }
 
     private void sendMachineSetting(MachineGuiButton machineButton, boolean decrement) {
-        int value = machineButton.nextValue(decrement);
+        int value = nextMachineButtonValue(machineButton, decrement);
         for (MachineGuiButton otherButton : machineButtons) {
             if (otherButton != machineButton && otherButton.getDefinition().getSettingKey().equals(machineButton.getDefinition().getSettingKey())) {
                 otherButton.setValue(value);
@@ -554,6 +561,21 @@ public class GuiMachineBase extends GuiTooltipContainer {
                 machineButton.getDefinition().getSettingKey(),
                 value
         ));
+    }
+
+    private int nextMachineButtonValue(MachineGuiButton machineButton, boolean decrement) {
+        if (machineButton.getDefinition().getKind() == ButtonDefinition.Kind.NUMBER) {
+            int change = decrement ? -1 : 1;
+            if (isShiftKeyDown()) {
+                change *= 10;
+            }
+            if (isCtrlKeyDown()) {
+                change *= 64;
+            }
+            machineButton.setValue(machineButton.getValue() + change);
+            return machineButton.getValue();
+        }
+        return machineButton.nextValue(decrement);
     }
 
     @Override

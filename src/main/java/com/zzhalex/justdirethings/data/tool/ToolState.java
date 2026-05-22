@@ -15,7 +15,6 @@ public final class ToolState {
     private final Map<String, Integer> abilityCustomSettings = new LinkedHashMap<>();
     private final Map<String, Integer> abilityBindingModes = new LinkedHashMap<>();
     private final List<AbilityBinding> abilityBindings = new ArrayList<>();
-    private final List<AbilityCooldown> abilityCooldowns = new ArrayList<>();
     private final List<String> leftClickAbilities = new ArrayList<>();
 
     public boolean isEnabled() {
@@ -44,10 +43,6 @@ public final class ToolState {
 
     public List<AbilityBinding> getAbilityBindings() {
         return abilityBindings;
-    }
-
-    public List<AbilityCooldown> getAbilityCooldowns() {
-        return abilityCooldowns;
     }
 
     public List<String> getLeftClickAbilities() {

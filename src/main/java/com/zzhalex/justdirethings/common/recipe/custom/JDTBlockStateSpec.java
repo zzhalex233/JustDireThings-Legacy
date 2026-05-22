@@ -5,6 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.JsonContext;
@@ -82,6 +83,29 @@ public final class JDTBlockStateSpec {
             parsedProperties.put(property.getName(), getPropertyValueName(state, property));
         }
         return new JDTBlockStateSpec(id, parsedProperties);
+    }
+
+    public NBTTagCompound writeToNbt() {
+        NBTTagCompound root = new NBTTagCompound();
+        root.setString("Name", blockId == null ? "minecraft:air" : blockId.toString());
+        NBTTagCompound propertiesTag = new NBTTagCompound();
+        for (Map.Entry<String, String> property : properties.entrySet()) {
+            propertiesTag.setString(property.getKey(), property.getValue());
+        }
+        root.setTag("Properties", propertiesTag);
+        return root;
+    }
+
+    public static JDTBlockStateSpec readFromNbt(NBTTagCompound root) {
+        if (root == null || !root.hasKey("Name")) {
+            return fromState(Blocks.AIR.getDefaultState());
+        }
+        Map<String, String> parsedProperties = new LinkedHashMap<>();
+        NBTTagCompound propertiesTag = root.getCompoundTag("Properties");
+        for (String key : propertiesTag.getKeySet()) {
+            parsedProperties.put(key, propertiesTag.getString(key));
+        }
+        return new JDTBlockStateSpec(new ResourceLocation(root.getString("Name")), parsedProperties);
     }
 
     private static IProperty<?> findProperty(IBlockState state, String propertyName) {

@@ -6,6 +6,7 @@ import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.FluidBackedItem;
 import com.zzhalex.justdirethings.common.item.base.FluidPickupHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemToggleableTool;
+import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModFluids;
@@ -27,7 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public class ItemPolymorphicWand extends ItemToggleableTool implements FluidBackedItem {
+public class ItemPolymorphicWand extends ItemToggleableTool implements LeftClickableTool, FluidBackedItem {
 
     public static final int DURABILITY = 200;
     public static final int FLUID_CAPACITY = 2_000;
@@ -40,6 +41,10 @@ public class ItemPolymorphicWand extends ItemToggleableTool implements FluidBack
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
+        ActionResult<ItemStack> settingsResult = openSettingsIfSneaking(world, player, hand);
+        if (settingsResult != null) {
+            return settingsResult;
+        }
         if (FluidPickupHelper.pickupSourceFluid(world, player, stack, rayTrace(world, player, true), getContainedFluid(stack))) {
             return new ActionResult<>(EnumActionResult.SUCCESS, stack);
         }

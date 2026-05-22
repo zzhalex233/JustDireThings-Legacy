@@ -1,9 +1,12 @@
 package com.zzhalex.justdirethings.registry;
 
+import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.recipe.AbilityInstallRecipe;
 import com.zzhalex.justdirethings.common.recipe.PaxelFusionRecipe;
 import com.zzhalex.justdirethings.common.recipe.TierUpgradeRecipe;
 import com.zzhalex.justdirethings.common.recipe.UpgradeStationRecipe;
+import com.zzhalex.justdirethings.config.JDTConfig;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -61,6 +64,35 @@ public final class ModRecipes {
     public static ItemStack getUpgradeStationOutput(ItemStack template, ItemStack base, ItemStack addition) {
         Optional<UpgradeStationRecipe> recipe = findUpgradeStationRecipe(template, base, addition);
         return recipe.map(value -> value.createOutputStack(template, base, addition)).orElse(ItemStack.EMPTY);
+    }
+
+    public static boolean isValidUpgradeStationInput(int slot, ItemStack stack) {
+        if (slot == com.zzhalex.justdirethings.common.tile.TileUpgradeStation.SLOT_TEMPLATE) {
+            return isUpgradeStationTemplate(stack);
+        }
+        if (slot == com.zzhalex.justdirethings.common.tile.TileUpgradeStation.SLOT_BASE) {
+            return isUpgradeStationBase(stack);
+        }
+        if (slot == com.zzhalex.justdirethings.common.tile.TileUpgradeStation.SLOT_ADDITION) {
+            return isUpgradeStationAddition(stack);
+        }
+        return false;
+    }
+
+    public static boolean isUpgradeStationTemplate(ItemStack stack) {
+        return recipeSlotContains(stack, UpgradeStationRecipe::getTemplateStacks);
+    }
+
+    public static boolean areSmithingTemplatesEnabled() {
+        return JDTConfig.enableSmithingTemplates;
+    }
+
+    public static boolean isUpgradeStationBase(ItemStack stack) {
+        return recipeSlotContains(stack, UpgradeStationRecipe::getBaseStacks);
+    }
+
+    public static boolean isUpgradeStationAddition(ItemStack stack) {
+        return recipeSlotContains(stack, UpgradeStationRecipe::getAdditionStacks);
     }
 
     private static List<UpgradeStationRecipe> createUpgradeStationRecipes() {
@@ -154,7 +186,7 @@ public final class ModRecipes {
         Item baseItem = equipment(baseId);
         Item additionItem = content(additionId);
         Item resultItem = equipment(resultId);
-        if (templateItem != null && baseItem != null && additionItem != null && resultItem != null) {
+        if ((JDTConfig.enableSmithingTemplates ? templateItem != null : true) && baseItem != null && additionItem != null && resultItem != null) {
             recipes.add(new TierUpgradeRecipe("tier_" + id, templateItem, baseItem, additionItem, resultItem));
         }
     }
@@ -171,13 +203,37 @@ public final class ModRecipes {
 
     private static void addAbilityRecipe(List<UpgradeStationRecipe> recipes, String upgradeId, String abilityId, Collection<Item> equipmentItems) {
         Item upgradeItem = content(upgradeId);
-        if (upgradeItem != null) {
-            recipes.add(new AbilityInstallRecipe("ability_install_" + abilityId, upgradeItem, abilityId, equipmentItems));
+        Ability ability = Ability.byId(abilityId);
+        if (upgradeItem != null && ability != null) {
+            for (Item equipmentItem : equipmentItems) {
+                if (equipmentItem instanceof ToggleableTool && ((ToggleableTool) equipmentItem).supportsAbility(ability)) {
+                    String itemId = equipmentItem.getRegistryName() == null ? equipmentItem.getTranslationKey() : equipmentItem.getRegistryName().getPath();
+                    recipes.add(new AbilityInstallRecipe("ability_install_" + abilityId + "_" + itemId, upgradeItem, abilityId, Collections.singleton(equipmentItem)));
+                }
+            }
         }
     }
 
     private static Item content(String id) {
         return ModContentItems.getItem(id);
+    }
+
+    private static boolean recipeSlotContains(ItemStack stack, java.util.function.Function<UpgradeStationRecipe, List<ItemStack>> getter) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        for (UpgradeStationRecipe recipe : UPGRADE_STATION_RECIPES) {
+            for (ItemStack allowed : getter.apply(recipe)) {
+                if (isSameRecipeItem(stack, allowed)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSameRecipeItem(ItemStack stack, ItemStack allowed) {
+        return !allowed.isEmpty() && stack.getItem() == allowed.getItem();
     }
 
     private static void addSmelting(String inputId, String outputId, float experience) {

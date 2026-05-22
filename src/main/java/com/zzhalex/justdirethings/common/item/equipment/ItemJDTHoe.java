@@ -182,7 +182,7 @@ public class ItemJDTHoe extends ItemHoe implements ToggleableTool, LeftClickable
             BoundInventoryHelper.setBoundTo(stack, newBinding);
             player.sendStatusMessage(new TextComponentTranslation(
                     "justdirethings.boundto",
-                    newBinding.getDimensionName(),
+                    newBinding.getDimensionComponent(),
                     "[" + newBinding.toShortString() + "]"
             ), true);
             world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_END_PORTAL_FRAME_FILL, SoundCategory.PLAYERS, 1.0F, 1.0F);
@@ -217,7 +217,7 @@ public class ItemJDTHoe extends ItemHoe implements ToggleableTool, LeftClickable
         soil.bindInventory(boundLocation.getPos(), boundLocation.getSide(), boundLocation.getDimension());
         player.sendStatusMessage(new TextComponentTranslation(
                 "justdirethings.boundto",
-                boundLocation.getDimensionName(),
+                boundLocation.getDimensionComponent(),
                 "[" + boundLocation.toShortString() + "]"
         ), true);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ENDEREYE_DEATH, SoundCategory.PLAYERS, 1.0F, 1.0F);

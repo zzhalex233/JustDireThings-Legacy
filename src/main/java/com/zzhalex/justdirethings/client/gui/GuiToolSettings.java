@@ -20,6 +20,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.config.GuiSlider;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class GuiToolSettings extends GuiTooltipContainer {
@@ -81,7 +81,7 @@ public class GuiToolSettings extends GuiTooltipContainer {
 
     private void rebuildAbilityButtons() {
         Ability previousShownAbility = shownAbilityButton == null ? null : shownAbilityButton.ability;
-        buttonList.removeIf(button -> button instanceof ToolSettingsButton);
+        buttonList.removeIf(button -> button instanceof ToolSettingsButton || button instanceof SliderButton);
         optionalButtons.clear();
         sliders.clear();
         leftRightClickButtons.clear();
@@ -165,7 +165,6 @@ public class GuiToolSettings extends GuiTooltipContainer {
             return;
         }
         if (button instanceof SliderButton) {
-            activateSliderButton((SliderButton) button);
             return;
         }
         if (button instanceof BindingModeButton) {
@@ -222,6 +221,24 @@ public class GuiToolSettings extends GuiTooltipContainer {
             return;
         }
         super.keyTyped(typedChar, keyCode);
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        int wheel = Mouse.getEventDWheel();
+        if (wheel == 0) {
+            return;
+        }
+
+        int mouseX = Mouse.getEventX() * width / mc.displayWidth;
+        int mouseY = height - Mouse.getEventY() * height / mc.displayHeight - 1;
+        for (SliderButton slider : sliders.values()) {
+            if (buttonList.contains(slider) && contains(slider, mouseX, mouseY)) {
+                slider.adjustByWheel(wheel > 0 ? 1 : -1);
+                return;
+            }
+        }
     }
 
     @Override
@@ -312,10 +329,14 @@ public class GuiToolSettings extends GuiTooltipContainer {
         rebuildAbilityButtons();
     }
 
-    private void activateSliderButton(SliderButton button) {
-        sendSlotSetting(button.ability, 2, button.getValue());
-        ToolSettingClientState.applyLocalPreview(selectedToolStack(), button.ability, 2, button.getValue());
-        rebuildAbilityButtons();
+    private void sliderValueChanged(SliderButton button) {
+        int value = button.getSteppedValue();
+        if (!button.markSent(value)) {
+            return;
+        }
+        sendSlotSetting(button.ability, 2, value);
+        ToolSettingClientState.applyLocalPreview(selectedToolStack(), button.ability, 2, value);
+        rememberSelectedStack();
     }
 
     private void activateBindingModeButton(BindingModeButton button) {
@@ -348,9 +369,9 @@ public class GuiToolSettings extends GuiTooltipContainer {
     private void activateRequireEquippedButton(RequireEquippedButton button) {
         button.toggle();
         AbilityBinding binding = LeftClickableTool.getAbilityBinding(selectedToolStack(), button.ability);
-        sendBinding(button.ability, 2, binding == null ? -1 : binding.getKeyCode(), binding != null && binding.isMouseBinding(), button.requiresEquipped());
         pendingRequireEquipped.put(button.ability, button.requiresEquipped());
         if (binding != null) {
+            sendBinding(button.ability, 2, binding.getKeyCode(), binding.isMouseBinding(), button.requiresEquipped());
             LeftClickableTool.addToCustomBindingList(selectedToolStack(), new AbilityBinding(button.ability.getId(), binding.getKeyCode(), binding.isMouseBinding(), button.requiresEquipped()));
         }
     }
@@ -486,14 +507,6 @@ public class GuiToolSettings extends GuiTooltipContainer {
         return mouseX >= button.x && mouseY >= button.y && mouseX < button.x + button.width && mouseY < button.y + button.height;
     }
 
-    private static String formatNumber(double value) {
-        long rounded = Math.round(value);
-        if (Math.abs(value - rounded) < 0.001D) {
-            return Long.toString(rounded);
-        }
-        return String.format(Locale.ROOT, "%.1f", value);
-    }
-
     private static final class ToolSettingClientState {
         private static void applyLocalPreview(ItemStack stack, Ability ability, int mode, int value) {
             if (stack.isEmpty() || !(stack.getItem() instanceof ToggleableTool)) {
@@ -594,42 +607,43 @@ public class GuiToolSettings extends GuiTooltipContainer {
         }
     }
 
-    private static final class SliderButton extends ToolSettingsButton {
+    private final class SliderButton extends GuiSlider {
         private final Ability ability;
         private final AbilityParams params;
-        private int value;
+        private int lastSentValue;
 
         private SliderButton(int buttonId, int x, int y, Ability ability, AbilityParams params, int value) {
-            super(buttonId, x, y, 100, 15, new ResourceLocation[] {buttonTexture("blankbutton.png")}, new String[] {ability.getTranslationKey()}, 0);
+            super(buttonId, x, y, 100, 15, I18n.format(ability.getTranslationKey()) + ": ", "", params.minSlider, params.maxSlider,
+                    value, false, true, slider -> GuiToolSettings.this.sliderValueChanged((SliderButton) slider));
             this.ability = ability;
             this.params = params;
-            this.value = value;
+            this.lastSentValue = clampToStep(value);
         }
 
-        @Override
-        public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-            if (!super.mousePressed(mc, mouseX, mouseY)) {
+        private int getSteppedValue() {
+            return clampToStep(getValueInt());
+        }
+
+        private boolean markSent(int value) {
+            if (value == lastSentValue) {
                 return false;
             }
-            double percent = Math.max(0.0D, Math.min(1.0D, (mouseX - x) / (double) width));
-            int raw = params.minSlider + (int) Math.round((params.maxSlider - params.minSlider) * percent);
-            int stepped = params.minSlider + Math.round((raw - params.minSlider) / (float) params.increment) * params.increment;
-            value = Math.max(params.minSlider, Math.min(params.maxSlider, stepped));
+            lastSentValue = value;
             return true;
         }
 
-        @Override
-        protected void drawTexture(Minecraft mc) {
-            drawRect(x, y + 5, x + width, y + 10, 0xFF353535);
-            double range = Math.max(1.0D, params.maxSlider - params.minSlider);
-            int filled = (int) Math.round(((value - params.minSlider) / range) * width);
-            drawRect(x, y + 5, x + filled, y + 10, 0xFF5AA7FF);
-            String text = I18n.format(ability.getTranslationKey()) + ": " + formatNumber(value);
-            mc.fontRenderer.drawString(text, x + width / 2 - mc.fontRenderer.getStringWidth(text) / 2, y - 1, 0x404040);
+        private void adjustByWheel(int direction) {
+            int next = getSteppedValue() + direction * Math.max(1, params.increment);
+            setValue(clampToStep(next));
+            updateSlider();
         }
 
-        private int getValue() {
-            return value;
+        private int clampToStep(int rawValue) {
+            int min = params.minSlider;
+            int max = params.maxSlider;
+            int increment = Math.max(1, params.increment);
+            int stepped = min + Math.round((rawValue - min) / (float) increment) * increment;
+            return Math.max(min, Math.min(max, stepped));
         }
     }
 

@@ -31,7 +31,7 @@ public final class ParadoxRuntimePlan {
             }
             for (ParadoxSnapshot.EntityEntry entity : snapshot.getEntities()) {
                 Vec3d relative = entity.getRelativePos();
-                Vec3d absolute = new Vec3d(origin.getX() + relative.x, origin.getY() + relative.y, origin.getZ() + relative.z);
+                Vec3d absolute = new Vec3d(origin.getX() + 0.5D + relative.x, origin.getY() + 0.5D + relative.y, origin.getZ() + 0.5D + relative.z);
                 entities.add(new EntityTarget(absolute, entity.getEntityData()));
             }
         }

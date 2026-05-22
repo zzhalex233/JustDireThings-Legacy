@@ -24,12 +24,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.model.pipeline.LightUtil;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
@@ -397,8 +395,6 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
                 addItem(stacks, Items.ENDER_PEARL);
                 break;
             case 4:
-                addRegisteredItem(stacks, "futuremc:sculk");
-                addRegisteredItem(stacks, "futuremc:sculk_catalyst");
                 addItem(stacks, Items.NETHER_STAR);
                 addItem(stacks, Items.ENDER_EYE);
                 addItem(stacks, ModContentItems.getItem("time_crystal"));
@@ -408,11 +404,6 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
                 break;
         }
         return stacks;
-    }
-
-    private static void addRegisteredItem(List<ItemStack> stacks, String registryName) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(registryName));
-        addItem(stacks, item);
     }
 
     private static void addItem(List<ItemStack> stacks, Item item) {

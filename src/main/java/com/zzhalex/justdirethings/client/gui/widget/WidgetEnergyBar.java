@@ -34,11 +34,12 @@ public class WidgetEnergyBar {
     }
 
     public void draw(int guiLeft, int guiTop) {
-        int filled = (int) Math.round((double) current / (double) max * height);
+        int innerHeight = height - 2;
+        int filled = Math.max(0, Math.min(innerHeight, (current * innerHeight) / max));
         Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
         Gui.drawModalRectWithCustomSizedTexture(guiLeft + x, guiTop + y, 0, 0, width, height, 36, 72);
         if (filled > 0) {
-            Gui.drawModalRectWithCustomSizedTexture(guiLeft + x + 1, guiTop + y + height - filled, 19, 71 - filled, width - 1, filled, 36, 72);
+            Gui.drawModalRectWithCustomSizedTexture(guiLeft + x + 1, guiTop + y + height - 2 - filled, 19, 69 - filled, width - 1, filled + 1, 36, 72);
         }
     }
 

@@ -1,6 +1,8 @@
 package com.zzhalex.justdirethings.registry;
 
 import com.zzhalex.justdirethings.common.item.misc.ItemCreatureCatcher;
+import com.zzhalex.justdirethings.common.item.block.ItemBlockExperienceHolder;
+import com.zzhalex.justdirethings.common.item.block.ItemBlockInventoryHolder;
 import com.zzhalex.justdirethings.common.item.misc.FluidCanisterItem;
 import com.zzhalex.justdirethings.common.item.misc.FuelCanisterItem;
 import com.zzhalex.justdirethings.common.item.misc.ItemMachineSettingsCopier;
@@ -60,8 +62,8 @@ public final class ModItems {
     public static final ItemBlock FLUID_PLACER_T2_ITEM = createBlockItem(ModBlocks.FLUID_PLACER_T2);
     public static final ItemBlock FLUID_COLLECTOR_T1_ITEM = createBlockItem(ModBlocks.FLUID_COLLECTOR_T1);
     public static final ItemBlock FLUID_COLLECTOR_T2_ITEM = createBlockItem(ModBlocks.FLUID_COLLECTOR_T2);
-    public static final ItemBlock INVENTORY_HOLDER_ITEM = createBlockItem(ModBlocks.INVENTORY_HOLDER);
-    public static final ItemBlock EXPERIENCEHOLDER_ITEM = createBlockItem(ModBlocks.EXPERIENCEHOLDER);
+    public static final ItemBlock INVENTORY_HOLDER_ITEM = createBlockItem(ModBlocks.INVENTORY_HOLDER, new ItemBlockInventoryHolder(ModBlocks.INVENTORY_HOLDER));
+    public static final ItemBlock EXPERIENCEHOLDER_ITEM = createBlockItem(ModBlocks.EXPERIENCEHOLDER, new ItemBlockExperienceHolder(ModBlocks.EXPERIENCEHOLDER));
     public static final ItemBlock ENERGYTRANSMITTER_ITEM = createBlockItem(ModBlocks.ENERGYTRANSMITTER);
     public static final ItemBlock PLAYERACCESSOR_ITEM = createBlockItem(ModBlocks.PLAYERACCESSOR);
     public static final ItemBlock PARADOX_MACHINE_ITEM = createBlockItem(ModBlocks.PARADOX_MACHINE);
@@ -242,7 +244,10 @@ public final class ModItems {
     }
 
     private static ItemBlock createBlockItem(net.minecraft.block.Block block) {
-        ItemBlock itemBlock = new ItemBlock(block);
+        return createBlockItem(block, new ItemBlock(block));
+    }
+
+    private static ItemBlock createBlockItem(net.minecraft.block.Block block, ItemBlock itemBlock) {
         itemBlock.setRegistryName(block.getRegistryName());
         itemBlock.setCreativeTab(ModCreativeTabs.JUST_DIRE_THINGS);
         return itemBlock;

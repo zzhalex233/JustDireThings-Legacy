@@ -4,17 +4,11 @@ import com.zzhalex.justdirethings.common.util.TickAccelerationRules;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -35,7 +29,7 @@ public class EntityTimeWand extends Entity {
     public EntityTimeWand(World worldIn, BlockPos acceleratedPos) {
         this(worldIn);
         this.acceleratedPos = acceleratedPos;
-        setPosition(acceleratedPos.getX() + 0.5D, acceleratedPos.getY() + 0.125D, acceleratedPos.getZ() + 0.5D);
+        setPosition(acceleratedPos.getX() + 0.5D, acceleratedPos.getY(), acceleratedPos.getZ() + 0.5D);
     }
 
     @Override
@@ -62,7 +56,7 @@ public class EntityTimeWand extends Entity {
             return;
         }
 
-        doExtraTicks();
+        TickAccelerationRules.doExtraTicks(world, acceleratedPos, getTickLevel());
         setRemainingTime(getRemainingTime() - 1);
     }
 
@@ -74,25 +68,6 @@ public class EntityTimeWand extends Entity {
             return false;
         }
         return !world.isAirBlock(acceleratedPos);
-    }
-
-    public void doExtraTicks() {
-        if (acceleratedPos == null) {
-            return;
-        }
-
-        IBlockState state = world.getBlockState(acceleratedPos);
-        TileEntity tileEntity = world.getTileEntity(acceleratedPos);
-        int extraTicks = TickAccelerationRules.extraTicksForLevel(getTickLevel());
-
-        for (int tick = 0; tick < extraTicks; tick++) {
-            if (tileEntity instanceof ITickable) {
-                ((ITickable) tileEntity).update();
-            }
-            if (state.getBlock().getTickRandomly()) {
-                state.getBlock().updateTick(world, acceleratedPos, state, world.rand);
-            }
-        }
     }
 
     public int getTickLevel() {

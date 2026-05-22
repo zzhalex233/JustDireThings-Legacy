@@ -22,7 +22,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class BlockGooBlock extends Block implements ITileEntityProvider {
 
@@ -76,20 +75,13 @@ public class BlockGooBlock extends Block implements ITileEntityProvider {
             case 3:
                 return item == Items.CHORUS_FRUIT || item == Items.ENDER_PEARL;
             case 4:
-                return isItem(item, "futuremc:sculk")
-                        || isItem(item, "futuremc:sculk_catalyst")
-                        || item == Items.NETHER_STAR
+                return item == Items.NETHER_STAR
                         || item == Items.ENDER_EYE
                         || item == ModContentItems.getItem("time_crystal")
                         || item == ModContentItems.getItem("eclipsealloy_ingot");
             default:
                 return false;
         }
-    }
-
-    private static boolean isItem(Item item, String registryName) {
-        Item registered = ForgeRegistries.ITEMS.getValue(new ResourceLocation(registryName));
-        return registered != null && item == registered;
     }
 
     @Override

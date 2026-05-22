@@ -68,7 +68,7 @@ public class MessageMachineSetting implements IMessage {
             }
 
             ContainerMachineBase machineContainer = (ContainerMachineBase) openContainer;
-            if (MachineSettingApplier.apply(machineContainer.getMachine(), message.getSettingKey(), message.getSettingValue(), player)) {
+            if (MachineSettingApplier.apply(machineContainer.getMachine(), message.getSettingKey(), message.getSettingValue(), player, machineContainer)) {
                 machineContainer.getMachine().markDirtyClient();
             }
         }

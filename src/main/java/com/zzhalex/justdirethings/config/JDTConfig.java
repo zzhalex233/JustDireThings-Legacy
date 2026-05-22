@@ -10,16 +10,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 @Config(modid = Reference.MOD_ID, name = Reference.MOD_ID)
 public final class JDTConfig {
 
-    @Config.Name("enableFallbackCompat")
-    @Config.Comment("Allow fixed fallback mappings when a modern content source such as FutureMC is unavailable.")
-    @Config.RequiresMcRestart
-    public static boolean enableFallbackCompat = true;
-
-    @Config.Name("enableFutureMcMaterialResolution")
-    @Config.Comment("Prefer FutureMC items and blocks when available.")
-    @Config.RequiresMcRestart
-    public static boolean enableFutureMcMaterialResolution = true;
-
     @Config.Name("toolMaxBreakFerricore")
     @Config.Comment("Maximum connected blocks a Ferricore tool can break through mining abilities such as Ore Miner, Tree Feller, and Sky Sweeper.")
     public static int toolMaxBreakFerricore = 64;
@@ -35,6 +25,10 @@ public final class JDTConfig {
     @Config.Name("toolMaxBreakEclipsealloy")
     @Config.Comment("Maximum connected blocks an Eclipse Alloy tool can break through mining abilities such as Ore Miner, Tree Feller, and Sky Sweeper.")
     public static int toolMaxBreakEclipsealloy = 256;
+
+    @Config.Name("disabledAbilities")
+    @Config.Comment("Ability ids to disable globally. Disabled abilities are hidden from all tools and cannot be used or installed.")
+    public static String[] disabledAbilities = new String[0];
 
     @Config.Name("pocketGeneratorMaxFe")
     @Config.Comment("Maximum FE buffer for the pocket generator.")
@@ -71,6 +65,27 @@ public final class JDTConfig {
     @Config.Name("timeWandFakePlayerAllowed")
     @Config.Comment("Allow fake players to use the Time Wand.")
     public static boolean timeWandFakePlayerAllowed = true;
+
+    @Config.Name("timeCrystalCustomDimensions")
+    @Config.Comment("Customize Time Crystal growth dimensions. When false, stage 1 charges outside the Nether and End, stage 2 in the Nether, and stage 3 in the End.")
+    public static boolean timeCrystalCustomDimensions = false;
+
+    @Config.Name("timeCrystalStage1Dimensions")
+    @Config.Comment("Dimensions where Budding Time Crystal blocks can advance to stage 1 when custom dimensions are enabled. Accepts dimension ids such as 0 or names such as minecraft:overworld.")
+    public static String[] timeCrystalStage1Dimensions = new String[0];
+
+    @Config.Name("timeCrystalStage2Dimensions")
+    @Config.Comment("Dimensions where Budding Time Crystal blocks can advance to stage 2 when custom dimensions are enabled. Accepts dimension ids such as -1 or names such as minecraft:the_nether.")
+    public static String[] timeCrystalStage2Dimensions = new String[0];
+
+    @Config.Name("timeCrystalStage3Dimensions")
+    @Config.Comment("Dimensions where Budding Time Crystal blocks can advance to stage 3 when custom dimensions are enabled. Accepts dimension ids such as 1 or names such as minecraft:the_end.")
+    public static String[] timeCrystalStage3Dimensions = new String[0];
+
+    @Config.RequiresMcRestart
+    @Config.Name("enableSmithingTemplates")
+    @Config.Comment("Enable the four Just Dire Things smithing template items and require them for tier upgrades in the Upgrade Station.")
+    public static boolean enableSmithingTemplates = true;
 
     @Config.Name("gooCanDie")
     @Config.Comment("Allow goo blocks to return to their dead state after completing a goo spread recipe.")
@@ -143,6 +158,19 @@ public final class JDTConfig {
     @Config.Name("energyTransmitterT1LossPerBlock")
     @Config.Comment("Energy loss per Manhattan-distance block in percent.")
     public static double energyTransmitterT1LossPerBlock = 1.0D;
+
+    @Config.Name("playerAccessorDimensionalBlacklisting")
+    @Config.Comment("Enable dimension blacklist checks for the Player Accessor.")
+    public static boolean playerAccessorDimensionalBlacklisting = false;
+
+    @Config.Name("playerAccessorValidationTime")
+    @Config.Comment("The frequency in ticks with which the Player Accessor validates the linked player.")
+    @Config.RangeInt(min = 0, max = 5000)
+    public static int playerAccessorValidationTime = 100;
+
+    @Config.Name("playerAccessorBlacklistedDimensions")
+    @Config.Comment("Dimension resource ids such as minecraft:overworld, legacy dimension names, or numeric ids where Player Accessor cannot access the linked player.")
+    public static String[] playerAccessorBlacklistedDimensions = new String[0];
 
     @Config.Name("paradoxRfCapacity")
     @Config.Comment("Maximum FE buffer for the Paradox Machine.")

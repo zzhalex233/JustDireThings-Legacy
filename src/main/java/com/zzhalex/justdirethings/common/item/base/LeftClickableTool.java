@@ -4,6 +4,8 @@ import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.data.tool.AbilityBinding;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
@@ -126,8 +128,28 @@ public interface LeftClickableTool {
         if (stack == null || stack.isEmpty() || player == null) {
             return false;
         }
-        return player.getHeldItemMainhand() == stack
-                || player.getHeldItemOffhand() == stack
-                || player.inventory.armorInventory.contains(stack);
+
+        if (stack.getItem() instanceof ItemArmor) {
+            EntityEquipmentSlot equipmentSlot = ((ItemArmor) stack.getItem()).armorType;
+            return isSameItemSameTags(stack, player.getItemStackFromSlot(equipmentSlot));
+        }
+        return isSameItemSameTags(stack, player.getHeldItemMainhand())
+                || isSameItemSameTags(stack, player.getHeldItemOffhand());
+    }
+
+    static boolean isInventorySlotEquipped(EntityPlayer player, int slot) {
+        if (player == null || slot < 0 || slot >= player.inventory.getSizeInventory()) {
+            return false;
+        }
+        return isItemEquipped(player.inventory.getStackInSlot(slot), player);
+    }
+
+    static boolean isSameItemSameTags(ItemStack stack, ItemStack equipped) {
+        return stack != null
+                && equipped != null
+                && !stack.isEmpty()
+                && !equipped.isEmpty()
+                && ItemStack.areItemsEqual(stack, equipped)
+                && ItemStack.areItemStackTagsEqual(stack, equipped);
     }
 }

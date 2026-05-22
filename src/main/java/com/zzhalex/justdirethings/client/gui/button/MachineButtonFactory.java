@@ -181,12 +181,12 @@ public final class MachineButtonFactory {
     public static List<ButtonDefinition> areaButtons(boolean renderArea, double xRadius, double yRadius, double zRadius, int xOffset, int yOffset, int zOffset) {
         List<ButtonDefinition> buttons = new ArrayList<>();
         buttons.add(renderAreaButton(renderArea));
-        buttons.addAll(areaValueButtons(25, 12, MachineSettingKeys.X_RADIUS_TENTHS, (int) Math.round(xRadius * 10.0D), 0, 50, 5, "justdirethings.screen.radiusx"));
-        buttons.addAll(areaValueButtons(75, 12, MachineSettingKeys.Y_RADIUS_TENTHS, (int) Math.round(yRadius * 10.0D), 0, 50, 5, "justdirethings.screen.radiusy"));
-        buttons.addAll(areaValueButtons(125, 12, MachineSettingKeys.Z_RADIUS_TENTHS, (int) Math.round(zRadius * 10.0D), 0, 50, 5, "justdirethings.screen.radiusz"));
-        buttons.addAll(areaValueButtons(25, 27, MachineSettingKeys.X_OFFSET, xOffset, -9, 9, 1, "justdirethings.screen.offsetx"));
-        buttons.addAll(areaValueButtons(75, 27, MachineSettingKeys.Y_OFFSET, yOffset, -9, 9, 1, "justdirethings.screen.offsety"));
-        buttons.addAll(areaValueButtons(125, 27, MachineSettingKeys.Z_OFFSET, zOffset, -9, 9, 1, "justdirethings.screen.offsetz"));
+        buttons.addAll(areaValueButtons(25, 12, MachineSettingKeys.X_RADIUS_TENTHS, (int) Math.round(xRadius * 10.0D), 0, 50, 5, ""));
+        buttons.addAll(areaValueButtons(75, 12, MachineSettingKeys.Y_RADIUS_TENTHS, (int) Math.round(yRadius * 10.0D), 0, 50, 5, ""));
+        buttons.addAll(areaValueButtons(125, 12, MachineSettingKeys.Z_RADIUS_TENTHS, (int) Math.round(zRadius * 10.0D), 0, 50, 5, ""));
+        buttons.addAll(areaValueButtons(25, 27, MachineSettingKeys.X_OFFSET, xOffset, -9, 9, 1, ""));
+        buttons.addAll(areaValueButtons(75, 27, MachineSettingKeys.Y_OFFSET, yOffset, -9, 9, 1, ""));
+        buttons.addAll(areaValueButtons(125, 27, MachineSettingKeys.Z_OFFSET, zOffset, -9, 9, 1, ""));
         return Collections.unmodifiableList(buttons);
     }
 
@@ -198,9 +198,9 @@ public final class MachineButtonFactory {
     public static List<ButtonDefinition> offsetOnlyAreaButtons(boolean renderArea, int xOffset, int yOffset, int zOffset) {
         List<ButtonDefinition> buttons = new ArrayList<>();
         buttons.add(renderAreaButton(renderArea));
-        buttons.addAll(areaValueButtons(25, 12, MachineSettingKeys.X_OFFSET, xOffset, -9, 9, 1, "justdirethings.screen.offsetx"));
-        buttons.addAll(areaValueButtons(75, 12, MachineSettingKeys.Y_OFFSET, yOffset, -9, 9, 1, "justdirethings.screen.offsety"));
-        buttons.addAll(areaValueButtons(125, 12, MachineSettingKeys.Z_OFFSET, zOffset, -9, 9, 1, "justdirethings.screen.offsetz"));
+        buttons.addAll(areaValueButtons(25, 12, MachineSettingKeys.X_OFFSET, xOffset, -9, 9, 1, ""));
+        buttons.addAll(areaValueButtons(75, 12, MachineSettingKeys.Y_OFFSET, yOffset, -9, 9, 1, ""));
+        buttons.addAll(areaValueButtons(125, 12, MachineSettingKeys.Z_OFFSET, zOffset, -9, 9, 1, ""));
         return Collections.unmodifiableList(buttons);
     }
 
@@ -338,6 +338,11 @@ public final class MachineButtonFactory {
 
     public static ButtonDefinition paradoxTargetButton(int x, int y, int targetType) {
         return ButtonDefinition.toggle(x, y, MachineSettingKeys.PARADOX_TARGET_TYPE, targetType, PARADOX_TARGET_STATES);
+    }
+
+    public static ButtonDefinition paradoxSnapshotButton(int x, int y) {
+        return ButtonDefinition.grayscale(x, y, MachineSettingKeys.PARADOX_SNAPSHOT_AREA, true,
+                state("positionswap.png", "justdirethings.screen.snapshotarea"));
     }
 
     private static ButtonDefinition.State state(String textureName, String localizationKey) {

@@ -1,9 +1,11 @@
 package com.zzhalex.justdirethings.client.event;
 
+import com.zzhalex.justdirethings.client.render.ClientPlayerPreviewRenderer;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -39,19 +41,11 @@ public enum AbilityRenderHandler {
         double viewerY = viewer.lastTickPosY + (viewer.posY - viewer.lastTickPosY) * event.getPartialTicks();
         double viewerZ = viewer.lastTickPosZ + (viewer.posZ - viewer.lastTickPosZ) * event.getPartialTicks();
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(-viewerX, -viewerY, -viewerZ);
-        prepareGlState();
-        try {
-            renderHeldStack(minecraft.player, minecraft.player.getHeldItemMainhand());
-            renderHeldStack(minecraft.player, minecraft.player.getHeldItemOffhand());
-        } finally {
-            restoreGlState();
-            GlStateManager.popMatrix();
-        }
+        renderHeldStack(minecraft.player, minecraft.player.getHeldItemMainhand(), viewerX, viewerY, viewerZ, event.getPartialTicks());
+        renderHeldStack(minecraft.player, minecraft.player.getHeldItemOffhand(), viewerX, viewerY, viewerZ, event.getPartialTicks());
     }
 
-    private static void renderHeldStack(EntityPlayer player, ItemStack stack) {
+    private static void renderHeldStack(EntityPlayer player, ItemStack stack, double viewerX, double viewerY, double viewerZ, float partialTicks) {
         if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ToggleableTool)) {
             return;
         }
@@ -61,33 +55,35 @@ public enum AbilityRenderHandler {
                 && tool.hasInstalledAbility(stack, Ability.VOIDSHIFT)
                 && tool.getSetting(stack, Ability.VOIDSHIFT)
                 && tool.getCustomSetting(stack, Ability.VOIDSHIFT) == 0) {
-            renderVoidShiftPreview(player, stack);
+            renderVoidShiftPreview(player, stack, viewerX, viewerY, viewerZ, partialTicks);
         }
 
         if (tool.supportsAbility(Ability.DROPTELEPORT)
                 && tool.hasInstalledAbility(stack, Ability.DROPTELEPORT)
                 && tool.getSetting(stack, Ability.DROPTELEPORT)
                 && tool.getCustomSetting(stack, Ability.DROPTELEPORT) == 0) {
-            renderDropTeleportBinding(player, stack);
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(-viewerX, -viewerY, -viewerZ);
+            prepareGlState();
+            try {
+                renderDropTeleportBinding(player, stack);
+            } finally {
+                restoreGlState();
+                GlStateManager.popMatrix();
+            }
         }
     }
 
-    private static void renderVoidShiftPreview(EntityPlayer player, ItemStack stack) {
+    private static void renderVoidShiftPreview(EntityPlayer player, ItemStack stack, double viewerX, double viewerY, double viewerZ, float partialTicks) {
         Vec3d position = getVoidShiftPosition(player.world, player, stack);
-        if (position == null) {
+        if (position == null || !(player instanceof AbstractClientPlayer)) {
             return;
         }
 
-        AxisAlignedBB feetBox = new AxisAlignedBB(
-                position.x - 0.3D,
-                position.y,
-                position.z - 0.3D,
-                position.x + 0.3D,
-                position.y + 1.8D,
-                position.z + 0.3D
-        );
-        drawSolidBox(feetBox, 120, 220, 255, 45);
-        drawWireBox(feetBox, 120, 220, 255, 210);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(-viewerX, -viewerY, -viewerZ);
+        ClientPlayerPreviewRenderer.renderTransparentLandingPlayer((AbstractClientPlayer) player, position.x, position.y, position.z, partialTicks, 0.5F);
+        GlStateManager.popMatrix();
     }
 
     private static Vec3d getVoidShiftPosition(World world, EntityPlayer player, ItemStack stack) {

@@ -6,7 +6,9 @@ import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
 import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.FluidPickupHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemFluidPoweredTool;
+import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
+import com.zzhalex.justdirethings.common.util.EntityDisplayNames;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.registry.ModFluids;
 import net.minecraft.client.resources.I18n;
@@ -14,6 +16,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,6 +24,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -30,7 +34,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public class ItemPolymorphicWandV2 extends ItemFluidPoweredTool {
+public class ItemPolymorphicWandV2 extends ItemFluidPoweredTool implements LeftClickableTool {
 
     public ItemPolymorphicWandV2() {
         super(1_000_000, 1_000_000, 1_000_000, 50, 8_000);
@@ -46,19 +50,28 @@ public class ItemPolymorphicWandV2 extends ItemFluidPoweredTool {
         }
         if (player.isSneaking()) {
             Entity lookedAt = AbilityMethods.getLookedAtEntity(world, player, 4.0D);
-            if (lookedAt instanceof EntityLiving) {
-                savePolymorphTarget(stack, player, (EntityLiving) lookedAt);
+            if (lookedAt instanceof EntityLivingBase) {
+                if (!world.isRemote) {
+                    savePolymorphTarget(stack, player, (EntityLivingBase) lookedAt);
+                }
                 return new ActionResult<>(EnumActionResult.SUCCESS, stack);
             }
+        }
+        ActionResult<ItemStack> settingsResult = openSettingsIfSneaking(world, player, hand);
+        if (settingsResult != null) {
+            return settingsResult;
         }
         ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(world, player, hand);
         return abilityResult != null ? abilityResult : super.onItemRightClick(world, player, hand);
     }
 
-    public static void savePolymorphTarget(ItemStack stack, EntityPlayer player, EntityLiving interactionTarget) {
+    public static void savePolymorphTarget(ItemStack stack, EntityPlayer player, EntityLivingBase interactionTarget) {
         String entityId = getEntityId(interactionTarget);
-        if (!entityId.isEmpty() && !AbilityMethods.isPolymorphicTargetDenied(entityId)) {
+        if (interactionTarget instanceof EntityLiving && !entityId.isEmpty() && !AbilityMethods.isPolymorphicTargetDenied(entityId)) {
             getOrCreateTag(stack).setString(JDTDataKeys.POLYMORPHIC_TARGET_ENTITY, entityId);
+            player.sendStatusMessage(new TextComponentTranslation("justdirethings.polymorphset", EntityDisplayNames.translationComponent(entityId)), true);
+        } else {
+            player.sendStatusMessage(new TextComponentTranslation("justdirethings.invalidpolymorphentity"), true);
         }
     }
 
@@ -76,6 +89,10 @@ public class ItemPolymorphicWandV2 extends ItemFluidPoweredTool {
                 TooltipHelper.formatNumber(getStoredFluid(stack)),
                 TooltipHelper.formatNumber(getFluidCapacity(stack))
         ));
+        String entityId = getSavedPolymorphTarget(stack);
+        if (!entityId.isEmpty()) {
+            tooltip.add(TextFormatting.AQUA + I18n.format("justdirethings.polymorphset", EntityDisplayNames.translatedName(entityId)));
+        }
     }
 
     @Override
@@ -117,4 +134,12 @@ public class ItemPolymorphicWandV2 extends ItemFluidPoweredTool {
         }
         return tag;
     }
+
+    private static String getSavedPolymorphTarget(ItemStack stack) {
+        if (stack == null || stack.isEmpty() || !stack.hasTagCompound()) {
+            return "";
+        }
+        return stack.getTagCompound().getString(JDTDataKeys.POLYMORPHIC_TARGET_ENTITY);
+    }
+
 }

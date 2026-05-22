@@ -32,7 +32,7 @@ public class FluidDropRecipeCategory implements IRecipeCategory<FluidDropRecipeW
 
     public FluidDropRecipeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
-        this.arrow = guiHelper.drawableBuilder(JEI_VANILLA, 82, 128, 24, 17).setTextureSize(256, 256).build();
+        this.arrow = guiHelper.drawableBuilder(JEI_VANILLA, 24, 132, 24, 17).setTextureSize(256, 256).build();
         this.icon = guiHelper.createDrawableIngredient(new ItemStack(ModContentItems.getItem("polymorphic_catalyst")));
     }
 

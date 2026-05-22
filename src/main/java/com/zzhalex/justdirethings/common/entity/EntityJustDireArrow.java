@@ -5,13 +5,17 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.monster.EntityPigZombie;
+import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.projectile.EntityTippedArrow;
+import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
@@ -22,7 +26,9 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class EntityJustDireArrow extends EntityTippedArrow {
 
@@ -41,6 +47,8 @@ public class EntityJustDireArrow extends EntityTippedArrow {
 
     private EntityLivingBase targetEntity;
     private final List<PotionEffect> jdtPotionEffects = new ArrayList<>();
+    private final Set<Integer> piercedEntityIds = new HashSet<>();
+    private boolean canHitMobs = true;
 
     private enum ArrowState {
         NORMAL,
@@ -87,19 +95,50 @@ public class EntityJustDireArrow extends EntityTippedArrow {
         }
 
         if (!world.isRemote && isPhase()) {
-            Entity entityHit = findEntityOnPath(getPositionVector(), getPositionVector().add(motionX, motionY, motionZ));
-            if (entityHit != null) {
-                onHit(new RayTraceResult(entityHit));
-                if (isDead) {
-                    return;
+            try {
+                canHitMobs = true;
+                Entity entityHit = findEntityOnPath(getPositionVector(), getPositionVector().add(motionX, motionY, motionZ));
+                if (entityHit != null) {
+                    onHit(new RayTraceResult(entityHit));
+                    if (isDead) {
+                        if (isEpic() && canContinueEpicArrow()) {
+                            resumeEpicArrowAfterHit();
+                        } else {
+                            return;
+                        }
+                    }
                 }
+            } finally {
+                canHitMobs = true;
             }
+            canHitMobs = false;
         }
 
         super.onUpdate();
+        canHitMobs = true;
+
+        if (!world.isRemote && isEpic() && isDead && canContinueEpicArrow()) {
+            resumeEpicArrowAfterHit();
+        }
+
+        if (!world.isRemote && isEpic() && targetEntity != null && wasAlreadyHit(targetEntity)) {
+            targetEntity = findNearestEntity();
+        }
 
         if (!world.isRemote && getOriginalVelocity() == 0.0F) {
             setOriginalVelocity((float) getMotionLength());
+        }
+
+        if (!world.isRemote && targetEntity != null && !targetEntity.isEntityAlive()) {
+            if (!isEpic()) {
+                setDead();
+                return;
+            }
+            targetEntity = findNearestEntity();
+            if (targetEntity == null || !targetEntity.isEntityAlive()) {
+                setDead();
+                return;
+            }
         }
 
         if (!world.isRemote && isHoming() && !inGround) {
@@ -123,9 +162,14 @@ public class EntityJustDireArrow extends EntityTippedArrow {
     protected void arrowHit(EntityLivingBase living) {
         super.arrowHit(living);
         if (isEpic()) {
+            if (!world.isRemote) {
+                piercedEntityIds.add(living.getEntityId());
+            }
             setArrowState(ArrowState.STOPPED_AND_ROTATING);
             dataManager.set(STATE_TICK_COUNTER, 0);
-            targetEntity = findNearestEntity();
+            if (!world.isRemote && isHoming() && piercedEntityIds.size() < JustDireArrowRules.epicMaxPiercedTargets()) {
+                targetEntity = findNearestEntity();
+            }
         }
     }
 
@@ -171,8 +215,8 @@ public class EntityJustDireArrow extends EntityTippedArrow {
 
     public void setEpicArrow(boolean epicArrow) {
         dataManager.set(EPIC_ARROW, epicArrow);
-        if (epicArrow) {
-            setIsCritical(true);
+        if (!epicArrow) {
+            piercedEntityIds.clear();
         }
     }
 
@@ -202,6 +246,45 @@ public class EntityJustDireArrow extends EntityTippedArrow {
 
     public void setTargetEntity(EntityLivingBase targetEntity) {
         this.targetEntity = targetEntity;
+    }
+
+    @Override
+    protected Entity findEntityOnPath(Vec3d start, Vec3d end) {
+        if (!canHitMobs) {
+            return null;
+        }
+        if (!isEpic()) {
+            return super.findEntityOnPath(start, end);
+        }
+        Entity nearestEntity = null;
+        double nearestDistance = 0.0D;
+        AxisAlignedBB searchArea = getEntityBoundingBox().expand(motionX, motionY, motionZ).grow(1.0D);
+        List<Entity> entities = world.getEntitiesInAABBexcluding(this, searchArea, this::canHitEntityOnPath);
+
+        for (Entity entity : entities) {
+            if (entity == shootingEntity && ticksExisted < 5) {
+                continue;
+            }
+            AxisAlignedBB bounds = entity.getEntityBoundingBox().grow(0.30000001192092896D);
+            RayTraceResult intercept = bounds.calculateIntercept(start, end);
+            if (intercept == null) {
+                continue;
+            }
+            double distance = start.squareDistanceTo(intercept.hitVec);
+            if (distance < nearestDistance || nearestDistance == 0.0D) {
+                nearestEntity = entity;
+                nearestDistance = distance;
+            }
+        }
+
+        return nearestEntity;
+    }
+
+    private boolean canHitEntityOnPath(Entity entity) {
+        if (entity == null || !EntitySelectors.NOT_SPECTATING.apply(entity) || !entity.canBeCollidedWith() || !entity.isEntityAlive()) {
+            return false;
+        }
+        return !isEpic() || !piercedEntityIds.contains(entity.getEntityId());
     }
 
     @Override
@@ -298,7 +381,15 @@ public class EntityJustDireArrow extends EntityTippedArrow {
         if (entity instanceof IMob) {
             return true;
         }
-        if (entity instanceof EntityLiving && ((EntityLiving) entity).getAttackTarget() != null) {
+        if (entity instanceof EntityPigZombie && ((EntityPigZombie) entity).isAngry()) {
+            setTargetAngry(true);
+            return true;
+        }
+        if (entity instanceof EntityEnderman && ((EntityEnderman) entity).isScreaming()) {
+            setTargetAngry(true);
+            return true;
+        }
+        if (entity instanceof EntityWolf && ((EntityWolf) entity).isAngry()) {
             setTargetAngry(true);
             return true;
         }
@@ -452,11 +543,11 @@ public class EntityJustDireArrow extends EntityTippedArrow {
     private EntityLivingBase findNearestEntity() {
         double radius = searchRadius();
         AxisAlignedBB searchArea = getEntityBoundingBox().grow(radius, radius / 2.0D, radius);
-        List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, searchArea, this::canTarget);
+        List<EntityLiving> entities = world.getEntitiesWithinAABB(EntityLiving.class, searchArea, this::canTarget);
         EntityLivingBase nearestEntity = null;
         double nearestDistance = Double.MAX_VALUE;
 
-        for (EntityLivingBase entity : entities) {
+        for (EntityLiving entity : entities) {
             double distance = getDistanceSq(entity);
             if (distance < nearestDistance) {
                 nearestEntity = entity;
@@ -471,7 +562,35 @@ public class EntityJustDireArrow extends EntityTippedArrow {
         if (entity == null || entity == this.shootingEntity || !entity.isEntityAlive()) {
             return false;
         }
+        if (wasAlreadyHit(entity)) {
+            return false;
+        }
         return !getHostileOnly() || isHostileEntity(entity);
+    }
+
+    private boolean wasAlreadyHit(EntityLivingBase target) {
+        return isEpic() && target != null && piercedEntityIds.contains(target.getEntityId());
+    }
+
+    private boolean canContinueEpicArrow() {
+        return isEpic() && piercedEntityIds.size() < JustDireArrowRules.epicMaxPiercedTargets();
+    }
+
+    private void resumeEpicArrowAfterHit() {
+        isDead = false;
+        inGround = false;
+        arrowShake = 0;
+
+        if (isHoming()) {
+            if (targetEntity == null || !targetEntity.isEntityAlive() || wasAlreadyHit(targetEntity)) {
+                targetEntity = findNearestEntity();
+            }
+            if (targetEntity == null || !targetEntity.isEntityAlive()) {
+                setDead();
+                return;
+            }
+            setArrowState(ArrowState.STOPPED_AND_ROTATING);
+        }
     }
 
     private void adjustCourseTowards(EntityLivingBase target) {

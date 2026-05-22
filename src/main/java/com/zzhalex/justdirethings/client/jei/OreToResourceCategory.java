@@ -4,7 +4,6 @@ import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.registry.ModContentBlocks;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
-import mezz.jei.api.gui.IDrawableAnimated;
 import mezz.jei.api.gui.IDrawableStatic;
 import mezz.jei.api.gui.IGuiItemStackGroup;
 import mezz.jei.api.gui.IRecipeLayout;
@@ -25,14 +24,13 @@ public class OreToResourceCategory implements IRecipeCategory<OreToResourceRecip
     private final IDrawableStatic background;
     private final IDrawable icon;
     private final IDrawable pickaxeIcon;
-    private final IDrawableAnimated animatedArrow;
+    private final IDrawableStatic arrow;
 
     public OreToResourceCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createBlankDrawable(120, 30);
         this.icon = guiHelper.createDrawableIngredient(new ItemStack(ModContentBlocks.RAW_FERRICORE_ORE));
         this.pickaxeIcon = guiHelper.createDrawableIngredient(new ItemStack(Items.IRON_PICKAXE));
-        IDrawableStatic arrowDrawable = guiHelper.drawableBuilder(JEI_VANILLA, 82, 128, 24, 17).setTextureSize(256, 256).build();
-        this.animatedArrow = guiHelper.createAnimatedDrawable(arrowDrawable, 40, IDrawableAnimated.StartDirection.LEFT, false);
+        this.arrow = guiHelper.drawableBuilder(JEI_VANILLA, 24, 132, 24, 17).setTextureSize(256, 256).build();
     }
 
     @Override
@@ -62,7 +60,7 @@ public class OreToResourceCategory implements IRecipeCategory<OreToResourceRecip
 
     @Override
     public void drawExtras(net.minecraft.client.Minecraft minecraft) {
-        animatedArrow.draw(minecraft, 46, 10);
+        arrow.draw(minecraft, 46, 10);
         background.draw(minecraft, 17, 0);
         pickaxeIcon.draw(minecraft, 50, -2);
     }

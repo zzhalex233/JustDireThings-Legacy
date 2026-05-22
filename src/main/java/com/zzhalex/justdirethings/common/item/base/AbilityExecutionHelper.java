@@ -26,7 +26,12 @@ public final class AbilityExecutionHelper {
         ToggleableTool tool = (ToggleableTool) stack.getItem();
         ToolState state = ToggleableTool.readToolState(stack);
         boolean consumedAny = false;
+        boolean voidShiftTakesPriority = canExecuteFromDirectUse(tool, stack, state, Ability.VOIDSHIFT)
+                && AbilityMethods.canStartVoidShift(world, player, stack);
         for (Ability ability : tool.getSupportedAbilities()) {
+            if (ability == Ability.AIRBURST && voidShiftTakesPriority) {
+                continue;
+            }
             if (!ability.requiresUseAction() || ability.getBindingType() != Ability.BindingType.LEFT_AND_CUSTOM
                     || !canExecuteFromDirectUse(tool, stack, state, ability)) {
                 continue;
@@ -73,7 +78,7 @@ public final class AbilityExecutionHelper {
                 && (!(stack.getItem() instanceof LeftClickableTool) || LeftClickableTool.getBindingMode(stack, ability) == 0);
     }
 
-    private static boolean canExecuteFromDirectUseOn(ToggleableTool tool, ItemStack stack, ToolState state, Ability ability) {
+    public static boolean canExecuteFromDirectUseOn(ToggleableTool tool, ItemStack stack, ToolState state, Ability ability) {
         return tool != null
                 && stack != null
                 && !stack.isEmpty()
@@ -82,6 +87,6 @@ public final class AbilityExecutionHelper {
                 && tool.supportsAbility(ability)
                 && tool.hasInstalledAbility(stack, ability)
                 && tool.getSetting(stack, ability)
-                && (!(stack.getItem() instanceof LeftClickableTool) || !LeftClickableTool.getLeftClickList(stack).contains(ability));
+                && (!(stack.getItem() instanceof LeftClickableTool) || LeftClickableTool.getBindingMode(stack, ability) == 0);
     }
 }

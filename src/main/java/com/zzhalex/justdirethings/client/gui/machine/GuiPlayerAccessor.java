@@ -14,17 +14,16 @@ public class GuiPlayerAccessor extends GuiMachineBase {
     public GuiPlayerAccessor(ContainerPlayerAccessor container) {
         super(container);
         this.container = container;
-        this.baseYSize = 222;
     }
 
     @Override
     protected void addMachineButtons() {
         TilePlayerAccessor tile = container.getTile();
         addMachineButton(MachineButtonFactory.inventoryConnectionButton(80, 22, MachineSettingKeys.INVENTORY_CONNECTION_UP, tile.getInventoryConnectionTypeIndex(EnumFacing.UP)));
-        addMachineButton(MachineButtonFactory.inventoryConnectionButton(80, 58, MachineSettingKeys.INVENTORY_CONNECTION_DOWN, tile.getInventoryConnectionTypeIndex(EnumFacing.DOWN)));
         addMachineButton(MachineButtonFactory.inventoryConnectionButton(80, 40, MachineSettingKeys.INVENTORY_CONNECTION_NORTH, tile.getInventoryConnectionTypeIndex(EnumFacing.NORTH)));
-        addMachineButton(MachineButtonFactory.inventoryConnectionButton(62, 58, MachineSettingKeys.INVENTORY_CONNECTION_SOUTH, tile.getInventoryConnectionTypeIndex(EnumFacing.SOUTH)));
         addMachineButton(MachineButtonFactory.inventoryConnectionButton(62, 40, MachineSettingKeys.INVENTORY_CONNECTION_WEST, tile.getInventoryConnectionTypeIndex(EnumFacing.WEST)));
         addMachineButton(MachineButtonFactory.inventoryConnectionButton(98, 40, MachineSettingKeys.INVENTORY_CONNECTION_EAST, tile.getInventoryConnectionTypeIndex(EnumFacing.EAST)));
+        addMachineButton(MachineButtonFactory.inventoryConnectionButton(80, 58, MachineSettingKeys.INVENTORY_CONNECTION_DOWN, tile.getInventoryConnectionTypeIndex(EnumFacing.DOWN)));
+        addMachineButton(MachineButtonFactory.inventoryConnectionButton(62, 58, MachineSettingKeys.INVENTORY_CONNECTION_SOUTH, tile.getInventoryConnectionTypeIndex(EnumFacing.SOUTH)));
     }
 }

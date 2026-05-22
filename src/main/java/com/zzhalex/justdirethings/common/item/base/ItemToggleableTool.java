@@ -1,15 +1,25 @@
 package com.zzhalex.justdirethings.common.item.base;
 
+import com.zzhalex.justdirethings.JustDireThingsLegacy;
+import com.zzhalex.justdirethings.common.entity.EntityFireResistantItem;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.ability.AbilityAvailability;
 import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import com.zzhalex.justdirethings.data.tool.ToolStateIO;
+import com.zzhalex.justdirethings.registry.ModContainers;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
@@ -37,7 +47,13 @@ public abstract class ItemToggleableTool extends Item implements ToggleableTool 
         if (supportedAbilities.isEmpty()) {
             return Collections.emptySet();
         }
-        return Collections.unmodifiableSet(EnumSet.copyOf(supportedAbilities));
+        EnumSet<Ability> abilities = EnumSet.noneOf(Ability.class);
+        for (Ability ability : supportedAbilities) {
+            if (AbilityAvailability.isAvailable(ability)) {
+                abilities.add(ability);
+            }
+        }
+        return abilities.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(abilities);
     }
 
     @Override
@@ -46,7 +62,7 @@ public abstract class ItemToggleableTool extends Item implements ToggleableTool 
     }
 
     public boolean supportsAbility(Ability ability) {
-        return ability != null && supportedAbilities.contains(ability);
+        return ability != null && supportedAbilities.contains(ability) && AbilityAvailability.isAvailable(ability);
     }
 
     public ToolState getToolState(ItemStack stack) {
@@ -138,6 +154,59 @@ public abstract class ItemToggleableTool extends Item implements ToggleableTool 
 
     protected ToolState createDefaultToolState() {
         return new ToolState();
+    }
+
+    protected ActionResult<ItemStack> openSettingsIfSneaking(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        if (player.isSneaking()) {
+            if (!world.isRemote) {
+                player.openGui(JustDireThingsLegacy.INSTANCE, ModContainers.GUI_TOOL_SETTINGS, world, 0, 0, 0);
+            }
+            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        }
+        return null;
+    }
+
+    public boolean isFireResistantDrop(ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public boolean hasCustomEntity(ItemStack stack) {
+        return isFireResistantDrop(stack);
+    }
+
+    @Override
+    public Entity createEntity(World world, Entity location, ItemStack itemstack) {
+        if (!isFireResistantDrop(itemstack)) {
+            return null;
+        }
+        EntityFireResistantItem entity = new EntityFireResistantItem(world, location.posX, location.posY, location.posZ, itemstack);
+        if (location instanceof EntityItem) {
+            NBTTagCompound tag = new NBTTagCompound();
+            location.writeToNBT(tag);
+            tag.removeTag("UUIDMost");
+            tag.removeTag("UUIDLeast");
+            entity.readFromNBT(tag);
+            entity.setItem(itemstack);
+            entity.setPosition(location.posX, location.posY, location.posZ);
+        }
+        entity.motionX = location.motionX;
+        entity.motionY = location.motionY;
+        entity.motionZ = location.motionZ;
+        entity.rotationYaw = location.rotationYaw;
+        entity.rotationPitch = location.rotationPitch;
+        entity.prevRotationYaw = location.prevRotationYaw;
+        entity.prevRotationPitch = location.prevRotationPitch;
+        return entity;
+    }
+
+    @Override
+    public boolean onEntityItemUpdate(EntityItem entityItem) {
+        if (entityItem != null && isFireResistantDrop(entityItem.getItem())) {
+            entityItem.extinguish();
+        }
+        return false;
     }
 
     @Override

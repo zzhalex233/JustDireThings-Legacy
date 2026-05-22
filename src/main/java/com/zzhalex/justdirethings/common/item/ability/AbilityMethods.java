@@ -11,10 +11,10 @@ import com.zzhalex.justdirethings.common.item.base.FluidBackedItem;
 import com.zzhalex.justdirethings.common.item.base.ItemToggleableTool;
 import com.zzhalex.justdirethings.common.item.base.PoweredEnergyCostHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
+import com.zzhalex.justdirethings.common.event.ToolMiningAbilityHandler;
 import com.zzhalex.justdirethings.common.item.material.JDTToolTier;
 import com.zzhalex.justdirethings.common.tile.TileEclipseGate;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
-import com.zzhalex.justdirethings.data.tool.AbilityCooldown;
 import com.zzhalex.justdirethings.data.tool.ToolState;
 import com.zzhalex.justdirethings.data.tool.ToolStateIO;
 import com.zzhalex.justdirethings.registry.ModContentBlocks;
@@ -49,6 +49,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -228,7 +229,7 @@ public final class AbilityMethods {
         if (world.isRemote) {
             JustDireThingsLegacy.proxy.discoverThings(player, ability, stack);
             world.playSound(player, player.posX, player.posY, player.posZ,
-                    ability == Ability.OREXRAY ? SoundEvents.BLOCK_NOTE_XYLOPHONE : SoundEvents.BLOCK_END_PORTAL_FRAME_FILL,
+                    ability == Ability.OREXRAY ? SoundEvents.BLOCK_STONE_BUTTON_CLICK_ON : SoundEvents.BLOCK_END_PORTAL_FRAME_FILL,
                     SoundCategory.PLAYERS, 1.0F, 1.0F);
             return false;
         }
@@ -283,8 +284,9 @@ public final class AbilityMethods {
         player.motionZ = look.z * burstStrength;
         player.fallDistance = 0.0F;
         player.velocityChanged = true;
-        if (player instanceof EntityPlayerMP) {
-            ((EntityPlayerMP) player).connection.sendPacket(new SPacketEntityVelocity(player));
+        EntityPlayerMP serverPlayer = player instanceof EntityPlayerMP ? (EntityPlayerMP) player : null;
+        if (serverPlayer != null && serverPlayer.connection != null) {
+            serverPlayer.connection.sendPacket(new SPacketEntityVelocity(player));
         }
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 0.5F, 0.125F);
         damageTool(stack, player, Ability.AIRBURST, Math.max(1, multiplier));
@@ -306,11 +308,32 @@ public final class AbilityMethods {
             return false;
         }
 
-        player.setPositionAndUpdate(shiftPosition.x, shiftPosition.y, shiftPosition.z);
+        teleportPlayerSafely(player, shiftPosition);
         player.fallDistance = 0.0F;
         world.playSound(null, shiftPosition.x, shiftPosition.y, shiftPosition.z, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
         damageTool(stack, player, Ability.VOIDSHIFT, Math.max(1, distanceTraveled));
         return false;
+    }
+
+    private static void teleportPlayerSafely(EntityPlayer player, Vec3d position) {
+        EntityPlayerMP serverPlayer = player instanceof EntityPlayerMP ? (EntityPlayerMP) player : null;
+        if (serverPlayer != null && serverPlayer.connection != null) {
+            serverPlayer.connection.setPlayerLocation(position.x, position.y, position.z, player.rotationYaw, player.rotationPitch);
+            return;
+        }
+        player.setPosition(position.x, position.y, position.z);
+    }
+
+    public static boolean canStartVoidShift(World world, EntityPlayer player, ItemStack stack) {
+        if (world == null || player == null || stack == null || stack.isEmpty() || !canUseAbility(stack, Ability.VOIDSHIFT)) {
+            return false;
+        }
+        Vec3d shiftPosition = getShiftPosition(world, player, stack);
+        if (Vec3d.ZERO.equals(shiftPosition) || !world.getWorldBorder().contains(new BlockPos(shiftPosition))) {
+            return false;
+        }
+        int distanceTraveled = (int) player.getPositionVector().distanceTo(shiftPosition);
+        return distanceTraveled > 0 && canUseAbilityAndDurability(stack, Ability.VOIDSHIFT, distanceTraveled);
     }
 
     private static boolean cauterizeWounds(World world, EntityPlayer player, ItemStack stack) {
@@ -322,7 +345,7 @@ public final class AbilityMethods {
         }
 
         player.heal(6.0F);
-        addCooldownFromParams(stack, Ability.CAUTERIZEWOUNDS, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.CAUTERIZEWOUNDS, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1.0F, 1.0F);
         spawnRandomEyeParticles(world, player, EnumParticleTypes.FLAME, 10);
         damageTool(stack, player, Ability.CAUTERIZEWOUNDS);
@@ -334,8 +357,8 @@ public final class AbilityMethods {
             return false;
         }
 
-        addCooldownFromParams(stack, Ability.INVULNERABILITY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.PLAYERS, 1.0F, 1.0F);
+        addCooldownFromParams(player, stack, Ability.INVULNERABILITY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 1.0F, 1.0F);
         damageTool(stack, player, Ability.INVULNERABILITY);
         return false;
     }
@@ -345,7 +368,7 @@ public final class AbilityMethods {
             return false;
         }
 
-        addCooldownFromParams(stack, Ability.GROUNDSTOMP, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.GROUNDSTOMP, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         int strength = getToolValue(stack, Ability.GROUNDSTOMP);
         AxisAlignedBB area = new AxisAlignedBB(player.posX - GROUNDSTOMP_RADIUS, player.posY - GROUNDSTOMP_RADIUS, player.posZ - GROUNDSTOMP_RADIUS,
                 player.posX + GROUNDSTOMP_RADIUS, player.posY + GROUNDSTOMP_RADIUS, player.posZ + GROUNDSTOMP_RADIUS);
@@ -372,7 +395,7 @@ public final class AbilityMethods {
         EntityLiving livingTarget = (EntityLiving) target;
         livingTarget.setAttackTarget(null);
         addStupefyTarget(stack, livingTarget.getUniqueID().toString());
-        addCooldownFromParams(stack, Ability.STUPEFY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.STUPEFY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.PLAYERS, 0.5F, 0.75F);
         spawnParticles(world, EnumParticleTypes.SMOKE_NORMAL, target.posX, target.posY + target.height * 0.75D, target.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
         damageTool(stack, player, Ability.STUPEFY);
@@ -391,9 +414,10 @@ public final class AbilityMethods {
 
         boolean peaceful = JDTEntityGroups.isPolymorphicPeaceful(getEntityId(entity));
         if (!peaceful && !JDTEntityGroups.isPolymorphicHostile(getEntityId(entity))) {
+            player.sendStatusMessage(new TextComponentTranslation("justdirethings.invalidpolymorphentity"), true);
             return false;
         }
-        if (!hasEnoughPolymorphicFluid(stack, RANDOM_POLYMORPH_FLUID_COST)) {
+        if (!hasEnoughPolymorphicFluid(player, stack, RANDOM_POLYMORPH_FLUID_COST)) {
             return false;
         }
 
@@ -402,7 +426,7 @@ public final class AbilityMethods {
             return false;
         }
 
-        consumePolymorphicFluid(stack, RANDOM_POLYMORPH_FLUID_COST);
+        consumePolymorphicFluid(player, stack, RANDOM_POLYMORPH_FLUID_COST);
         world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.PLAYERS, 0.5F, 0.75F);
         spawnParticles(world, EnumParticleTypes.SMOKE_NORMAL, entity.posX, entity.posY + entity.height * 0.75D, entity.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
         damageTool(stack, player, Ability.POLYMORPH_RANDOM);
@@ -423,17 +447,17 @@ public final class AbilityMethods {
         if (replacementId.isEmpty() || JDTEntityGroups.isPolymorphicTargetDenied(replacementId)) {
             return false;
         }
-        if (!hasEnoughPolymorphicFluid(stack, TARGET_POLYMORPH_FLUID_COST)) {
+        if (!hasEnoughPolymorphicFluid(player, stack, TARGET_POLYMORPH_FLUID_COST)) {
             return false;
         }
         if (!spawnReplacementMob(world, (EntityLiving) entity, replacementId)) {
             return false;
         }
 
-        consumePolymorphicFluid(stack, TARGET_POLYMORPH_FLUID_COST);
+        consumePolymorphicFluid(player, stack, TARGET_POLYMORPH_FLUID_COST);
         world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.PLAYERS, 0.5F, 0.75F);
         spawnParticles(world, EnumParticleTypes.SMOKE_NORMAL, entity.posX, entity.posY + entity.height * 0.75D, entity.posZ, 20, 0.25D, 0.2D, 0.25D, 0.0D);
-        damageTool(stack, player, Ability.POLYMORPH_RANDOM);
+        damageTool(stack, player, Ability.POLYMORPH_TARGET);
         return false;
     }
 
@@ -459,7 +483,7 @@ public final class AbilityMethods {
             return false;
         }
 
-        addCooldownFromParams(stack, Ability.DEBUFFREMOVER, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.DEBUFFREMOVER, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0F, 1.0F);
         List<Potion> harmfulEffects = new ArrayList<>();
         for (PotionEffect effect : player.getActivePotionEffects()) {
@@ -483,7 +507,7 @@ public final class AbilityMethods {
             return false;
         }
 
-        addCooldownFromParams(stack, Ability.EARTHQUAKE, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.EARTHQUAKE, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0F, 0.5F);
         AxisAlignedBB area = new AxisAlignedBB(player.posX - EARTHQUAKE_RADIUS, player.posY - EARTHQUAKE_RADIUS, player.posZ - EARTHQUAKE_RADIUS,
                 player.posX + EARTHQUAKE_RADIUS, player.posY + EARTHQUAKE_RADIUS, player.posZ + EARTHQUAKE_RADIUS);
@@ -505,7 +529,7 @@ public final class AbilityMethods {
             return false;
         }
 
-        addCooldownFromParams(stack, Ability.NOAI, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.NOAI, false, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         AxisAlignedBB area = new AxisAlignedBB(player.posX - NOAI_RADIUS, player.posY - NOAI_RADIUS, player.posZ - NOAI_RADIUS,
                 player.posX + NOAI_RADIUS, player.posY + NOAI_RADIUS, player.posZ + NOAI_RADIUS);
         List<EntityLiving> mobs = world.getEntitiesWithinAABB(EntityLiving.class, area, AbilityMethods::isValidNoAiEntity);
@@ -566,20 +590,25 @@ public final class AbilityMethods {
 
         int maxBreak = getLeafbreakerMaxBreak(stack);
         Set<BlockPos> alsoBreakSet = findLikeBlocks(world, state, pos, maxBreak, LEAFBREAKER_RADIUS);
-        for (BlockPos breakPos : alsoBreakSet) {
-            if (!canUseAbilityAndDurability(stack, Ability.LEAFBREAKER)) {
-                break;
-            }
-            IBlockState before = world.getBlockState(breakPos);
-            if (!isLeafBlock(before)) {
-                continue;
-            }
-            if (world.destroyBlock(breakPos, true)) {
-                world.notifyBlockUpdate(breakPos, before, world.getBlockState(breakPos), 3);
-                if (world.rand.nextFloat() < 0.1F) {
-                    damageTool(stack, player, Ability.LEAFBREAKER);
+        ToolMiningAbilityHandler.beginManualDropBatch(pos);
+        try {
+            for (BlockPos breakPos : alsoBreakSet) {
+                if (!canUseAbilityAndDurability(stack, Ability.LEAFBREAKER)) {
+                    break;
+                }
+                IBlockState before = world.getBlockState(breakPos);
+                if (!isLeafBlock(before)) {
+                    continue;
+                }
+                if (ToolMiningAbilityHandler.breakBlockForAbilities(world, breakPos, player, stack, false)) {
+                    world.notifyBlockUpdate(breakPos, before, world.getBlockState(breakPos), 3);
+                    if (world.rand.nextFloat() < 0.1F) {
+                        damageTool(stack, player, Ability.LEAFBREAKER);
+                    }
                 }
             }
+        } finally {
+            ToolMiningAbilityHandler.finishManualDropBatch(stack, world, pos, player);
         }
         return true;
     }
@@ -614,6 +643,7 @@ public final class AbilityMethods {
 
         if (anyWorked) {
             world.playSound(null, pos, SoundEvents.ENTITY_ENDEREYE_DEATH, SoundCategory.PLAYERS, 1.0F, 1.0F);
+            spawnEclipseGateParticles(world, posList);
         }
         return anyWorked;
     }
@@ -632,7 +662,7 @@ public final class AbilityMethods {
             return false;
         }
 
-        addCooldownFromParams(stack, Ability.DECOY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
+        addCooldownFromParams(player, stack, Ability.DECOY, true, DEFAULT_ACTIVE_COOLDOWN_TICKS);
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.EVOCATION_ILLAGER_PREPARE_SUMMON, SoundCategory.PLAYERS, 1.0F, 1.0F);
         damageTool(stack, player, Ability.DECOY);
         return false;
@@ -714,21 +744,11 @@ public final class AbilityMethods {
     }
 
     private static boolean hasActiveCooldown(ItemStack stack, Ability ability) {
-        for (AbilityCooldown cooldown : readStackState(stack).getAbilityCooldowns()) {
-            if (ability.getId().equals(cooldown.getAbilityId()) && cooldown.isActive() && cooldown.getRemainingTicks() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return AbilityCooldownTracker.hasActiveCooldown(stack, ability);
     }
 
     private static boolean hasCooldown(ItemStack stack, Ability ability) {
-        for (AbilityCooldown cooldown : readStackState(stack).getAbilityCooldowns()) {
-            if (ability.getId().equals(cooldown.getAbilityId()) && cooldown.getRemainingTicks() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return AbilityCooldownTracker.hasCooldown(stack, ability);
     }
 
     private static int getToolValue(ItemStack stack, Ability ability) {
@@ -739,7 +759,7 @@ public final class AbilityMethods {
         return readStackState(stack).getAbilityValues().getOrDefault(ability.getId(), params.defaultValue);
     }
 
-    private static void addCooldownFromParams(ItemStack stack, Ability ability, boolean active, int fallbackTicks) {
+    private static void addCooldownFromParams(EntityPlayer player, ItemStack stack, Ability ability, boolean active, int fallbackTicks) {
         int ticks = fallbackTicks;
         if (stack.getItem() instanceof ToggleableTool) {
             AbilityParams params = ((ToggleableTool) stack.getItem()).getAbilityParams(ability);
@@ -749,10 +769,7 @@ public final class AbilityMethods {
             }
         }
 
-        ToolState state = readStackState(stack);
-        state.getAbilityCooldowns().removeIf(cooldown -> ability.getId().equals(cooldown.getAbilityId()));
-        state.getAbilityCooldowns().add(new AbilityCooldown(ability.getId(), ticks, active));
-        writeStackState(stack, state);
+        AbilityCooldownTracker.addCooldown(player, stack, ability, ticks, active);
     }
 
     public static List<String> getStupefyTargets(ItemStack stack) {
@@ -858,13 +875,14 @@ public final class AbilityMethods {
             return;
         }
 
-        drops = compactDrops(drops);
         if (canUseAbilityAndDurability(stack, Ability.SMELTER)) {
             SmeltResult smeltResult = smeltAbilityDrops(stack, player, drops);
             drops = compactDrops(smeltResult.drops);
             if (smeltResult.didSmelt) {
                 spawnSmelterParticles(world, breakPositions);
             }
+        } else {
+            drops = compactDrops(drops);
         }
 
         if (!drops.isEmpty() && canUseAbilityAndDurability(stack, Ability.DROPTELEPORT)) {
@@ -931,17 +949,40 @@ public final class AbilityMethods {
                 continue;
             }
             ItemStack result = FurnaceRecipes.instance().getSmeltingResult(drop);
-            if (!result.isEmpty() && canUseAbilityAndDurability(stack, Ability.SMELTER, drop.getCount())) {
+            int smeltCount = result.isEmpty() ? 0 : Math.min(drop.getCount(), getAffordableAbilityUses(stack, Ability.SMELTER, drop.getCount()));
+            if (!result.isEmpty() && smeltCount > 0) {
                 ItemStack resultCopy = result.copy();
-                resultCopy.setCount(drop.getCount());
+                resultCopy.setCount(smeltCount);
                 smelted.add(resultCopy);
-                damageTool(stack, player, Ability.SMELTER, drop.getCount());
+                damageTool(stack, player, Ability.SMELTER, smeltCount);
                 didSmelt = true;
+                int unsmeltedCount = drop.getCount() - smeltCount;
+                if (unsmeltedCount > 0) {
+                    ItemStack unsmelted = drop.copy();
+                    unsmelted.setCount(unsmeltedCount);
+                    smelted.add(unsmelted);
+                }
             } else {
                 smelted.add(drop);
             }
         }
         return new SmeltResult(smelted, didSmelt);
+    }
+
+    private static int getAffordableAbilityUses(ItemStack stack, Ability ability, int requestedUses) {
+        if (requestedUses <= 0 || !canUseAbility(stack, ability)) {
+            return 0;
+        }
+        int cappedUses = requestedUses;
+        IEnergyStorage energyStorage = stack.getCapability(CapabilityEnergy.ENERGY, null);
+        if (energyStorage != null && ability.getFeCost() > 0) {
+            cappedUses = Math.min(cappedUses, energyStorage.getEnergyStored() / ability.getFeCost());
+        }
+        if (stack.isItemStackDamageable() && ability.getDurabilityCost() > 0) {
+            int remainingDurability = stack.getMaxDamage() - stack.getItemDamage();
+            cappedUses = Math.min(cappedUses, remainingDurability / ability.getDurabilityCost());
+        }
+        return Math.max(0, cappedUses);
     }
 
     private static void spawnSmelterParticles(World world, Set<BlockPos> breakPositions) {
@@ -985,6 +1026,29 @@ public final class AbilityMethods {
                     0.0D,
                     0.0D
             );
+        }
+    }
+
+    private static void spawnEclipseGateParticles(World world, Set<BlockPos> positions) {
+        if (!(world instanceof WorldServer) || positions == null || positions.isEmpty()) {
+            return;
+        }
+        int iterations = positions.size() > 10 ? 1 : 5;
+        WorldServer serverWorld = (WorldServer) world;
+        for (BlockPos pos : positions) {
+            for (int i = 0; i < iterations; i++) {
+                serverWorld.spawnParticle(
+                        EnumParticleTypes.PORTAL,
+                        pos.getX() + world.rand.nextDouble(),
+                        pos.getY() - 0.5D + world.rand.nextDouble(),
+                        pos.getZ() + world.rand.nextDouble(),
+                        1,
+                        0.0D,
+                        0.0D,
+                        0.0D,
+                        0.0D
+                );
+            }
         }
     }
 
@@ -1127,7 +1191,10 @@ public final class AbilityMethods {
         return true;
     }
 
-    private static boolean hasEnoughPolymorphicFluid(ItemStack stack, int amount) {
+    private static boolean hasEnoughPolymorphicFluid(EntityPlayer player, ItemStack stack, int amount) {
+        if (player != null && player.capabilities.isCreativeMode) {
+            return true;
+        }
         if (!(stack.getItem() instanceof FluidBackedItem)) {
             return false;
         }
@@ -1135,8 +1202,11 @@ public final class AbilityMethods {
         return fluidItem.getStoredFluid(stack) >= amount;
     }
 
-    private static boolean consumePolymorphicFluid(ItemStack stack, int amount) {
-        if (!hasEnoughPolymorphicFluid(stack, amount)) {
+    private static boolean consumePolymorphicFluid(EntityPlayer player, ItemStack stack, int amount) {
+        if (player != null && player.capabilities.isCreativeMode) {
+            return true;
+        }
+        if (!hasEnoughPolymorphicFluid(player, stack, amount)) {
             return false;
         }
         FluidBackedItem fluidItem = (FluidBackedItem) stack.getItem();
@@ -1266,16 +1336,6 @@ public final class AbilityMethods {
         if (world instanceof WorldServer) {
             ((WorldServer) world).spawnParticle(particle, x, y, z, count, xOffset, yOffset, zOffset, speed, parameters);
         }
-    }
-
-    private static void writeStackState(ItemStack stack, ToolState state) {
-        if (stack == null || stack.isEmpty()) {
-            return;
-        }
-        if (!stack.hasTagCompound()) {
-            stack.setTagCompound(new net.minecraft.nbt.NBTTagCompound());
-        }
-        stack.getTagCompound().setTag(JDTDataKeys.TOOL_STATE, ToolStateIO.write(state));
     }
 
     private static boolean notYetImplementedUseOn(

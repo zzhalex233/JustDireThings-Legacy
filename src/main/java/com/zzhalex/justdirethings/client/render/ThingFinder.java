@@ -1,11 +1,12 @@
 package com.zzhalex.justdirethings.client.render;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
-import net.minecraft.block.Block;
+import com.zzhalex.justdirethings.common.util.OreDetection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -13,9 +14,8 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -26,7 +26,6 @@ import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -114,21 +113,7 @@ public enum ThingFinder {
     }
 
     private static boolean isOreBlock(IBlockState blockState) {
-        Block block = blockState.getBlock();
-        Item item = Item.getItemFromBlock(block);
-        if (item == null) {
-            return false;
-        }
-        ItemStack oreStack = new ItemStack(item, 1, block.getMetaFromState(blockState));
-        if (oreStack.isEmpty()) {
-            return false;
-        }
-        for (int id : OreDictionary.getOreIDs(oreStack)) {
-            if (OreDictionary.getOreName(id).startsWith("ore")) {
-                return true;
-            }
-        }
-        return false;
+        return OreDetection.isOreBlock(blockState);
     }
 
     private static boolean isCorrectToolForOre(IBlockState blockState, ItemStack stack) {
@@ -140,7 +125,7 @@ public enum ThingFinder {
         BlockPos playerPos = getPlayerOnPos(player);
         AxisAlignedBB searchArea = new AxisAlignedBB(playerPos.add(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
                 playerPos.add(SCAN_RADIUS + 1, SCAN_RADIUS + 1, SCAN_RADIUS + 1));
-        entityList.addAll(player.world.getEntitiesWithinAABB(EntityLiving.class, searchArea, entity -> entity instanceof IMob));
+        entityList.addAll(player.world.getEntitiesWithinAABB(EntityLiving.class, searchArea, entity -> entity instanceof EntityMob));
         if (startTimer) {
             entityParticlesStartTime = System.currentTimeMillis();
         }
@@ -170,11 +155,12 @@ public enum ThingFinder {
                 if (!isOreBlock(state)) {
                     continue;
                 }
+                IBakedModel model = minecraft.getBlockRendererDispatcher().getModelForState(state);
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(pos.getX() + 0.0005D, pos.getY() + 0.0005D, pos.getZ() + 0.0005D);
                 GlStateManager.scale(0.999F, 0.999F, 0.999F);
                 buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
-                renderXRayModelQuads(buffer, minecraft.getBlockRendererDispatcher().getModelForState(state), state);
+                renderXRayModelQuads(buffer, world, model, state, pos);
                 tessellator.draw();
                 GlStateManager.popMatrix();
             }
@@ -184,24 +170,57 @@ public enum ThingFinder {
         }
     }
 
+    private static void renderXRayModelQuads(BufferBuilder buffer, World world, IBakedModel model, IBlockState state, BlockPos pos) {
+        for (EnumFacing face : EnumFacing.values()) {
+            if (isOreBlock(world.getBlockState(pos.offset(face)))) {
+                continue;
+            }
+            int color = faceShadeColor(face);
+            for (BakedQuad quad : model.getQuads(state, face, 0L)) {
+                LightUtil.renderQuadColor(buffer, quad, color);
+            }
+        }
+        for (BakedQuad quad : model.getQuads(state, null, 0L)) {
+            LightUtil.renderQuadColor(buffer, quad, 0xFFFFFFFF);
+        }
+    }
+
+    private static int faceShadeColor(EnumFacing face) {
+        int shade;
+        switch (face) {
+            case DOWN:
+                shade = 128;
+                break;
+            case UP:
+                shade = 255;
+                break;
+            case NORTH:
+            case SOUTH:
+                shade = 204;
+                break;
+            case WEST:
+            case EAST:
+            default:
+                shade = 153;
+                break;
+        }
+        return 0xFF000000 | shade << 16 | shade << 8 | shade;
+    }
+
     private static void prepareXRayState() {
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GlStateManager.enableTexture2D();
         GlStateManager.disableLighting();
         GlStateManager.enableCull();
         GlStateManager.enableDepth();
         GlStateManager.depthFunc(GL11.GL_GREATER);
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
-        );
+        GlStateManager.disableBlend();
         GlStateManager.depthMask(false);
-        GlStateManager.color(1.35F, 1.35F, 1.35F, 0.82F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private static void restoreXRayState() {
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GlStateManager.depthMask(true);
         GlStateManager.depthFunc(GL11.GL_LEQUAL);
         GlStateManager.disableBlend();
@@ -211,17 +230,6 @@ public enum ThingFinder {
         GlStateManager.enableTexture2D();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glLineWidth(1.0F);
-    }
-
-    private static void renderXRayModelQuads(BufferBuilder buffer, IBakedModel model, IBlockState state) {
-        for (EnumFacing face : EnumFacing.values()) {
-            for (BakedQuad quad : model.getQuads(state, face, 0L)) {
-                LightUtil.renderQuadColor(buffer, quad, 0xD0FFFFFF);
-            }
-        }
-        for (BakedQuad quad : model.getQuads(state, null, 0L)) {
-            LightUtil.renderQuadColor(buffer, quad, 0xD0FFFFFF);
-        }
     }
 
     private static void expireOldResults(long currentTime) {

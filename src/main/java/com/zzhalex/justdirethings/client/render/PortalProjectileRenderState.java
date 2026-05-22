@@ -1,8 +1,23 @@
 package com.zzhalex.justdirethings.client.render;
 
+import net.minecraft.util.math.AxisAlignedBB;
+
+import java.util.Arrays;
+import java.util.List;
+
 public final class PortalProjectileRenderState {
 
+    private static final List<AxisAlignedBB> MODEL_BOXES = Arrays.asList(
+            new AxisAlignedBB(-0.25D, -0.25D, -0.0625D, 0.25D, 0.25D, 0.0625D),
+            new AxisAlignedBB(-0.0625D, -0.25D, -0.25D, 0.0625D, 0.25D, 0.25D),
+            new AxisAlignedBB(-0.25D, -0.0625D, -0.25D, 0.25D, 0.0625D, 0.25D)
+    );
+
     private PortalProjectileRenderState() {
+    }
+
+    public static List<AxisAlignedBB> modelBoxes() {
+        return MODEL_BOXES;
     }
 
     public static Rotation rotationForAge(int ticksExisted, float partialTicks) {

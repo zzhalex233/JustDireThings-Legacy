@@ -1,6 +1,12 @@
 package com.zzhalex.justdirethings.common.util;
 
+import com.zzhalex.justdirethings.common.block.group.JDTBlockGroups;
 import com.zzhalex.justdirethings.config.JDTConfig;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public final class TickAccelerationRules {
 
@@ -16,6 +22,35 @@ public final class TickAccelerationRules {
 
     public static int extraTicksForLevel(int level) {
         return Math.max(0, Math.round(accelRateForLevel(level)) - 1);
+    }
+
+    public static void doExtraTicks(World world, BlockPos pos, int level) {
+        if (world == null || pos == null) {
+            return;
+        }
+        IBlockState state = world.getBlockState(pos);
+        TileEntity tileEntity = world.getTileEntity(pos);
+        if (!isValidTickAccelBlock(world, state, tileEntity)) {
+            return;
+        }
+        int extraTicks = extraTicksForLevel(level);
+        for (int tick = 0; tick < extraTicks; tick++) {
+            if (tileEntity instanceof ITickable) {
+                ((ITickable) tileEntity).update();
+            } else if (state.getBlock().getTickRandomly() && world.rand.nextInt(1365) == 0) {
+                state.getBlock().updateTick(world, pos, state, world.rand);
+            }
+        }
+    }
+
+    public static boolean isValidTickAccelBlock(World world, IBlockState state, TileEntity tileEntity) {
+        if (world == null || state == null) {
+            return false;
+        }
+        if (JDTBlockGroups.isTickSpeedDenied(state.getBlock())) {
+            return false;
+        }
+        return tileEntity instanceof ITickable || state.getBlock().getTickRandomly();
     }
 
     public static int feCostForLevel(int level, boolean creative) {

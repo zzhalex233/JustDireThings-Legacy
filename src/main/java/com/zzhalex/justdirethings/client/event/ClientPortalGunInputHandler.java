@@ -1,6 +1,9 @@
 package com.zzhalex.justdirethings.client.event;
 
+import com.zzhalex.justdirethings.client.ClientPortalKeys;
+import com.zzhalex.justdirethings.client.gui.upstream.AdvPortalRadialMenu;
 import com.zzhalex.justdirethings.common.item.tool.ItemPortalGun;
+import com.zzhalex.justdirethings.common.item.tool.ItemPortalGunV2;
 import com.zzhalex.justdirethings.client.render.ThingFinder;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
@@ -9,6 +12,7 @@ import com.zzhalex.justdirethings.network.JDTNetwork;
 import com.zzhalex.justdirethings.network.message.MessageExecuteAbility;
 import com.zzhalex.justdirethings.network.message.MessagePortalGunLeftClick;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -17,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -46,7 +51,17 @@ public final class ClientPortalGunInputHandler {
         if (!Keyboard.getEventKeyState()) {
             return;
         }
+        if (isAdvancedPortalToggleKey(Keyboard.getEventKey())) {
+            return;
+        }
         sendCustomBindings(Keyboard.getEventKey(), false);
+    }
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            openAdvancedPortalMenuFromBinding();
+        }
     }
 
     @SubscribeEvent
@@ -104,7 +119,8 @@ public final class ClientPortalGunInputHandler {
         }
 
         EntityPlayer player = mc.player;
-        for (int slot = 0; slot < player.inventory.getSizeInventory(); slot++) {
+        int scanSize = mouse ? player.inventory.mainInventory.size() : player.inventory.getSizeInventory();
+        for (int slot = 0; slot < scanSize; slot++) {
             ItemStack stack = player.inventory.getStackInSlot(slot);
             if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ToggleableTool) || !(stack.getItem() instanceof LeftClickableTool)) {
                 continue;
@@ -113,10 +129,36 @@ public final class ClientPortalGunInputHandler {
         }
     }
 
+    private static boolean isAdvancedPortalToggleKey(int keyCode) {
+        KeyBinding binding = ClientPortalKeys.TOGGLE_TOOL;
+        if (keyCode != binding.getKeyCode()) {
+            return false;
+        }
+        Minecraft mc = Minecraft.getMinecraft();
+        return mc.world != null && mc.player != null && !ItemPortalGunV2.findHeldPortalGun(mc.player).isEmpty();
+    }
+
+    private static void openAdvancedPortalMenuFromBinding() {
+        Minecraft mc = Minecraft.getMinecraft();
+        boolean pressed = ClientPortalKeys.TOGGLE_TOOL.isPressed();
+        if (mc.world == null || mc.player == null || mc.currentScreen instanceof AdvPortalRadialMenu || !pressed) {
+            return;
+        }
+        if (mc.currentScreen != null) {
+            return;
+        }
+        ItemStack portalGun = ItemPortalGunV2.findHeldPortalGun(mc.player);
+        if (portalGun.isEmpty()) {
+            return;
+        }
+        mc.displayGuiScreen(new AdvPortalRadialMenu(portalGun));
+    }
+
     private static void sendMatchingCustomBindings(EntityPlayer player, ItemStack stack, int slot, int keyCode, boolean mouse) {
         RayTraceResult hit = player.rayTrace(player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue(), 1.0F);
         boolean hasBlockHit = hit != null && hit.typeOfHit == RayTraceResult.Type.BLOCK && hit.getBlockPos() != null && hit.sideHit != null;
-        for (Ability ability : LeftClickableTool.getCustomBindingListFor(stack, keyCode, mouse, player)) {
+        boolean isEquipped = LeftClickableTool.isInventorySlotEquipped(player, slot);
+        for (Ability ability : LeftClickableTool.getCustomBindingListFor(stack, keyCode, mouse, isEquipped)) {
             if (!canSendCustomBinding(stack, ability)) {
                 continue;
             }

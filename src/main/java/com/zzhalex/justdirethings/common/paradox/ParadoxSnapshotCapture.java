@@ -21,7 +21,7 @@ public final class ParadoxSnapshotCapture {
             return;
         }
         snapshot.addEntity(
-            new Vec3d(absolutePos.x - origin.getX(), absolutePos.y - origin.getY(), absolutePos.z - origin.getZ()),
+            new Vec3d(absolutePos.x - (origin.getX() + 0.5D), absolutePos.y - (origin.getY() + 0.5D), absolutePos.z - (origin.getZ() + 0.5D)),
             entityData
         );
     }

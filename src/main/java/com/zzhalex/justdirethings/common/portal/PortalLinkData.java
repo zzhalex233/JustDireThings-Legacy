@@ -245,8 +245,19 @@ public class PortalLinkData {
                     player.posX,
                     player.posY,
                     player.posZ,
-                    player.getHorizontalFacing()
+                    facingFromPlayer(player)
             );
+        }
+
+        public static EnumFacing facingFromPlayer(EntityPlayer player) {
+            float pitch = player.rotationPitch;
+            if (pitch < -45.0F) {
+                return EnumFacing.UP;
+            }
+            if (pitch > 45.0F) {
+                return EnumFacing.DOWN;
+            }
+            return player.getHorizontalFacing();
         }
     }
 }

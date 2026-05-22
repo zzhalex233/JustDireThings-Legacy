@@ -5,8 +5,10 @@ import com.zzhalex.justdirethings.common.item.base.EnergyBackedItem;
 import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.misc.PocketGeneratorItem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -65,7 +67,7 @@ public final class TooltipHelper {
                 + I18n.format(stateKey)
                 + TextFormatting.DARK_GRAY
                 + " "
-                + I18n.format("justdirethings.presshotkey", I18n.format("justdirethings.gui.tool_settings")));
+                + I18n.format("justdirethings.presshotkey", settingsShortcutName()));
     }
 
     public static void appendAbilityList(ItemStack stack, List<String> tooltip) {
@@ -171,7 +173,7 @@ public final class TooltipHelper {
 
         tooltip.add(TextFormatting.DARK_PURPLE + I18n.format(
                 "justdirethings.boundto",
-                boundLocation.getDimensionName(),
+                boundLocation.getTranslatedDimensionName(),
                 "[" + boundLocation.toShortString() + "]"
         ));
         EnumFacing side = boundLocation.getSide();
@@ -191,5 +193,12 @@ public final class TooltipHelper {
 
     private static String abilityName(Ability ability) {
         return I18n.format(ability.getTranslationKey());
+    }
+
+    private static String settingsShortcutName() {
+        GameSettings settings = Minecraft.getMinecraft().gameSettings;
+        return GameSettings.getKeyDisplayString(settings.keyBindSneak.getKeyCode())
+                + " + "
+                + GameSettings.getKeyDisplayString(settings.keyBindUseItem.getKeyCode());
     }
 }

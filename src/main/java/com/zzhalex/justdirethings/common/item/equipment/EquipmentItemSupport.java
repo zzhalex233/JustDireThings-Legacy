@@ -7,6 +7,7 @@ import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.capability.item.StackItemCapabilityProvider;
 import com.zzhalex.justdirethings.capability.item.StackItemInventoryHandler;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.ability.AbilityAvailability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.BoundInventoryHelper;
 import com.zzhalex.justdirethings.common.item.base.EnergyBackedItem;
@@ -114,7 +115,7 @@ final class EquipmentItemSupport {
             BoundInventoryHelper.setBoundTo(stack, newBinding);
             player.sendStatusMessage(new TextComponentTranslation(
                     "justdirethings.boundto",
-                    newBinding.getDimensionName(),
+                    newBinding.getDimensionComponent(),
                     "[" + newBinding.toShortString() + "]"
             ), true);
             world.playSound(null, player.posX, player.posY, player.posZ, net.minecraft.init.SoundEvents.BLOCK_END_PORTAL_FRAME_FILL, net.minecraft.util.SoundCategory.PLAYERS, 1.0F, 1.0F);
@@ -386,7 +387,16 @@ final class EquipmentItemSupport {
         }
 
         Set<Ability> abilities() {
-            return abilities.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(EnumSet.copyOf(abilities));
+            if (abilities.isEmpty()) {
+                return Collections.emptySet();
+            }
+            EnumSet<Ability> available = EnumSet.noneOf(Ability.class);
+            for (Ability ability : abilities) {
+                if (AbilityAvailability.isAvailable(ability)) {
+                    available.add(ability);
+                }
+            }
+            return available.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(available);
         }
 
         Map<Ability, AbilityParams> params() {

@@ -30,7 +30,15 @@ public class TileUpgradeStation extends TileEntity implements ITickable {
             if (slot == SLOT_OUTPUT) {
                 return stack;
             }
+            if (!isItemValid(slot, stack)) {
+                return stack;
+            }
             return super.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return !stack.isEmpty() && ModRecipes.isValidUpgradeStationInput(slot, stack);
         }
 
         @Override

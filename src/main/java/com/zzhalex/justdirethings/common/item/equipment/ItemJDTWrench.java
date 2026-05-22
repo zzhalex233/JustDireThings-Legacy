@@ -128,7 +128,7 @@ public class ItemJDTWrench extends Item {
     private void sendBoundMessage(World world, EntityPlayer player, BoundInventoryHelper.BoundLocation boundLocation) {
         player.sendStatusMessage(new TextComponentTranslation(
                 "justdirethings.boundto",
-                boundLocation.getDimensionName(),
+                boundLocation.getDimensionComponent(),
                 "[" + boundLocation.toShortString() + "]"
         ), true);
     }
@@ -167,7 +167,7 @@ public class ItemJDTWrench extends Item {
         if (boundLocation != null) {
             tooltip.add(TextFormatting.DARK_PURPLE + I18n.format(
                     "justdirethings.boundto",
-                    boundLocation.getDimensionName(),
+                    boundLocation.getTranslatedDimensionName(),
                     boundLocation.toShortString()
             ));
         }

@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.tile.base;
 
+import com.zzhalex.justdirethings.common.container.machine.ContainerInventoryHolder;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockSwapper;
 import com.zzhalex.justdirethings.common.tile.machine.TileBlockBreaker;
 import com.zzhalex.justdirethings.common.tile.machine.TileClicker;
@@ -12,6 +13,7 @@ import com.zzhalex.justdirethings.common.tile.machine.TileParadoxMachine;
 import com.zzhalex.justdirethings.common.tile.machine.TilePlayerAccessor;
 import com.zzhalex.justdirethings.common.tile.machine.TileSensor;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.util.EnumFacing;
 
 public final class MachineSettingApplier {
@@ -24,6 +26,10 @@ public final class MachineSettingApplier {
     }
 
     public static boolean apply(TileMachineBase machine, String key, int value, EntityPlayer player) {
+        return apply(machine, key, value, player, null);
+    }
+
+    public static boolean apply(TileMachineBase machine, String key, int value, EntityPlayer player, Container container) {
         if (machine == null || key == null) {
             return false;
         }
@@ -91,13 +97,13 @@ public final class MachineSettingApplier {
                 return false;
             case MachineSettingKeys.STORE_EXPERIENCE:
                 if (machine instanceof TileExperienceHolder && player != null) {
-                    ((TileExperienceHolder) machine).storeExperience(player, value <= 0 ? 1 : value);
+                    ((TileExperienceHolder) machine).storeExperience(player, value);
                     return true;
                 }
                 return false;
             case MachineSettingKeys.EXTRACT_EXPERIENCE:
                 if (machine instanceof TileExperienceHolder && player != null) {
-                    ((TileExperienceHolder) machine).extractExperience(player, value <= 0 ? 1 : value);
+                    ((TileExperienceHolder) machine).extractExperience(player, value);
                     return true;
                 }
                 return false;
@@ -145,6 +151,12 @@ public final class MachineSettingApplier {
                     return true;
                 }
                 return false;
+            case MachineSettingKeys.INVENTORY_COMPARE_NBT:
+                if (machine instanceof TileInventoryHolder) {
+                    ((TileInventoryHolder) machine).setCompareNbt(value != 0);
+                    return true;
+                }
+                return false;
             case MachineSettingKeys.AUTOMATED_FILTER_ONLY:
                 if (machine instanceof TileInventoryHolder) {
                     ((TileInventoryHolder) machine).setAutomatedFiltersOnly(value != 0);
@@ -165,6 +177,18 @@ public final class MachineSettingApplier {
                 }
                 if (machine instanceof TileInventoryHolder) {
                     ((TileInventoryHolder) machine).setRenderPlayer(value != 0);
+                    return true;
+                }
+                return false;
+            case MachineSettingKeys.INVENTORY_RENDERED_SLOT:
+                if (machine instanceof TileInventoryHolder) {
+                    ((TileInventoryHolder) machine).setRenderedSlot(value);
+                    return true;
+                }
+                return false;
+            case MachineSettingKeys.INVENTORY_SAVE_SLOT:
+                if (machine instanceof TileInventoryHolder) {
+                    ((TileInventoryHolder) machine).addSavedItem(value);
                     return true;
                 }
                 return false;
@@ -203,20 +227,20 @@ public final class MachineSettingApplier {
                 }
                 return false;
             case MachineSettingKeys.SEND_INVENTORY:
-                if (machine instanceof TileInventoryHolder && player != null) {
-                    ((TileInventoryHolder) machine).copyFromPlayer(player);
+                if (container instanceof ContainerInventoryHolder) {
+                    ((ContainerInventoryHolder) container).sendAllItemsToMachine();
                     return true;
                 }
                 return false;
             case MachineSettingKeys.PULL_INVENTORY:
-                if (machine instanceof TileInventoryHolder && player != null) {
-                    ((TileInventoryHolder) machine).copyToPlayer(player);
+                if (container instanceof ContainerInventoryHolder) {
+                    ((ContainerInventoryHolder) container).sendAllItemsToPlayer();
                     return true;
                 }
                 return false;
             case MachineSettingKeys.SWAP_INVENTORY:
-                if (machine instanceof TileInventoryHolder && player != null) {
-                    ((TileInventoryHolder) machine).swapWithPlayer(player);
+                if (container instanceof ContainerInventoryHolder) {
+                    ((ContainerInventoryHolder) container).swapItems();
                     return true;
                 }
                 return false;
@@ -267,6 +291,12 @@ public final class MachineSettingApplier {
                 if (machine instanceof TileParadoxMachine) {
                     TileParadoxMachine paradox = (TileParadoxMachine) machine;
                     paradox.setPreviewState(paradox.shouldRenderParadox(), value);
+                    return true;
+                }
+                return false;
+            case MachineSettingKeys.PARADOX_SNAPSHOT_AREA:
+                if (machine instanceof TileParadoxMachine) {
+                    ((TileParadoxMachine) machine).snapshotArea();
                     return true;
                 }
                 return false;

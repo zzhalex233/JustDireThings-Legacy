@@ -3,6 +3,7 @@ package com.zzhalex.justdirethings.common.item.equipment;
 import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.common.entity.EntityJustDireArrow;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import com.zzhalex.justdirethings.common.item.ability.AbilityCooldownTracker;
 import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
@@ -135,6 +136,16 @@ public class ItemJDTBow extends ItemBow implements ToggleableTool, LeftClickable
         if (arrow.getIsCritical()) {
             justDireArrow.setIsCritical(true);
         }
+        if (isEpicArrowPrimed(bowStack)) {
+            justDireArrow.setEpicArrow(true);
+            justDireArrow.setDamage(20.0D);
+            int cooldownTicks = getAbilityParams(Ability.EPICARROW).cooldown;
+            AbilityCooldownTracker.addCooldown(shooter instanceof EntityPlayer ? (EntityPlayer) shooter : null, bowStack, Ability.EPICARROW, cooldownTicks, false);
+            setEpicArrowPrimed(bowStack, false);
+        }
+        if (!isEnabled(bowStack)) {
+            return super.customizeArrow(justDireArrow);
+        }
         if (isActive(bowStack, Ability.PHASE)) {
             justDireArrow.setPhase(true);
             AbilityMethods.damageTool(bowStack, shooter, Ability.PHASE);
@@ -148,13 +159,6 @@ public class ItemJDTBow extends ItemBow implements ToggleableTool, LeftClickable
                 justDireArrow.setTargetEntity(aimedAtEntity);
             }
             AbilityMethods.damageTool(bowStack, shooter, Ability.HOMING);
-        }
-        if (isEpicArrowPrimed(bowStack)) {
-            justDireArrow.setEpicArrow(true);
-            justDireArrow.setDamage(20.0D);
-            int cooldownTicks = getAbilityParams(Ability.EPICARROW).cooldown;
-            ToggleableTool.addCooldown(bowStack, Ability.EPICARROW, cooldownTicks, false);
-            setEpicArrowPrimed(bowStack, false);
         }
         applyPotionCanisterEffects(bowStack, justDireArrow);
         return super.customizeArrow(justDireArrow);

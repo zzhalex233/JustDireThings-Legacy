@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.base.AbilityParams;
 import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.ItemPoweredTool;
+import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
 import com.zzhalex.justdirethings.data.JDTDataKeys;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -12,7 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
-public class ItemVoidshiftWand extends ItemPoweredTool {
+public class ItemVoidshiftWand extends ItemPoweredTool implements LeftClickableTool {
 
     public static final int DURABILITY = 200;
     public static final int ENERGY_CAPACITY = 10_000;
@@ -26,8 +27,17 @@ public class ItemVoidshiftWand extends ItemPoweredTool {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ActionResult<ItemStack> settingsResult = openSettingsIfSneaking(world, player, hand);
+        if (settingsResult != null) {
+            return settingsResult;
+        }
         ActionResult<ItemStack> abilityResult = AbilityExecutionHelper.tryExecuteRightClickAbility(world, player, hand);
         return abilityResult != null ? abilityResult : super.onItemRightClick(world, player, hand);
+    }
+
+    @Override
+    public boolean isFireResistantDrop(ItemStack stack) {
+        return true;
     }
 
     @Override

@@ -24,6 +24,7 @@ import net.minecraft.util.Mirror;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -76,6 +77,21 @@ public abstract class BlockMachineBase extends Block implements ITileEntityProvi
             }
             machine.markDirtyClient();
         }
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
+        TileEntity tileEntity = worldIn.getTileEntity(pos);
+        if (tileEntity instanceof TileMachineBase) {
+            ((TileMachineBase) tileEntity).getRedstoneState().setCheckedRedstone(false);
+        }
+    }
+
+    @Override
+    public boolean canConnectRedstone(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        TileEntity tileEntity = world.getTileEntity(pos);
+        return tileEntity instanceof TileMachineBase || super.canConnectRedstone(state, world, pos, side);
     }
 
     @Override

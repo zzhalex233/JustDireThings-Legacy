@@ -2,10 +2,10 @@ package com.zzhalex.justdirethings.coremod.hooks;
 
 import com.zzhalex.justdirethings.common.item.ability.Ability;
 import com.zzhalex.justdirethings.common.item.ability.AbilityMethods;
+import com.zzhalex.justdirethings.common.block.group.JDTBlockGroups;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -51,6 +51,8 @@ public final class PhaseHooks {
             return true;
         }
 
+        // In the 1.12 collision hook, upward motion needs an explicit bypass or
+        // players get "stuck" trying to jump while already phased into blocks.
         if (player.motionY > 1.0E-5D) {
             return false;
         }
@@ -61,12 +63,6 @@ public final class PhaseHooks {
 
     private static boolean isPhaseDenied(IBlockState state, World world, BlockPos pos) {
         return state.getBlockHardness(world, pos) < 0.0F
-                || state.getBlock() == Blocks.BARRIER
-                || state.getBlock() == Blocks.BEDROCK
-                || state.getBlock() == Blocks.END_PORTAL
-                || state.getBlock() == Blocks.END_PORTAL_FRAME
-                || state.getBlock() == Blocks.END_GATEWAY
-                || state.getBlock() == Blocks.STRUCTURE_BLOCK
-                || state.getBlock() == Blocks.PORTAL;
+                || JDTBlockGroups.isPhaseDenied(state.getBlock());
     }
 }
