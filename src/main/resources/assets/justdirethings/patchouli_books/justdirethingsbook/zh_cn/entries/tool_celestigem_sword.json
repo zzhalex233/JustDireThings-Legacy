@@ -1,0 +1,18 @@
+{
+    "name":  "苍穹晶剑",
+    "sortnum":  13,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:celestigem_sword",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "$(l:tool_blazegold_sword)烈焰金剑$(/l)的升级版本，此剑使用 FE 而非耐久度。它最多能装下 10,000FE，推荐配备$(l:item_pocket_generator)便携发电器$(/l)保证能量供应。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_sword",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

@@ -1,0 +1,18 @@
+{
+    "name":  "Blazegold Bow",
+    "sortnum":  12,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:bow_blazegold",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "Stronger than the $(l:tool_ferricore_bow)Ferricore Bow$(/l). Features \u0027Lava Repair\u0027.$(br2)In addition, it has 2 slots for $(l:item_potion_canister)Potion Canister$(/l)"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_bow",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

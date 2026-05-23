@@ -1,0 +1,27 @@
+{
+  "parent": "justdirethings:eclipsealloy_ingot",
+  "criteria": {
+    "justdirethings_eclipsegate_wand": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:eclipsegate_wand"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:eclipsegate_wand"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.eclipsegate_wand.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.eclipsegate_wand.title"
+    },
+    "frame": "goal"
+  }
+}

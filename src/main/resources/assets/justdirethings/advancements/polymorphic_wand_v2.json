@@ -1,0 +1,27 @@
+{
+  "parent": "justdirethings:eclipsealloy_ingot",
+  "criteria": {
+    "justdirethings_polymorphic_wand_v2": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:polymorphic_wand_v2"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:polymorphic_wand_v2"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.polymorphic_wand_v2.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.polymorphic_wand_v2.title"
+    },
+    "frame": "goal"
+  }
+}

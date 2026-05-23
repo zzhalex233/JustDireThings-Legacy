@@ -1,0 +1,33 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_fluidcollectort2":  {
+                                                  "trigger":  "minecraft:inventory_changed",
+                                                  "conditions":  {
+                                                                     "items":  [
+                                                                                   {
+                                                                                       "item":  "justdirethings:fluidcollectort2"
+                                                                                   }
+                                                                               ]
+                                                                 }
+                                              },
+                     "has_the_recipe":  {
+                                            "trigger":  "minecraft:recipe_unlocked",
+                                            "conditions":  {
+                                                               "recipe":  "justdirethings:fluidcollectort2_nbtclear"
+                                                           }
+                                        }
+                 },
+    "requirements":  [
+                         [
+                             "has_the_recipe",
+                             "has_fluidcollectort2"
+                         ]
+                     ],
+    "rewards":  {
+                    "recipes":  [
+                                    "justdirethings:fluidcollectort2_nbtclear"
+                                ]
+                }
+}
+

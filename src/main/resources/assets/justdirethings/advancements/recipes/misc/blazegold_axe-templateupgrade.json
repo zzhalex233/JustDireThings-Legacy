@@ -1,0 +1,21 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_template_blazegold":  {
+                                                    "trigger":  "minecraft:inventory_changed",
+                                                    "conditions":  {
+                                                                       "items":  [
+                                                                                     {
+                                                                                         "item":  "justdirethings:template_blazegold"
+                                                                                     }
+                                                                                 ]
+                                                                   }
+                                                }
+                 },
+    "requirements":  [
+                         [
+                             "has_template_blazegold"
+                         ]
+                     ]
+}
+

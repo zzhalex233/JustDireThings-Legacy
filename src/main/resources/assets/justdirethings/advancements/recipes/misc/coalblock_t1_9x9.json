@@ -1,0 +1,33 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_coalblock_t1":  {
+                                              "trigger":  "minecraft:inventory_changed",
+                                              "conditions":  {
+                                                                 "items":  [
+                                                                               {
+                                                                                   "item":  "justdirethings:coalblock_t1"
+                                                                               }
+                                                                           ]
+                                                             }
+                                          },
+                     "has_the_recipe":  {
+                                            "trigger":  "minecraft:recipe_unlocked",
+                                            "conditions":  {
+                                                               "recipe":  "justdirethings:coalblock_t1_9x9"
+                                                           }
+                                        }
+                 },
+    "requirements":  [
+                         [
+                             "has_the_recipe",
+                             "has_coalblock_t1"
+                         ]
+                     ],
+    "rewards":  {
+                    "recipes":  [
+                                    "justdirethings:coalblock_t1_9x9"
+                                ]
+                }
+}
+

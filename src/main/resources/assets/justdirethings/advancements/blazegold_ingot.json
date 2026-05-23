@@ -1,0 +1,26 @@
+{
+  "parent": "justdirethings:ferricore_ingot",
+  "criteria": {
+    "justdirethings_blazegold_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:blazegold_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:blazegold_ingot"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.blazegold_ingot.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.blazegold_ingot.title"
+    }
+  }
+}

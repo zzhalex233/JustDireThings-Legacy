@@ -5,6 +5,7 @@
     "fluiddrop": "com.zzhalex.justdirethings.common.recipe.custom.FluidDropDataRecipe$Factory"
   },
   "conditions": {
-    "config_enabled": "com.zzhalex.justdirethings.common.recipe.custom.ConfigEnabledCondition"
+    "config_enabled": "com.zzhalex.justdirethings.common.recipe.custom.ConfigEnabledCondition",
+    "mod_loaded": "com.zzhalex.justdirethings.common.recipe.custom.ModLoadedCondition"
   }
 }

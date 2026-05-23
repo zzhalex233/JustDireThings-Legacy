@@ -1,0 +1,18 @@
+{
+    "name":  "Blazegold Shovel",
+    "sortnum":  9,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:blazegold_shovel",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "This shovel digs faster than the $(l:tool_ferricore_shovel)Ferricore Shovel$(/l). It repairs itself when dropped into lava via \u0027Lava Repair\u0027."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_shovel",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

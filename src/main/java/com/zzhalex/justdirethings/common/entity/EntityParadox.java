@@ -1,6 +1,8 @@
 package com.zzhalex.justdirethings.common.entity;
 
+import com.zzhalex.justdirethings.common.block.group.JDTBlockGroups;
 import com.zzhalex.justdirethings.common.entity.group.JDTEntityGroups;
+import com.zzhalex.justdirethings.common.item.group.JDTItemGroups;
 import com.zzhalex.justdirethings.registry.ModContentItems;
 import com.zzhalex.justdirethings.registry.ModSounds;
 import net.minecraft.block.Block;
@@ -184,7 +186,10 @@ public class EntityParadox extends Entity {
     }
 
     private boolean isValidItem(EntityItem entity) {
-        return entity != null && !entity.isDead && !entity.getItem().isEmpty();
+        return entity != null
+                && !entity.isDead
+                && !entity.getItem().isEmpty()
+                && !JDTItemGroups.isParadoxAbsorbDenied(entity.getItem().getItem());
     }
 
     private boolean isValidEntity(Entity entity) {
@@ -192,7 +197,7 @@ public class EntityParadox extends Entity {
                 && !(entity instanceof EntityPlayer)
                 && !(entity instanceof MultiPartEntityPart)
                 && entity.getParts() == null
-                && !JDTEntityGroups.isTeleportingNotSupported(entity)
+                && !JDTEntityGroups.isParadoxAbsorbDenied(entity)
                 && entity != this;
     }
 
@@ -262,7 +267,7 @@ public class EntityParadox extends Entity {
         if (block == Blocks.AIR) {
             return false;
         }
-        if (block == Blocks.BEDROCK || blocksToAbsorb.containsKey(blockPos)) {
+        if (JDTBlockGroups.isParadoxAbsorbDenied(block) || blocksToAbsorb.containsKey(blockPos)) {
             return false;
         }
         if (blockState.getBlockHardness(world, blockPos) < 0.0F) {

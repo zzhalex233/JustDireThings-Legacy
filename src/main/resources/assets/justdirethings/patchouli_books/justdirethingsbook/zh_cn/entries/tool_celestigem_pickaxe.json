@@ -1,0 +1,18 @@
+{
+    "name":  "苍穹晶镐",
+    "sortnum":  14,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:celestigem_pickaxe",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "为$(l:tool_blazegold_pickaxe)烈焰金镐$(/l)加上了 FE 存储功能，此工具最多可容纳 10,000FE。长时间使用时，需配用$(l:item_pocket_generator)便携发电器$(/l)充能。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_pickaxe",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

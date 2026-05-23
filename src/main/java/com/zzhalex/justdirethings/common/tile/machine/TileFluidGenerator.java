@@ -16,7 +16,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
@@ -62,7 +61,7 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
         if (contained == null || contained.amount <= 0) {
             return;
         }
-        if (getFePerFuelTick(contained.getFluid().getName()) <= 0) {
+        if (!isRefinedFuel(contained)) {
             return;
         }
         if (!getFluidState().getFluidName().isEmpty() && !getFluidState().getFluidName().equals(contained.getFluid().getName())) {
@@ -110,7 +109,15 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
         return true;
     }
 
-    int getFePerFuelTick(String fluidName) {
+    public int getCurrentFePerFuelTick() {
+        return getFePerFuelTick(getFluidState().getFluidName());
+    }
+
+    public static boolean isRefinedFuel(FluidStack fluidStack) {
+        return fluidStack != null && fluidStack.amount > 0 && fluidStack.getFluid() != null && isRefinedFuelName(fluidStack.getFluid().getName());
+    }
+
+    public static int getFePerFuelTick(String fluidName) {
         if ("refined_t2_fluid".equals(fluidName)) {
             return JDTConfig.fuelTier2FePerMb;
         }
@@ -121,6 +128,17 @@ public class TileFluidGenerator extends TileMachineBase implements ITickable {
             return JDTConfig.fuelTier4FePerMb;
         }
         return 0;
+    }
+
+    private static boolean isRefinedFuelName(String fluidName) {
+        return "refined_t2_fluid".equals(fluidName)
+                || "refined_t3_fluid".equals(fluidName)
+                || "refined_t4_fluid".equals(fluidName);
+    }
+
+    @Override
+    protected boolean isFluidValid(FluidStack resource) {
+        return isRefinedFuel(resource);
     }
 
     private int providePowerAdjacent() {

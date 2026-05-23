@@ -1,0 +1,18 @@
+{
+    "name":  "烈焰金护腿",
+    "sortnum":  7,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:blazegold_leggings",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "烈焰金护腿灵活性与防御性并重。将这副护腿投入熔岩源，其上“熔岩修补”能力便可令自身恢复如初。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_leggings",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

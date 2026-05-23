@@ -1,0 +1,52 @@
+{
+  "processor": "com.zzhalex.justdirethings.common.util.UpgradeStationComponentProcessor",
+  "components": [
+    {
+      "type": "header",
+      "text": "#title",
+      "x": -1,
+      "y": 0,
+      "centered": true
+    },
+    {
+      "type": "separator",
+      "x": -1,
+      "y": 14
+    },
+    {
+      "type": "item",
+      "item": "#template",
+      "framed": true,
+      "x": 8,
+      "y": 36
+    },
+    {
+      "type": "item",
+      "item": "#base",
+      "framed": true,
+      "x": 36,
+      "y": 36
+    },
+    {
+      "type": "item",
+      "item": "#addition",
+      "framed": true,
+      "x": 64,
+      "y": 36
+    },
+    {
+      "type": "item",
+      "item": "#output",
+      "framed": true,
+      "linkedRecipe": true,
+      "x": 102,
+      "y": 36
+    },
+    {
+      "type": "text",
+      "text": "#text",
+      "x": 0,
+      "y": 72
+    }
+  ]
+}

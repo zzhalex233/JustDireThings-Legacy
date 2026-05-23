@@ -1,0 +1,18 @@
+{
+    "name":  "苍穹晶锹",
+    "sortnum":  15,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:celestigem_shovel",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "由$(l:tool_blazegold_shovel)烈焰金锹$(/l)锻造而来，此锹以 FE 为运作能源。其中足够存下 10,000FE，$(l:item_pocket_generator)便携发电器$(/l)可让其能量充足。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_shovel",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

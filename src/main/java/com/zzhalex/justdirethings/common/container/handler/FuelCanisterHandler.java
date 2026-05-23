@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.common.container.handler;
 
 import com.zzhalex.justdirethings.common.item.fuel.FuelBurnHelper;
+import com.zzhalex.justdirethings.common.item.group.JDTItemGroups;
 import com.zzhalex.justdirethings.common.item.misc.FuelCanisterItem;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
@@ -32,6 +33,7 @@ public class FuelCanisterHandler extends ItemStackHandler {
         return !stack.isEmpty()
                 && !(stack.getItem() instanceof FuelCanisterItem)
                 && FuelBurnHelper.getBurnTime(stack) > 0
-                && !FuelBurnHelper.hasContainerRemainder(stack);
+                && !FuelBurnHelper.hasContainerRemainder(stack)
+                && !JDTItemGroups.isFuelCanisterDenied(stack.getItem());
     }
 }

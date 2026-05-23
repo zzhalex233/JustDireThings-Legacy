@@ -1,0 +1,18 @@
+{
+    "name":  "苍穹晶护腿",
+    "sortnum":  11,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:celestigem_leggings",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "苍穹晶护腿的能量存储上限足有 10,000FE，其耐久度因此超出寻常。随身携带$(l:item_pocket_generator)便携发电器$(/l)，即可保持能量充沛。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_leggings",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

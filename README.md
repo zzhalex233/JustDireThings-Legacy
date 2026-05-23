@@ -6,7 +6,7 @@
 
 ## About
 
-Just Dire Things started as a collection of random items and blocks I wanted added to the game.  
+Just Dire Things started as a collection of random items and blocks I wanted added to the game.
 Then things kind of got away from me...
 
 ---
@@ -43,11 +43,7 @@ Many blocks designed around automation, including:
 - Energy distribution blocks
 
 ### Gallery
-Gallery content is unrelated to the original mod and only shows backported features in this project.🥰
 
-![portal gun](gallery/image.png)
-![t2 machine](gallery/image-1.png)
-![mob catcher](gallery/image-2.png)
+
 ![goo jei](gallery/image-3.png)
 ![goo block](gallery/image-5.png)
-![goo fluid](gallery/image-6.png)

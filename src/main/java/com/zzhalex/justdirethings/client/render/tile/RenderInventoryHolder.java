@@ -4,8 +4,10 @@ import com.mojang.authlib.GameProfile;
 import com.zzhalex.justdirethings.client.render.ClientPlayerPreviewRenderer;
 import com.zzhalex.justdirethings.common.tile.machine.TileInventoryHolder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
@@ -43,7 +45,7 @@ public class RenderInventoryHolder extends TileEntitySpecialRenderer<TileInvento
         }
         if (mockPlayer == null || mockPlayerUuid == null || !mockPlayerUuid.equals(ownerUuid) || mockPlayer.world != minecraft.world) {
             mockPlayerUuid = ownerUuid;
-            mockPlayer = new EntityOtherPlayerMP(minecraft.world, new GameProfile(ownerUuid, "MockPlayer"));
+            mockPlayer = new InventoryHolderPlayer(minecraft, new GameProfile(ownerUuid, "MockPlayer"));
         }
         return mockPlayer;
     }
@@ -73,6 +75,24 @@ public class RenderInventoryHolder extends TileEntitySpecialRenderer<TileInvento
         }
         ItemStack stack = handler.getStackInSlot(slot);
         return stack.isEmpty() ? ItemStack.EMPTY : stack.copy();
+    }
+
+    private static class InventoryHolderPlayer extends EntityOtherPlayerMP {
+        private final Minecraft minecraft;
+
+        private InventoryHolderPlayer(Minecraft minecraft, GameProfile profile) {
+            super(minecraft.world, profile);
+            this.minecraft = minecraft;
+        }
+
+        @Override
+        public boolean isWearing(EnumPlayerModelParts part) {
+            AbstractClientPlayer currentPlayer = minecraft.player;
+            if (currentPlayer != null && currentPlayer.getUniqueID().equals(getUniqueID())) {
+                return currentPlayer.isWearing(part);
+            }
+            return part != EnumPlayerModelParts.CAPE;
+        }
     }
 
 }

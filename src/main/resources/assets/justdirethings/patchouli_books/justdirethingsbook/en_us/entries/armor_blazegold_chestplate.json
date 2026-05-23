@@ -1,0 +1,18 @@
+{
+    "name":  "Blazegold Chestplate",
+    "sortnum":  6,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:blazegold_chestplate",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "The Blazegold Chestplate not only provides enhanced defense but also features the Lava Repair ability. Drop this chestplate into a lava source block to fully repair it."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_chestplate",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

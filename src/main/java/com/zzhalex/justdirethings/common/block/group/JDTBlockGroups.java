@@ -58,6 +58,10 @@ public final class JDTBlockGroups {
         return Reference.MOD_ID.equals(id.getNamespace()) && "inventory_holder".equals(id.getPath());
     }
 
+    public static boolean isParadoxAbsorbDenied(Block block) {
+        return block == Blocks.BEDROCK;
+    }
+
     public static boolean isPhaseDenied(Block block) {
         if (block == null) {
             return false;

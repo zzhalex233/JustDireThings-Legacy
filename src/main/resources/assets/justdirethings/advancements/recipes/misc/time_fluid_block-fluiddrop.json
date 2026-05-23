@@ -1,0 +1,33 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_the_recipe":  {
+                                            "trigger":  "minecraft:recipe_unlocked",
+                                            "conditions":  {
+                                                               "recipe":  "justdirethings:time_fluid_block-fluiddrop"
+                                                           }
+                                        },
+                     "has_time_crystal":  {
+                                              "trigger":  "minecraft:inventory_changed",
+                                              "conditions":  {
+                                                                 "items":  [
+                                                                               {
+                                                                                   "item":  "justdirethings:time_crystal"
+                                                                               }
+                                                                           ]
+                                                             }
+                                          }
+                 },
+    "requirements":  [
+                         [
+                             "has_the_recipe",
+                             "has_time_crystal"
+                         ]
+                     ],
+    "rewards":  {
+                    "recipes":  [
+                                    "justdirethings:time_fluid_block-fluiddrop"
+                                ]
+                }
+}
+

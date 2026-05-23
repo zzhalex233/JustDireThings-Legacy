@@ -1,0 +1,18 @@
+{
+    "name":  "蚀空合金锄",
+    "sortnum":  24,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:eclipsealloy_hoe",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "蚀空合金锄是农业科技的一件革命性发明，能把土壤变成极为肥沃的耕地。$(br2)它支持最高等级的农垦升级，可将农作物的产量抬至最高，达到效率的极致。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_eclipsealloy_hoe",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

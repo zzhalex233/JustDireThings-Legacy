@@ -1,0 +1,18 @@
+{
+    "name":  "蚀空合金剑",
+    "sortnum":  20,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:eclipsealloy_sword",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "蚀空合金剑是 Just Dire Things 中格斗科技的顶峰，能量储备量大，且支持最高级的升级。$(br2)此剑由蚀空合金铸造而成；作为最高品质的工具，它的伤害和耐久度都超乎寻常，足以承接最为致命的进攻性能力。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_eclipsealloy_sword",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

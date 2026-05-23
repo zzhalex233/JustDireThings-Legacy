@@ -5,6 +5,7 @@ import com.zzhalex.justdirethings.network.message.MessageExecuteAbility;
 import com.zzhalex.justdirethings.network.message.MessageItemFlowParticle;
 import com.zzhalex.justdirethings.network.message.MessageSyncAbilityCooldowns;
 import com.zzhalex.justdirethings.network.message.MessageBlockStateFilter;
+import com.zzhalex.justdirethings.network.message.MessageCopyMachineSettings;
 import com.zzhalex.justdirethings.network.message.MessageGhostSlot;
 import com.zzhalex.justdirethings.network.message.MessageMachineSetting;
 import com.zzhalex.justdirethings.network.message.MessageParadoxState;
@@ -52,6 +53,7 @@ public final class JDTNetwork {
         CHANNEL.registerMessage(MessageStartElytraFlight.Handler.class, MessageStartElytraFlight.class, nextId++, Side.SERVER);
         CHANNEL.registerMessage(MessageSyncAbilityCooldowns.Handler.class, MessageSyncAbilityCooldowns.class, nextId++, Side.CLIENT);
         CHANNEL.registerMessage(MessageItemFlowParticle.Handler.class, MessageItemFlowParticle.class, nextId++, Side.CLIENT);
+        CHANNEL.registerMessage(MessageCopyMachineSettings.Handler.class, MessageCopyMachineSettings.class, nextId++, Side.SERVER);
         registered = true;
     }
 

@@ -1,15 +1,14 @@
 package com.zzhalex.justdirethings.client.gui.widget;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
-import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 public class WidgetEnergyBar {
 
@@ -52,12 +51,8 @@ public class WidgetEnergyBar {
     public List<String> getTooltipLines() {
         return Collections.singletonList(I18n.format(
                 "justdirethings.screen.energy",
-                formatAmount(current),
-                formatAmount(max)
+                TooltipHelper.formatTooltipValue(current),
+                TooltipHelper.formatTooltipValue(max)
         ));
-    }
-
-    private static String formatAmount(int amount) {
-        return NumberFormat.getIntegerInstance(Locale.ROOT).format(amount);
     }
 }

@@ -1,0 +1,26 @@
+{
+  "parent": "justdirethings:ferricore_ingot",
+  "criteria": {
+    "justdirethings_generatort1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:generatort1"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:generatort1"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.generatort1.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.generatort1.title"
+    }
+  }
+}

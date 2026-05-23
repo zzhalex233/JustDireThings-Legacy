@@ -282,6 +282,9 @@ public class TileMachineBase extends TileEntity {
             if (resource == null || resource.amount <= 0 || fluidState.getCapacity() <= 0 || resource.getFluid() == null) {
                 return 0;
             }
+            if (!isFluidValid(resource)) {
+                return 0;
+            }
             if (!fluidState.getFluidName().isEmpty() && !fluidState.getFluidName().equals(resource.getFluid().getName())) {
                 return 0;
             }
@@ -344,6 +347,10 @@ public class TileMachineBase extends TileEntity {
         }
         Fluid fluid = FluidRegistry.getFluid(fluidState.getFluidName());
         return fluid == null ? null : new FluidStack(fluid, fluidState.getAmount());
+    }
+
+    protected boolean isFluidValid(FluidStack resource) {
+        return true;
     }
 
     private void rotateDefaultAreaWithFacing(int oldDirection, int newDirection) {

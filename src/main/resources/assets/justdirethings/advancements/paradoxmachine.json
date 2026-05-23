@@ -1,0 +1,27 @@
+{
+  "parent": "justdirethings:eclipsealloy_ingot",
+  "criteria": {
+    "justdirethings_paradoxmachine": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:paradoxmachine"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:paradoxmachine"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.paradoxmachine.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.paradoxmachine.title"
+    },
+    "frame": "goal"
+  }
+}

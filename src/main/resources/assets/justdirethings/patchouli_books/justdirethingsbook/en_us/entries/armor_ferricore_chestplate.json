@@ -1,0 +1,17 @@
+{
+  "name": "Ferricore Chestplate",
+  "sortnum": 2,
+  "category": "justdirethings:armor",
+  "icon": "justdirethings:ferricore_chestplate",
+  "pages": [
+    {
+      "type": "text",
+      "text": "Offering robust protection, the Ferricore Chestplate is crafted to endure more than standard iron armor. It’s also eligible for special upgrades, enhancing its defensive capabilities."
+    },
+    {
+      "type": "crafting",
+      "title": "Ferricore Chestplate Crafting",
+      "recipe": "justdirethings:ferricore_chestplate"
+    }
+  ]
+}

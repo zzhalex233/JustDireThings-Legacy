@@ -1,0 +1,21 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_eclipsealloy_raw":  {
+                                                  "trigger":  "minecraft:inventory_changed",
+                                                  "conditions":  {
+                                                                     "items":  [
+                                                                                   {
+                                                                                       "item":  "justdirethings:raw_eclipsealloy"
+                                                                                   }
+                                                                               ]
+                                                                 }
+                                              }
+                 },
+    "requirements":  [
+                         [
+                             "has_eclipsealloy_raw"
+                         ]
+                     ]
+}
+

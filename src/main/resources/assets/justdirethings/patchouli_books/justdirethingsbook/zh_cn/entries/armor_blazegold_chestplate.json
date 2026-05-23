@@ -1,0 +1,18 @@
+{
+    "name":  "烈焰金胸甲",
+    "sortnum":  6,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:blazegold_chestplate",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "烈焰金胸甲不只防御能力超众，还拥有“熔岩修补”能力。将此胸甲投入熔岩源即可完全修复。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_chestplate",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

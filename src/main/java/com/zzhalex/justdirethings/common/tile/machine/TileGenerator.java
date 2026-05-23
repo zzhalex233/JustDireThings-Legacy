@@ -66,6 +66,10 @@ public class TileGenerator extends TileMachineBase implements ITickable {
         return maxBurn;
     }
 
+    public int getFePerTick() {
+        return GeneratorMath.energyPerTick(JDTConfig.generatorT1FePerFuelTick, fuelBurnMultiplier);
+    }
+
     private void tryStartBurn() {
         ItemStack fuelStack = itemHandler.getStackInSlot(0);
         int burnTime = FuelBurnHelper.getBurnTime(fuelStack);

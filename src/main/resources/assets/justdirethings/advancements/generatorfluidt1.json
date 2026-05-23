@@ -1,0 +1,26 @@
+{
+  "parent": "justdirethings:blazegold_ingot",
+  "criteria": {
+    "justdirethings_generatorfluidt1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:generatorfluidt1"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:generatorfluidt1"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.generatorfluidt1.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.generatorfluidt1.title"
+    }
+  }
+}

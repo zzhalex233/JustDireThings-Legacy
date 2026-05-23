@@ -1,0 +1,26 @@
+{
+  "parent": "justdirethings:blazegold_ingot",
+  "criteria": {
+    "justdirethings_celestigem": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:celestigem"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:celestigem"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.celestigem.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.celestigem.title"
+    }
+  }
+}

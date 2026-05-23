@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.item.misc;
 
+import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import com.zzhalex.justdirethings.common.tile.base.MachineAreaState;
 import com.zzhalex.justdirethings.common.tile.base.MachineFilterState;
 import com.zzhalex.justdirethings.common.tile.base.MachineRedstoneState;
@@ -10,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -45,6 +47,18 @@ public class ItemMachineSettingsCopier extends Item {
 
     public ItemMachineSettingsCopier() {
         setMaxStackSize(1);
+    }
+
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        if (!player.isSneaking()) {
+            return new ActionResult<>(EnumActionResult.PASS, stack);
+        }
+        if (world.isRemote) {
+            JustDireThingsLegacy.proxy.openMachineSettingsCopierScreen(stack);
+        }
+        return new ActionResult<>(EnumActionResult.PASS, stack);
     }
 
     @Override

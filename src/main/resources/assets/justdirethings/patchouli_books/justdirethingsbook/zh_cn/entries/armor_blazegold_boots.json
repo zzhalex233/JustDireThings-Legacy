@@ -1,0 +1,18 @@
+{
+    "name":  "烈焰金靴子",
+    "sortnum":  8,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:blazegold_boots",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "烈焰金靴子对足部的防护能力较强，且自带“熔岩修补”能力。只需投入熔岩源即能修复如初。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_boots",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

@@ -1,0 +1,18 @@
+{
+    "name":  "Celestigem Chestplate",
+    "sortnum":  10,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:celestigem_chestplate",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "The Celestigem Chestplate uses Forge Energy for its functionality, equipped with a 10,000 FE capacity. It\u0027s ideal to use a $(l:item_pocket_generator)Pocket Generator$(/l) for keeping it continuously charged."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_chestplate",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

@@ -1,0 +1,18 @@
+{
+    "name":  "蚀空合金靴子",
+    "sortnum":  23,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:eclipsealloy_boots",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "这双高等级靴子最多可以存储 500,000FE，灵活性出众，缓冲能力也超群。配备$(l:item_pocket_generator)便携发电器$(/l)充能，即可保持最优状态。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_eclipsealloy_boots",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

@@ -1,0 +1,21 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_celestigem":  {
+                                            "trigger":  "minecraft:inventory_changed",
+                                            "conditions":  {
+                                                               "items":  [
+                                                                             {
+                                                                                 "item":  "justdirethings:celestigem"
+                                                                             }
+                                                                         ]
+                                                           }
+                                        }
+                 },
+    "requirements":  [
+                         [
+                             "has_celestigem"
+                         ]
+                     ]
+}
+

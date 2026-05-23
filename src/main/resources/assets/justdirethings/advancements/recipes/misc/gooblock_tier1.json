@@ -1,0 +1,33 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_coal":  {
+                                      "trigger":  "minecraft:inventory_changed",
+                                      "conditions":  {
+                                                         "items":  [
+                                                                       {
+                                                                           "item":  "minecraft:coal"
+                                                                       }
+                                                                   ]
+                                                     }
+                                  },
+                     "has_the_recipe":  {
+                                            "trigger":  "minecraft:recipe_unlocked",
+                                            "conditions":  {
+                                                               "recipe":  "justdirethings:gooblock_tier1"
+                                                           }
+                                        }
+                 },
+    "requirements":  [
+                         [
+                             "has_the_recipe",
+                             "has_coal"
+                         ]
+                     ],
+    "rewards":  {
+                    "recipes":  [
+                                    "justdirethings:gooblock_tier1"
+                                ]
+                }
+}
+

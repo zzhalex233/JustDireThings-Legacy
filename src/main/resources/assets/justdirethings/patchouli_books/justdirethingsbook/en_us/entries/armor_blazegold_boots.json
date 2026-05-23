@@ -1,0 +1,18 @@
+{
+    "name":  "Blazegold Boots",
+    "sortnum":  8,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:blazegold_boots",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "Blazegold Boots provide enhanced foot protection and come with the Lava Repair ability. To fully repair these boots, drop them into a lava source block."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_boots",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

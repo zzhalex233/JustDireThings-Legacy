@@ -59,4 +59,8 @@ public class CommonProxy {
     public void spawnItemFlowParticle(World world, double startX, double startY, double startZ, double targetX, double targetY, double targetZ, ItemStack stack, int ticksPerBlock) {
         // Client-only particle rendering is bridged by ClientProxy.
     }
+
+    public void openMachineSettingsCopierScreen(ItemStack stack) {
+        // Client-only screen opening is bridged by ClientProxy.
+    }
 }

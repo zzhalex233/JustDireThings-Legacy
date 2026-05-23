@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.tile.machine;
 
+import com.zzhalex.justdirethings.common.block.group.JDTBlockGroups;
 import com.zzhalex.justdirethings.common.entity.EntityParadox;
 import com.zzhalex.justdirethings.common.entity.group.JDTEntityGroups;
 import com.zzhalex.justdirethings.common.paradox.ParadoxRuntimePlan;
@@ -32,6 +33,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -179,6 +181,18 @@ public class TileParadoxMachine extends TileMachineBase implements ITickable, Ti
 
     public float getMaxParadoxEnergy() {
         return (float) JDTConfig.paradoxEnergyMax;
+    }
+
+    public static boolean isTimeFluid(FluidStack fluidStack) {
+        return fluidStack != null
+                && fluidStack.amount > 0
+                && fluidStack.getFluid() != null
+                && "time_fluid".equals(fluidStack.getFluid().getName());
+    }
+
+    @Override
+    protected boolean isFluidValid(FluidStack resource) {
+        return isTimeFluid(resource);
     }
 
     public void setParadoxEnergy(float paradoxEnergy) {
@@ -566,14 +580,16 @@ public class TileParadoxMachine extends TileMachineBase implements ITickable, Ti
 
     private boolean isBlockPosValid(BlockPos blockPos) {
         IBlockState state = world.getBlockState(blockPos);
-        return state.getBlock() != Blocks.AIR && OreDetection.isOreBlock(state);
+        return state.getBlock() != Blocks.AIR
+                && !JDTBlockGroups.isParadoxAbsorbDenied(state.getBlock())
+                && OreDetection.isOreBlock(state);
     }
 
     private boolean isValidEntity(Entity entity) {
         return entity instanceof EntityLivingBase
                 && !(entity instanceof EntityPlayer)
                 && !(entity instanceof MultiPartEntityPart)
-                && !JDTEntityGroups.isTeleportingNotSupported(entity)
+                && !JDTEntityGroups.isParadoxAbsorbDenied(entity)
                 && entity.getParts() == null;
     }
 

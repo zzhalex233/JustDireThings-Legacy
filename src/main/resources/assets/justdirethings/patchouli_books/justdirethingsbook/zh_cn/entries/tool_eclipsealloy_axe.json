@@ -1,0 +1,18 @@
+{
+    "name":  "蚀空合金斧",
+    "sortnum":  23,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:eclipsealloy_axe",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "蚀空合金斧能以极高效率砍伐树木，能量上限也抬高许多。$(br2)它正是为极其劳累的伐木作业而造的。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_eclipsealloy_axe",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

@@ -17,33 +17,6 @@ repositories {
     mavenLocal() // Must be last for caching to work
 }
 
-configurations {
-    mekanismRunClientSource
-    computerCraftApiSource
-    openComputersApiSource
-}
-
-tasks.register('syncRunClientMekanism', Copy) {
-    from configurations.mekanismRunClientSource
-    into layout.projectDirectory.dir('run/client/mods')
-}
-
-tasks.register('computerCraftApiJar', Jar) {
-    archiveBaseName = 'computercraft-api'
-    destinationDirectory = layout.buildDirectory.dir('generated-api-jars')
-    from({ zipTree(configurations.computerCraftApiSource.singleFile) }) {
-        include 'dan200/computercraft/api/**'
-    }
-}
-
-tasks.register('openComputersApiJar', Jar) {
-    archiveBaseName = 'opencomputers-api'
-    destinationDirectory = layout.buildDirectory.dir('generated-api-jars')
-    from({ zipTree(configurations.openComputersApiSource.singleFile) }) {
-        include 'li/cil/oc/api/**'
-    }
-}
-
 dependencies {
     compileOnly "com.cleanroommc:sponge-mixin:0.20.12+mixin.0.8.7"
     if (propertyBool('enable_lwjglx')) {
@@ -52,18 +25,8 @@ dependencies {
 
     modCompileOnly "curse.maven:jei-238222:5846804"
     modRuntimeOnly "curse.maven:jei-238222:5846804"
-//    modRuntimeOnly "curse.maven:future-mc-310059:6162819"
     modRuntimeOnly "curse.maven:forgelin-continuous-456403:7883992"
     modRuntimeOnly "curse.maven:spark-361579:3542217"
-    mekanismRunClientSource "curse.maven:mekanism-ce-unofficial-840735:7904551"
-    modRuntimeOnly "curse.maven:industrial-craft-242638:3078606"
-    modRuntimeOnly "curse.maven:redstone-flux-270789:2920436"
-    computerCraftApiSource "curse.maven:computercraft-67504:2478952"
-    openComputersApiSource "curse.maven:opencomputers-223008:4630537"
-    modRuntimeOnly files(tasks.named('computerCraftApiJar'))
-    modRuntimeOnly files(tasks.named('openComputersApiJar'))
-}
-
-tasks.named('runClient') {
-    dependsOn tasks.named('syncRunClientMekanism')
+    modCompileOnly "curse.maven:patchouli-306770:3162874"
+    modRuntimeOnly "curse.maven:patchouli-306770:3162874"
 }

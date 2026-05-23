@@ -1,0 +1,26 @@
+{
+  "parent": "justdirethings:celestigem",
+  "criteria": {
+    "justdirethings_eclipsealloy_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:eclipsealloy_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "justdirethings:eclipsealloy_ingot"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.eclipsealloy_ingot.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.eclipsealloy_ingot.title"
+    }
+  }
+}

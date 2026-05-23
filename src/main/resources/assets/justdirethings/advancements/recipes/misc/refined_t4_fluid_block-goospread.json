@@ -1,0 +1,33 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_goo_block_t4":  {
+                                              "trigger":  "minecraft:inventory_changed",
+                                              "conditions":  {
+                                                                 "items":  [
+                                                                               {
+                                                                                   "item":  "justdirethings:gooblock_tier4"
+                                                                               }
+                                                                           ]
+                                                             }
+                                          },
+                     "has_the_recipe":  {
+                                            "trigger":  "minecraft:recipe_unlocked",
+                                            "conditions":  {
+                                                               "recipe":  "justdirethings:refined_t4_fluid_block-goospread"
+                                                           }
+                                        }
+                 },
+    "requirements":  [
+                         [
+                             "has_the_recipe",
+                             "has_goo_block_t4"
+                         ]
+                     ],
+    "rewards":  {
+                    "recipes":  [
+                                    "justdirethings:refined_t4_fluid_block-goospread"
+                                ]
+                }
+}
+

@@ -1,0 +1,22 @@
+{
+  "criteria": {
+    "location": {
+      "trigger": "minecraft:location",
+      "conditions": {}
+    }
+  },
+  "display": {
+    "background": "justdirethings:textures/block/gooblock_tier1.png",
+    "icon": {
+      "item": "justdirethings:ferricore_ingot"
+    },
+    "description": {
+      "translate": "advancements.justdirethings.root.description"
+    },
+    "title": {
+      "translate": "advancements.justdirethings.root.title"
+    },
+    "announce_to_chat": false,
+    "frame": "goal"
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "name":  "Celestigem Helmet",
+    "sortnum":  9,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:celestigem_helmet",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "The Celestigem Helmet harnesses Forge Energy for durability, storing up to 10,000 FE. Keep it charged using a $(l:item_pocket_generator)Pocket Generator$(/l)."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_helmet",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

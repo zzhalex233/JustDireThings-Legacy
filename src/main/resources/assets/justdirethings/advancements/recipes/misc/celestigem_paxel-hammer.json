@@ -1,0 +1,21 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_upgrade_base":  {
+                                              "trigger":  "minecraft:inventory_changed",
+                                              "conditions":  {
+                                                                 "items":  [
+                                                                               {
+                                                                                   "item":  "justdirethings:upgrade_blank"
+                                                                               }
+                                                                           ]
+                                                             }
+                                          }
+                 },
+    "requirements":  [
+                         [
+                             "has_upgrade_base"
+                         ]
+                     ]
+}
+

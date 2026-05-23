@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings.client.render;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -109,6 +111,7 @@ public final class ClientPlayerPreviewRenderer {
                 }
             }
 
+            syncPlayerModelState(model, player);
             model.swingProgress = 0.0F;
             model.isRiding = false;
             model.isChild = player.isChild();
@@ -137,6 +140,26 @@ public final class ClientPlayerPreviewRenderer {
             GlStateManager.popMatrix();
             GL11.glPopAttrib();
         }
+    }
+
+    private static void syncPlayerModelState(ModelPlayer model, AbstractClientPlayer player) {
+        if (player.isSpectator()) {
+            model.setVisible(false);
+            model.bipedHead.showModel = true;
+            model.bipedHeadwear.showModel = true;
+            return;
+        }
+
+        model.setVisible(true);
+        model.bipedHeadwear.showModel = player.isWearing(EnumPlayerModelParts.HAT);
+        model.bipedBodyWear.showModel = player.isWearing(EnumPlayerModelParts.JACKET);
+        model.bipedLeftLegwear.showModel = player.isWearing(EnumPlayerModelParts.LEFT_PANTS_LEG);
+        model.bipedRightLegwear.showModel = player.isWearing(EnumPlayerModelParts.RIGHT_PANTS_LEG);
+        model.bipedLeftArmwear.showModel = player.isWearing(EnumPlayerModelParts.LEFT_SLEEVE);
+        model.bipedRightArmwear.showModel = player.isWearing(EnumPlayerModelParts.RIGHT_SLEEVE);
+        model.isSneak = player.isSneaking();
+        model.leftArmPose = ModelBiped.ArmPose.EMPTY;
+        model.rightArmPose = ModelBiped.ArmPose.EMPTY;
     }
 
     private static void applyLandingLight(World world, double x, double y, double z) {

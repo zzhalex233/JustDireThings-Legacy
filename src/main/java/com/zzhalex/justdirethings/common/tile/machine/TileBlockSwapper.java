@@ -10,7 +10,9 @@ import com.zzhalex.justdirethings.common.tile.base.MachineRedstoneState;
 import com.zzhalex.justdirethings.common.world.PortalChunkKeeper;
 import com.zzhalex.justdirethings.common.tile.base.TileAdvancedMachine;
 import com.zzhalex.justdirethings.common.tile.base.TileMachineBase;
+import com.zzhalex.justdirethings.JustDireThingsLegacy;
 import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MultiPartEntityPart;
@@ -37,12 +39,17 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.lang.reflect.Method;
 import javax.annotation.Nullable;
 
 public class TileBlockSwapper extends TileMachineBase implements ITickable {
+
+    private static final int SWAP_SET_FLAGS = 50;
+    private static final int VALIDATE_NOTIFY_FLAGS = 3;
 
     public enum SwapEntityType {
         NONE,
@@ -279,69 +286,52 @@ public class TileBlockSwapper extends TileMachineBase implements ITickable {
     protected int swapTargetBlocks(TileBlockSwapper partner) {
         FakePlayer fakePlayer = createProtectionFakePlayer(world, this);
         FakePlayer partnerFakePlayer = createProtectionFakePlayer(partner.world, partner);
-        List<BlockSwapEntry> entries = new ArrayList<>();
+        int swapped = 0;
         for (BlockPos first : findSpotsToSwap()) {
-            BlockPos second = partner.getWorldPos(getRelativePos(first));
-            BlockSwapEntry entry = createBlockSwapEntry(first, second, partner, fakePlayer, partnerFakePlayer);
-            if (entry != null) {
-                entries.add(entry);
+            if (swapBlock(first, partner, fakePlayer, partnerFakePlayer)) {
+                swapped++;
             }
         }
-        applyBlockSwaps(partner, entries);
-        return entries.size();
+        return swapped;
     }
 
-    protected BlockSwapEntry createBlockSwapEntry(BlockPos first, BlockPos second, TileBlockSwapper partner, FakePlayer fakePlayer, FakePlayer partnerFakePlayer) {
+    protected boolean swapBlock(BlockPos first, TileBlockSwapper partner, FakePlayer fakePlayer, FakePlayer partnerFakePlayer) {
+        BlockPos second = partner == null || first == null ? null : partner.getWorldPos(getRelativePos(first));
         if (partner == null || first == null || second == null || first.equals(second) || !isBlockPosValid(world, first) || !isBlockPosValid(partner.world, second)) {
-            return null;
+            return false;
         }
         ensureChunkLoaded(world, first);
         ensureChunkLoaded(partner.world, second);
         if (!canBreakAndPlaceAt(world, first, fakePlayer) || !canBreakAndPlaceAt(partner.world, second, partnerFakePlayer)) {
-            return null;
+            return false;
         }
 
         IBlockState firstState = world.getBlockState(first);
         IBlockState secondState = partner.world.getBlockState(second);
         if (firstState.getBlock() == Blocks.AIR && secondState.getBlock() == Blocks.AIR) {
-            return null;
+            return false;
         }
 
         NBTTagCompound firstNbt = saveTileNbt(world.getTileEntity(first));
         NBTTagCompound secondNbt = saveTileNbt(partner.world.getTileEntity(second));
-        return new BlockSwapEntry(first, second, firstState, secondState, firstNbt, secondNbt);
-    }
+        world.removeTileEntity(first);
+        partner.world.removeTileEntity(second);
 
-    protected void applyBlockSwaps(TileBlockSwapper partner, List<BlockSwapEntry> entries) {
-        if (partner == null || entries == null || entries.isEmpty()) {
-            return;
+        boolean placedSecond = placeSwappedState(partner.world, second, firstState);
+        if (placedSecond && !firstNbt.isEmpty()) {
+            restoreTileNbt(ensureTileEntity(partner.world, second, firstState), second, firstNbt);
         }
+        thatValidationList.add(second);
 
-        for (BlockSwapEntry entry : entries) {
-            world.removeTileEntity(entry.first);
-            partner.world.removeTileEntity(entry.second);
+        boolean placedFirst = placeSwappedState(world, first, secondState);
+        if (placedFirst && !secondNbt.isEmpty()) {
+            restoreTileNbt(ensureTileEntity(world, first, secondState), first, secondNbt);
         }
+        thisValidationList.add(first);
 
-        for (BlockSwapEntry entry : entries) {
-            boolean placedSecond = placeSwappedState(partner.world, entry.second, entry.firstState);
-            if (placedSecond && !entry.firstNbt.isEmpty()) {
-                restoreTileNbt(ensureTileEntity(partner.world, entry.second, entry.firstState), entry.second, entry.firstNbt);
-            }
-            thatValidationList.add(entry.second);
-        }
-
-        for (BlockSwapEntry entry : entries) {
-            boolean placedFirst = placeSwappedState(world, entry.first, entry.secondState);
-            if (placedFirst && !entry.secondNbt.isEmpty()) {
-                restoreTileNbt(ensureTileEntity(world, entry.first, entry.secondState), entry.first, entry.secondNbt);
-            }
-            thisValidationList.add(entry.first);
-        }
-
-        for (BlockSwapEntry entry : entries) {
-            spawnTeleportParticles(entry.first);
-            partner.spawnTeleportParticles(entry.second);
-        }
+        spawnTeleportParticles(first);
+        partner.spawnTeleportParticles(second);
+        return placedSecond || placedFirst;
     }
 
     protected void validateSwappedBlocks(TileBlockSwapper partner) {
@@ -551,13 +541,64 @@ public class TileBlockSwapper extends TileMachineBase implements ITickable {
 
     protected void validateBlock(BlockPos blockPos) {
         IBlockState state = world.getBlockState(blockPos);
-        IBlockState adjustedState = state.getBlock().getActualState(state, world, blockPos);
-        if (!adjustedState.equals(state)) {
-            world.setBlockState(blockPos, adjustedState, 3);
-        } else {
-            world.markAndNotifyBlock(blockPos, world.getChunk(blockPos), state, state, 3);
+        if (!canRemainAt(state, blockPos)) {
+            world.destroyBlock(blockPos, true);
+            return;
         }
-        world.notifyNeighborsOfStateChange(blockPos, state.getBlock(), false);
+        world.markAndNotifyBlock(blockPos, world.getChunk(blockPos), state, state, VALIDATE_NOTIFY_FLAGS);
+    }
+
+    protected boolean canRemainAt(IBlockState state, BlockPos blockPos) {
+        if (state.getBlock() == Blocks.AIR) {
+            return true;
+        }
+        Boolean blockStay = invokeCanBlockStay(state, blockPos);
+        if (blockStay != null) {
+            return blockStay;
+        }
+        EnumFacing facing = getFacingValue(state);
+        if (facing != null && overrides(state, "canPlaceBlockOnSide", World.class, BlockPos.class, EnumFacing.class)) {
+            return state.getBlock().canPlaceBlockOnSide(world, blockPos, facing);
+        }
+        if (!state.getBlock().isFullCube(state) && overrides(state, "canPlaceBlockAt", World.class, BlockPos.class)) {
+            return state.getBlock().canPlaceBlockAt(world, blockPos);
+        }
+        return true;
+    }
+
+    @Nullable
+    private Boolean invokeCanBlockStay(IBlockState state, BlockPos blockPos) {
+        try {
+            Method method = state.getBlock().getClass().getMethod("canBlockStay", World.class, BlockPos.class, IBlockState.class);
+            return (Boolean) method.invoke(state.getBlock(), world, blockPos, state);
+        } catch (ReflectiveOperationException ignored) {
+            try {
+                Method method = state.getBlock().getClass().getMethod("canBlockStay", World.class, BlockPos.class);
+                return (Boolean) method.invoke(state.getBlock(), world, blockPos);
+            } catch (ReflectiveOperationException ignoredAgain) {
+                return null;
+            }
+        }
+    }
+
+    private static boolean overrides(IBlockState state, String methodName, Class<?>... parameterTypes) {
+        try {
+            return state.getBlock().getClass().getMethod(methodName, parameterTypes).getDeclaringClass() != net.minecraft.block.Block.class;
+        } catch (NoSuchMethodException ignored) {
+            return false;
+        }
+    }
+
+    @Nullable
+    private static EnumFacing getFacingValue(IBlockState state) {
+        Collection<IProperty<?>> properties = state.getPropertyKeys();
+        for (IProperty<?> property : properties) {
+            if ("facing".equals(property.getName())) {
+                Comparable<?> value = state.getValue(property);
+                return value instanceof EnumFacing ? (EnumFacing) value : null;
+            }
+        }
+        return null;
     }
 
     protected void ensureChunkLoaded(World targetWorld, BlockPos blockPos) {
@@ -649,25 +690,32 @@ public class TileBlockSwapper extends TileMachineBase implements ITickable {
         if (tileEntity == null || tag == null || tag.getKeySet().isEmpty()) {
             return;
         }
-        tag.setInteger("x", blockPos.getX());
-        tag.setInteger("y", blockPos.getY());
-        tag.setInteger("z", blockPos.getZ());
-        tileEntity.readFromNBT(tag);
-        tileEntity.markDirty();
+        NBTTagCompound restored = tag.copy();
+        restored.setInteger("x", blockPos.getX());
+        restored.setInteger("y", blockPos.getY());
+        restored.setInteger("z", blockPos.getZ());
+        try {
+            tileEntity.readFromNBT(restored);
+            tileEntity.markDirty();
+        } catch (RuntimeException e) {
+            JustDireThingsLegacy.LOGGER.warn("Failed to restore tile data for swapped block at {}", blockPos, e);
+        }
     }
 
     private static boolean placeSwappedState(World world, BlockPos blockPos, IBlockState state) {
-        boolean placed = world.setBlockState(blockPos, state, 51);
+        boolean placed = world.setBlockState(blockPos, state, SWAP_SET_FLAGS);
         return placed || world.getBlockState(blockPos).equals(state);
     }
 
     private static TileEntity ensureTileEntity(World world, BlockPos blockPos, IBlockState state) {
         TileEntity tileEntity = world.getTileEntity(blockPos);
-        if (tileEntity != null || !state.getBlock().hasTileEntity(state)) {
+        if (tileEntity != null) {
             return tileEntity;
         }
 
-        tileEntity = state.getBlock().createTileEntity(world, state);
+        if (state.getBlock().hasTileEntity(state)) {
+            tileEntity = state.getBlock().createTileEntity(world, state);
+        }
         if (tileEntity == null && state.getBlock() instanceof ITileEntityProvider) {
             tileEntity = ((ITileEntityProvider) state.getBlock()).createNewTileEntity(world, state.getBlock().getMetaFromState(state));
         }
@@ -675,24 +723,6 @@ public class TileBlockSwapper extends TileMachineBase implements ITickable {
             world.setTileEntity(blockPos, tileEntity);
         }
         return tileEntity;
-    }
-
-    protected static final class BlockSwapEntry {
-        private final BlockPos first;
-        private final BlockPos second;
-        private final IBlockState firstState;
-        private final IBlockState secondState;
-        private final NBTTagCompound firstNbt;
-        private final NBTTagCompound secondNbt;
-
-        private BlockSwapEntry(BlockPos first, BlockPos second, IBlockState firstState, IBlockState secondState, NBTTagCompound firstNbt, NBTTagCompound secondNbt) {
-            this.first = first;
-            this.second = second;
-            this.firstState = firstState;
-            this.secondState = secondState;
-            this.firstNbt = firstNbt;
-            this.secondNbt = secondNbt;
-        }
     }
 
     @Override

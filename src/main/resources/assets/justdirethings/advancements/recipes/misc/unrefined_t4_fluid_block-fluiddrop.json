@@ -1,0 +1,33 @@
+{
+    "parent":  "minecraft:recipes/root",
+    "criteria":  {
+                     "has_coal_t4":  {
+                                         "trigger":  "minecraft:inventory_changed",
+                                         "conditions":  {
+                                                            "items":  [
+                                                                          {
+                                                                              "item":  "justdirethings:coal_t4"
+                                                                          }
+                                                                      ]
+                                                        }
+                                     },
+                     "has_the_recipe":  {
+                                            "trigger":  "minecraft:recipe_unlocked",
+                                            "conditions":  {
+                                                               "recipe":  "justdirethings:unrefined_t4_fluid_block-fluiddrop"
+                                                           }
+                                        }
+                 },
+    "requirements":  [
+                         [
+                             "has_the_recipe",
+                             "has_coal_t4"
+                         ]
+                     ],
+    "rewards":  {
+                    "recipes":  [
+                                    "justdirethings:unrefined_t4_fluid_block-fluiddrop"
+                                ]
+                }
+}
+

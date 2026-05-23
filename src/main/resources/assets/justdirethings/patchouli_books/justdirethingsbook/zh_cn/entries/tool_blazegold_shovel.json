@@ -1,0 +1,18 @@
+{
+    "name":  "烈焰金锹",
+    "sortnum":  9,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:blazegold_shovel",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "挖掘速度比$(l:tool_ferricore_shovel)核源铁锹$(/l)更快。“熔岩修补”可让其在熔岩中修复自身。"
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_blazegold_shovel",
+                      "title":  "升级工作台配方",
+                      "text":  "在升级工作台中升级此物品。"
+                  }
+              ]
+}

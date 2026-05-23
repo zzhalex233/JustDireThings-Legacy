@@ -1,0 +1,24 @@
+{
+  "conditions": [
+    {
+      "type": "justdirethings:mod_loaded",
+      "modid": "patchouli"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "group": "justdirethings",
+  "ingredients": [
+    {
+      "item": "justdirethings:gooblock_tier1"
+    },
+    {
+      "item": "minecraft:book"
+    }
+  ],
+  "result": {
+    "item": "patchouli:guide_book",
+    "nbt": {
+      "patchouli:book": "justdirethings:justdirethingsbook"
+    }
+  }
+}

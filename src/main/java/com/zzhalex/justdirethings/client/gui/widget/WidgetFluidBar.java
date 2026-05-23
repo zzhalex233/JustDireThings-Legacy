@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.client.gui.widget;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.common.item.tooltip.TooltipHelper;
 import com.zzhalex.justdirethings.common.util.FluidDisplayHelper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -16,10 +17,8 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
-import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 public class WidgetFluidBar {
 
@@ -78,8 +77,8 @@ public class WidgetFluidBar {
         return Collections.singletonList(I18n.format(
                 "justdirethings.screen.fluid",
                 displayName,
-                formatAmount(current),
-                formatAmount(max)
+                TooltipHelper.formatTooltipValue(current),
+                TooltipHelper.formatTooltipValue(max)
         ));
     }
 
@@ -125,7 +124,4 @@ public class WidgetFluidBar {
         return FluidDisplayHelper.getLocalizedName(fluidName, current);
     }
 
-    private static String formatAmount(int amount) {
-        return NumberFormat.getIntegerInstance(Locale.ROOT).format(amount);
-    }
 }

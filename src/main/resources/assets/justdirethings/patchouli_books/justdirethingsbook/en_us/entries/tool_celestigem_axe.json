@@ -1,0 +1,18 @@
+{
+    "name":  "Celestigem Axe",
+    "sortnum":  16,
+    "category":  "justdirethings:tools",
+    "icon":  "justdirethings:celestigem_axe",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "Advancing from $(l:tool_blazegold_axe)Blazegold Axe$(/l), this axe harnesses Forge Energy, featuring a 10,000 FE storage. Maintain power levels with a $(l:item_pocket_generator)Pocket Generator$(/l)."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_celestigem_axe",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

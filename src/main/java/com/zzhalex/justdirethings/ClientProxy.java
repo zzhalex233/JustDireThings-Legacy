@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings;
 
 import com.zzhalex.justdirethings.client.ClientRegistration;
+import com.zzhalex.justdirethings.client.gui.upstream.MachineSettingsCopierScreen;
 import com.zzhalex.justdirethings.client.overlay.ClientAbilityCooldowns;
 import com.zzhalex.justdirethings.client.particle.TimeCrystalParticles;
 import com.zzhalex.justdirethings.client.render.ThingFinder;
@@ -65,5 +66,13 @@ public class ClientProxy extends CommonProxy {
     public void spawnItemFlowParticle(World world, double startX, double startY, double startZ, double targetX, double targetY, double targetZ, ItemStack stack, int ticksPerBlock) {
         Minecraft minecraft = Minecraft.getMinecraft();
         TimeCrystalParticles.spawnItemFlow(world == null && minecraft != null ? minecraft.world : world, startX, startY, startZ, targetX, targetY, targetZ, stack, ticksPerBlock);
+    }
+
+    @Override
+    public void openMachineSettingsCopierScreen(ItemStack stack) {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        if (minecraft != null) {
+            minecraft.displayGuiScreen(new MachineSettingsCopierScreen(stack));
+        }
     }
 }

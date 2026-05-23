@@ -100,6 +100,10 @@ public final class JDTEntityGroups {
         return POLYMORPHIC_TARGET_DENY.contains(normalize(entityId));
     }
 
+    public static boolean isParadoxAbsorbDenied(Entity entity) {
+        return isTeleportingNotSupported(entity);
+    }
+
     public static boolean canRandomlyPolymorph(String entityId) {
         return isPolymorphicPeaceful(entityId) || isPolymorphicHostile(entityId);
     }

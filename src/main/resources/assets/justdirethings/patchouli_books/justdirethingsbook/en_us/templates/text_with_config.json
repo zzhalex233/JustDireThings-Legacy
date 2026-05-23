@@ -1,0 +1,9 @@
+{
+  "processor": "com.zzhalex.justdirethings.common.util.ConfigValueComponentProcessor",
+  "components": [
+    {
+      "type": "text",
+      "text": "#text"
+    }
+  ]
+}

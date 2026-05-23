@@ -1,0 +1,18 @@
+{
+    "name":  "Eclipse Alloy Leggings",
+    "sortnum":  22,
+    "category":  "justdirethings:armor",
+    "icon":  "justdirethings:eclipsealloy_leggings",
+    "pages":  [
+                  {
+                      "type":  "text",
+                      "text":  "Crafted for ultimate endurance, these leggings are powered by 500,000 FE of Forge Energy. Use a $(l:item_pocket_generator)Pocket Generator$(/l) to maintain their power levels and functionality."
+                  },
+                  {
+                      "type":  "justdirethings:upgrade_station_recipe",
+                      "recipe":  "justdirethings:tier_eclipsealloy_leggings",
+                      "title":  "Upgrade Station Recipe",
+                      "text":  "Upgrade this item in the Upgrade Station."
+                  }
+              ]
+}

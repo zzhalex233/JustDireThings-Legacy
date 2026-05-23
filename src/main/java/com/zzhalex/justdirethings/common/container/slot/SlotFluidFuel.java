@@ -1,9 +1,10 @@
 package com.zzhalex.justdirethings.common.container.slot;
 
+import com.zzhalex.justdirethings.common.tile.machine.TileFluidGenerator;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -15,7 +16,11 @@ public class SlotFluidFuel extends SlotItemHandler {
 
     @Override
     public boolean isItemValid(ItemStack stack) {
-        FluidStack contained = FluidUtil.getFluidContained(stack);
-        return contained != null && contained.amount > 0 && contained.getFluid() == FluidRegistry.LAVA;
+        IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(stack);
+        if (fluidHandler == null) {
+            return false;
+        }
+        FluidStack contained = fluidHandler.drain(1000, false);
+        return TileFluidGenerator.isRefinedFuel(contained);
     }
 }
