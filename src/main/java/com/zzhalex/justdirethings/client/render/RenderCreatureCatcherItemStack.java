@@ -51,34 +51,7 @@ public class RenderCreatureCatcherItemStack extends TileEntityItemStackRenderer 
             }
         } finally {
             GL11.glPopAttrib();
-            syncGlStateManagerCache();
-        }
-    }
-
-    private static void syncGlStateManagerCache() {
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_DEPTH_TEST), GlStateManager::enableDepth, GlStateManager::disableDepth);
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_BLEND), GlStateManager::enableBlend, GlStateManager::disableBlend);
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_CULL_FACE), GlStateManager::enableCull, GlStateManager::disableCull);
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_LIGHTING), GlStateManager::enableLighting, GlStateManager::disableLighting);
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_ALPHA_TEST), GlStateManager::enableAlpha, GlStateManager::disableAlpha);
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_FOG), GlStateManager::enableFog, GlStateManager::disableFog);
-        forceSetToggle(GL11.glIsEnabled(GL11.GL_TEXTURE_2D), GlStateManager::enableTexture2D, GlStateManager::disableTexture2D);
-        boolean dm = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
-        GlStateManager.depthMask(!dm);
-        GlStateManager.depthMask(dm);
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.color(0.0F, 0.0F, 0.0F, 0.0F);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.bindTexture(0);
-    }
-
-    private static void forceSetToggle(boolean desired, Runnable enable, Runnable disable) {
-        if (desired) {
-            disable.run();
-            enable.run();
-        } else {
-            enable.run();
-            disable.run();
+            RenderStateHelper.syncGlStateManagerCache();
         }
     }
 

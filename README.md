@@ -44,6 +44,7 @@ Many blocks designed around automation, including:
 
 ### Gallery
 
+![machines](gallery/image1.png)
+![goo jei](gallery/image2.png)
+![goo block](gallery/image3.png)
 
-![goo jei](gallery/image-3.png)
-![goo block](gallery/image-5.png)

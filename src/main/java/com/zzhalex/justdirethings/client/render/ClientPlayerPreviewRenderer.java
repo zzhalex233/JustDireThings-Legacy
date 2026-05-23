@@ -64,6 +64,7 @@ public final class ClientPlayerPreviewRenderer {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GlStateManager.popMatrix();
             GL11.glPopAttrib();
+            RenderStateHelper.syncGlStateManagerCache();
         }
     }
 
@@ -139,6 +140,7 @@ public final class ClientPlayerPreviewRenderer {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GlStateManager.popMatrix();
             GL11.glPopAttrib();
+            RenderStateHelper.syncGlStateManagerCache();
         }
     }
 
