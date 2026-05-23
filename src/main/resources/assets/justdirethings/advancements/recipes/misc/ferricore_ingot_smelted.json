@@ -1,21 +1,20 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_ferricore_raw":  {
-                                               "trigger":  "minecraft:inventory_changed",
-                                               "conditions":  {
-                                                                  "items":  [
-                                                                                {
-                                                                                    "item":  "justdirethings:raw_ferricore"
-                                                                                }
-                                                                            ]
-                                                              }
-                                           }
-                 },
-    "requirements":  [
-                         [
-                             "has_ferricore_raw"
-                         ]
-                     ]
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_ferricore_raw": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:raw_ferricore"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_ferricore_raw"
+    ]
+  ]
 }
-

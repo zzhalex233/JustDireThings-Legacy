@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_blockbreakert2":  {
-                                                "trigger":  "minecraft:inventory_changed",
-                                                "conditions":  {
-                                                                   "items":  [
-                                                                                 {
-                                                                                     "item":  "justdirethings:blockbreakert2"
-                                                                                 }
-                                                                             ]
-                                                               }
-                                            },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:blockbreakert2_nbtclear"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_blockbreakert2"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:blockbreakert2_nbtclear"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blockbreakert2": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:blockbreakert2"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:blockbreakert2_nbtclear"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_blockbreakert2"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:blockbreakert2_nbtclear"
+    ]
+  }
 }
-

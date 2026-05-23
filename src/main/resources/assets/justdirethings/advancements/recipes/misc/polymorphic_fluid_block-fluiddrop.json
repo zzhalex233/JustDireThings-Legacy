@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_polymorphic_catalyst":  {
-                                                      "trigger":  "minecraft:inventory_changed",
-                                                      "conditions":  {
-                                                                         "items":  [
-                                                                                       {
-                                                                                           "item":  "justdirethings:polymorphic_catalyst"
-                                                                                       }
-                                                                                   ]
-                                                                     }
-                                                  },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:polymorphic_fluid_block-fluiddrop"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_polymorphic_catalyst"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:polymorphic_fluid_block-fluiddrop"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_polymorphic_catalyst": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:polymorphic_catalyst"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:polymorphic_fluid_block-fluiddrop"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_polymorphic_catalyst"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:polymorphic_fluid_block-fluiddrop"
+    ]
+  }
 }
-

@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_fluidplacert1":  {
-                                               "trigger":  "minecraft:inventory_changed",
-                                               "conditions":  {
-                                                                  "items":  [
-                                                                                {
-                                                                                    "item":  "justdirethings:fluidplacert1"
-                                                                                }
-                                                                            ]
-                                                              }
-                                           },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:fluidplacert1_nbtclear"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_fluidplacert1"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:fluidplacert1_nbtclear"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_fluidplacert1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:fluidplacert1"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:fluidplacert1_nbtclear"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_fluidplacert1"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:fluidplacert1_nbtclear"
+    ]
+  }
 }
-

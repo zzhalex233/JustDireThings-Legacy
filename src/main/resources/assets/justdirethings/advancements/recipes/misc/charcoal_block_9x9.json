@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_charcoal":  {
-                                          "trigger":  "minecraft:inventory_changed",
-                                          "conditions":  {
-                                                             "items":  [
-                                                                           {
-                                                                               "item":  "justdirethings:charcoal"
-                                                                           }
-                                                                       ]
-                                                         }
-                                      },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:charcoal_block_9x9"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_charcoal"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:charcoal_block_9x9"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_charcoal": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:charcoal"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:charcoal_block_9x9"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_charcoal"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:charcoal_block_9x9"
+    ]
+  }
 }
-

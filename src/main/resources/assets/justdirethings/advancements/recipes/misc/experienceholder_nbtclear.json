@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_experienceholder":  {
-                                                  "trigger":  "minecraft:inventory_changed",
-                                                  "conditions":  {
-                                                                     "items":  [
-                                                                                   {
-                                                                                       "item":  "justdirethings:experienceholder"
-                                                                                   }
-                                                                               ]
-                                                                 }
-                                              },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:experienceholder_nbtclear"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_experienceholder"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:experienceholder_nbtclear"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_experienceholder": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:experienceholder"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:experienceholder_nbtclear"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_experienceholder"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:experienceholder_nbtclear"
+    ]
+  }
 }
-

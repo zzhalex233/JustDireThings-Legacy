@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_goo_block_t1":  {
-                                              "trigger":  "minecraft:inventory_changed",
-                                              "conditions":  {
-                                                                 "items":  [
-                                                                               {
-                                                                                   "item":  "justdirethings:gooblock_tier1"
-                                                                               }
-                                                                           ]
-                                                             }
-                                          },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:raw_coal_t1_ore-goospread"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_goo_block_t1"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:raw_coal_t1_ore-goospread"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_goo_block_t1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:gooblock_tier1"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:raw_coal_t1_ore-goospread"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_goo_block_t1"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:raw_coal_t1_ore-goospread"
+    ]
+  }
 }
-

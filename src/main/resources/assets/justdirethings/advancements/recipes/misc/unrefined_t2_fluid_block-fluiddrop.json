@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_coal_t2":  {
-                                         "trigger":  "minecraft:inventory_changed",
-                                         "conditions":  {
-                                                            "items":  [
-                                                                          {
-                                                                              "item":  "justdirethings:coal_t2"
-                                                                          }
-                                                                      ]
-                                                        }
-                                     },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:unrefined_t2_fluid_block-fluiddrop"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_coal_t2"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:unrefined_t2_fluid_block-fluiddrop"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_coal_t2": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:coal_t2"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:unrefined_t2_fluid_block-fluiddrop"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_coal_t2"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:unrefined_t2_fluid_block-fluiddrop"
+    ]
+  }
 }
-

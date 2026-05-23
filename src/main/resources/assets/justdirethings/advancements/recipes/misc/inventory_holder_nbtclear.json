@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_inventory_holder":  {
-                                                  "trigger":  "minecraft:inventory_changed",
-                                                  "conditions":  {
-                                                                     "items":  [
-                                                                                   {
-                                                                                       "item":  "justdirethings:inventory_holder"
-                                                                                   }
-                                                                               ]
-                                                                 }
-                                              },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:inventory_holder_nbtclear"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_inventory_holder"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:inventory_holder_nbtclear"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_inventory_holder": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:inventory_holder"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:inventory_holder_nbtclear"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_inventory_holder"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:inventory_holder_nbtclear"
+    ]
+  }
 }
-

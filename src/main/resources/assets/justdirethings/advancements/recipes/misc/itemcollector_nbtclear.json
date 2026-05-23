@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_itemcollector":  {
-                                               "trigger":  "minecraft:inventory_changed",
-                                               "conditions":  {
-                                                                  "items":  [
-                                                                                {
-                                                                                    "item":  "justdirethings:itemcollector"
-                                                                                }
-                                                                            ]
-                                                              }
-                                           },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:itemcollector_nbtclear"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_itemcollector"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:itemcollector_nbtclear"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_itemcollector": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:itemcollector"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:itemcollector_nbtclear"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_itemcollector"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:itemcollector_nbtclear"
+    ]
+  }
 }
-

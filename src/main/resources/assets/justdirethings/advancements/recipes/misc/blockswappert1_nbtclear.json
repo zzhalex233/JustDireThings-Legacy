@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_blockswappert1":  {
-                                                "trigger":  "minecraft:inventory_changed",
-                                                "conditions":  {
-                                                                   "items":  [
-                                                                                 {
-                                                                                     "item":  "justdirethings:blockswappert1"
-                                                                                 }
-                                                                             ]
-                                                               }
-                                            },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:blockswappert1_nbtclear"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_blockswappert1"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:blockswappert1_nbtclear"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blockswappert1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:blockswappert1"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:blockswappert1_nbtclear"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_blockswappert1"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:blockswappert1_nbtclear"
+    ]
+  }
 }
-

@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_celestigem":  {
-                                            "trigger":  "minecraft:inventory_changed",
-                                            "conditions":  {
-                                                               "items":  [
-                                                                             {
-                                                                                 "item":  "justdirethings:celestigem"
-                                                                             }
-                                                                         ]
-                                                           }
-                                        },
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:voidshift_wand"
-                                                           }
-                                        }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_celestigem"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:voidshift_wand"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_celestigem": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:celestigem"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:voidshift_wand"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_celestigem"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:voidshift_wand"
+    ]
+  }
 }
-

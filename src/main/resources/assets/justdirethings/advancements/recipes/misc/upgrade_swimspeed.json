@@ -1,33 +1,32 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_the_recipe":  {
-                                            "trigger":  "minecraft:recipe_unlocked",
-                                            "conditions":  {
-                                                               "recipe":  "justdirethings:upgrade_swimspeed"
-                                                           }
-                                        },
-                     "has_upgrade_base":  {
-                                              "trigger":  "minecraft:inventory_changed",
-                                              "conditions":  {
-                                                                 "items":  [
-                                                                               {
-                                                                                   "item":  "justdirethings:upgrade_blank"
-                                                                               }
-                                                                           ]
-                                                             }
-                                          }
-                 },
-    "requirements":  [
-                         [
-                             "has_the_recipe",
-                             "has_upgrade_base"
-                         ]
-                     ],
-    "rewards":  {
-                    "recipes":  [
-                                    "justdirethings:upgrade_swimspeed"
-                                ]
-                }
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "justdirethings:upgrade_swimspeed"
+      }
+    },
+    "has_upgrade_base": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:upgrade_blank"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_upgrade_base"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "justdirethings:upgrade_swimspeed"
+    ]
+  }
 }
-

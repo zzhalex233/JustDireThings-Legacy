@@ -1,21 +1,20 @@
 {
-    "parent":  "minecraft:recipes/root",
-    "criteria":  {
-                     "has_blazegold_raw":  {
-                                               "trigger":  "minecraft:inventory_changed",
-                                               "conditions":  {
-                                                                  "items":  [
-                                                                                {
-                                                                                    "item":  "justdirethings:raw_blazegold"
-                                                                                }
-                                                                            ]
-                                                              }
-                                           }
-                 },
-    "requirements":  [
-                         [
-                             "has_blazegold_raw"
-                         ]
-                     ]
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blazegold_raw": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "justdirethings:raw_blazegold"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_blazegold_raw"
+    ]
+  ]
 }
-
