@@ -1,6 +1,7 @@
 # JustDireThings-Legacy
 
 `JustDireThings-Legacy` is a Minecraft 1.12.2 backport project for [`JustDireThings`](https://github.com/Direwolf20-MC/JustDireThings).
+With [Crafttweaker support](https://github.com/zzhalex233/JustDireThings-Legacy/wiki/Crafttweaker-support)
 
 ---
 

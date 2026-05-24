@@ -37,6 +37,16 @@ public final class CraftTweakerGoo {
     }
 
     @ZenMethod
+    public static void registerGoo(IItemStack catalyst, int tier, IItemStack revivalItem) {
+        CraftTweakerAPI.apply(new RegisterGooAction(CraftTweakerHelper.blockStateSpec(catalyst), tier, itemStacks(revivalItem)));
+    }
+
+    @ZenMethod
+    public static void registerGoo(IItemStack catalyst, int tier, IItemStack[] revivalItems) {
+        CraftTweakerAPI.apply(new RegisterGooAction(CraftTweakerHelper.blockStateSpec(catalyst), tier, itemStacks(revivalItems)));
+    }
+
+    @ZenMethod
     public static void addSpread(String name, IBlockState input, IBlockState output, int tierRequirement, int craftingDuration) {
         CraftTweakerAPI.apply(new AddGooSpreadAction(
                 CraftTweakerHelper.recipeId(name),
@@ -155,6 +165,15 @@ public final class CraftTweakerGoo {
     }
 
     @ZenMethod
+    public static void addFluidDrop(String name, IBlockState input, ILiquidStack output, IItemStack catalyst) {
+        CraftTweakerAPI.apply(new AddFluidDropAction(
+                CraftTweakerHelper.recipeId(name),
+                CraftTweakerHelper.blockStateSpec(input),
+                CraftTweakerHelper.blockStateSpec(output),
+                CraftTweakerHelper.itemId(catalyst)));
+    }
+
+    @ZenMethod
     public static void addFluidDrop(String name, ILiquidStack input, IBlockState output, IItemStack catalyst) {
         CraftTweakerAPI.apply(new AddFluidDropAction(
                 CraftTweakerHelper.recipeId(name),
@@ -165,6 +184,15 @@ public final class CraftTweakerGoo {
 
     @ZenMethod
     public static void addFluidDrop(String name, ILiquidStack input, IItemStack output, IItemStack catalyst) {
+        CraftTweakerAPI.apply(new AddFluidDropAction(
+                CraftTweakerHelper.recipeId(name),
+                CraftTweakerHelper.blockStateSpec(input),
+                CraftTweakerHelper.blockStateSpec(output),
+                CraftTweakerHelper.itemId(catalyst)));
+    }
+
+    @ZenMethod
+    public static void addFluidDrop(String name, ILiquidStack input, ILiquidStack output, IItemStack catalyst) {
         CraftTweakerAPI.apply(new AddFluidDropAction(
                 CraftTweakerHelper.recipeId(name),
                 CraftTweakerHelper.blockStateSpec(input),
