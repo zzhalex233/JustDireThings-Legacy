@@ -74,7 +74,10 @@ public class GooSpreadTagRecipeCategory implements IRecipeCategory<GooSpreadTagR
         items.set(0, JeiIngredientUtil.itemStacksForTag(wrapper.getRecipe().getInputTag()));
 
         items.init(1, true, 29, 12);
-        items.set(1, JeiIngredientUtil.gooCatalysts(wrapper.getRecipe().getTierRequirement()));
+        List<ItemStack> catalysts = JeiIngredientUtil.gooCatalysts(wrapper.getRecipe().getTierRequirement(), wrapper.getRecipe().getCatalyst());
+        if (!catalysts.isEmpty()) {
+            items.set(1, catalysts);
+        }
 
         List<ItemStack> outputItems = JeiIngredientUtil.itemStacks(wrapper.getRecipe().getOutput());
         FluidStack outputFluid = JeiIngredientUtil.fluidStack(wrapper.getRecipe().getOutput());
@@ -82,8 +85,8 @@ public class GooSpreadTagRecipeCategory implements IRecipeCategory<GooSpreadTagR
             items.init(2, false, 88, 12);
             items.set(2, outputItems);
         } else if (outputFluid != null) {
-            fluids.init(0, false, 88, 12, 16, 16, 1000, false, null);
-            fluids.set(0, outputFluid);
+            fluids.init(2, false, 88, 12, 16, 16, 1000, false, null);
+            fluids.set(2, outputFluid);
         }
     }
 }

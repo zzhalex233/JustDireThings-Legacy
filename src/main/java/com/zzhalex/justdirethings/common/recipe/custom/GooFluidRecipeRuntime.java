@@ -1,7 +1,6 @@
 package com.zzhalex.justdirethings.common.recipe.custom;
 
 import com.zzhalex.justdirethings.Reference;
-import com.zzhalex.justdirethings.registry.ModContentBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.properties.IProperty;
@@ -31,8 +30,12 @@ public final class GooFluidRecipeRuntime {
     }
 
     public static GooSpreadDataRecipe findGooSpreadRecipe(IBlockState sourceState, int gooTier) {
+        return findGooSpreadRecipe(sourceState, gooTier, null);
+    }
+
+    public static GooSpreadDataRecipe findGooSpreadRecipe(IBlockState sourceState, int gooTier, JDTBlockStateSpec gooCatalyst) {
         for (GooSpreadDataRecipe recipe : gooSpreadRecipes()) {
-            if (recipe.matches(sourceState, gooTier)) {
+            if (recipe.matches(sourceState, gooTier, gooCatalyst)) {
                 return recipe;
             }
         }
@@ -40,8 +43,12 @@ public final class GooFluidRecipeRuntime {
     }
 
     public static GooSpreadTagDataRecipe findGooSpreadTagRecipe(IBlockState sourceState, int gooTier) {
+        return findGooSpreadTagRecipe(sourceState, gooTier, null);
+    }
+
+    public static GooSpreadTagDataRecipe findGooSpreadTagRecipe(IBlockState sourceState, int gooTier, JDTBlockStateSpec gooCatalyst) {
         for (GooSpreadTagDataRecipe recipe : gooSpreadTagRecipes()) {
-            if (recipe.matches(sourceState, gooTier)) {
+            if (recipe.matches(sourceState, gooTier, gooCatalyst)) {
                 return recipe;
             }
         }
@@ -70,12 +77,7 @@ public final class GooFluidRecipeRuntime {
     }
 
     public static List<ItemStack> gooCatalystsForTier(int tierRequirement) {
-        List<ItemStack> stacks = new ArrayList<>();
-        addTierCatalyst(stacks, tierRequirement, 1, ModContentBlocks.GOO_BLOCK_TIER1);
-        addTierCatalyst(stacks, tierRequirement, 2, ModContentBlocks.GOO_BLOCK_TIER2);
-        addTierCatalyst(stacks, tierRequirement, 3, ModContentBlocks.GOO_BLOCK_TIER3);
-        addTierCatalyst(stacks, tierRequirement, 4, ModContentBlocks.GOO_BLOCK_TIER4);
-        return stacks;
+        return GooCatalystRegistry.catalystsForTier(tierRequirement);
     }
 
     public static List<ItemStack> itemStacksForBlockState(JDTBlockStateSpec spec) {
@@ -174,12 +176,6 @@ public final class GooFluidRecipeRuntime {
         }
         matches.sort(Comparator.comparing(recipe -> String.valueOf(recipe.getRegistryName())));
         return matches;
-    }
-
-    private static void addTierCatalyst(List<ItemStack> stacks, int tierRequirement, int tier, Block block) {
-        if (tier >= tierRequirement) {
-            stacks.add(new ItemStack(block));
-        }
     }
 
     private static String normalize(String tag) {

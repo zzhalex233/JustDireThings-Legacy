@@ -1,12 +1,14 @@
 package com.zzhalex.justdirethings;
 
 import com.zzhalex.justdirethings.common.event.AbilityRuntimeEventHandler;
+import com.zzhalex.justdirethings.common.event.CustomGooEventHandler;
 import com.zzhalex.justdirethings.common.event.FluidDropEventHandler;
 import com.zzhalex.justdirethings.common.event.GooSoilEventHandler;
 import com.zzhalex.justdirethings.common.event.PolymorphicWandEventHandler;
 import com.zzhalex.justdirethings.common.event.TimeCrystalBlockEventHandler;
 import com.zzhalex.justdirethings.common.event.ToolMiningAbilityHandler;
 import com.zzhalex.justdirethings.common.item.ability.Ability;
+import net.minecraft.nbt.NBTTagCompound;
 import com.zzhalex.justdirethings.network.message.MessageSyncAbilityCooldowns;
 import com.zzhalex.justdirethings.common.world.PortalChunkKeeper;
 import com.zzhalex.justdirethings.registry.ModContainers;
@@ -15,6 +17,7 @@ import com.zzhalex.justdirethings.registry.ModRecipes;
 import com.zzhalex.justdirethings.registry.ModTileEntities;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -29,6 +32,7 @@ public class CommonProxy {
         ModTileEntities.register();
         ModContainers.registerGuiHandler();
         MinecraftForge.EVENT_BUS.register(AbilityRuntimeEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(CustomGooEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(FluidDropEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(GooSoilEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(PolymorphicWandEventHandler.INSTANCE);
@@ -50,6 +54,10 @@ public class CommonProxy {
 
     public void syncAbilityCooldowns(List<MessageSyncAbilityCooldowns.Entry> entries) {
         // Client-only HUD state is bridged by ClientProxy.
+    }
+
+    public void syncCustomGooTile(BlockPos pos, NBTTagCompound tag, boolean remove) {
+        // Client-only custom goo renderer state is bridged by ClientProxy.
     }
 
     public void spawnTimeCrystalChargeParticle(World world, double startX, double startY, double startZ, double targetX, double targetY, double targetZ, float red, float green, float blue) {

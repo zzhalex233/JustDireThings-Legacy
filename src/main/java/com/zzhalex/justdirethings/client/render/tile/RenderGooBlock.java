@@ -3,11 +3,14 @@ package com.zzhalex.justdirethings.client.render.tile;
 import com.zzhalex.justdirethings.client.render.RenderStateHelper;
 import com.zzhalex.justdirethings.common.block.goo.BlockGooBlock;
 import com.zzhalex.justdirethings.common.block.goo.BlockGooPattern;
+import com.zzhalex.justdirethings.common.recipe.custom.GooCatalystRegistry;
+import com.zzhalex.justdirethings.common.recipe.custom.JDTBlockStateSpec;
 import com.zzhalex.justdirethings.common.tile.goo.TileGooBlock;
 import com.zzhalex.justdirethings.registry.ModContentBlocks;
 import com.zzhalex.justdirethings.registry.ModContentItems;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockModelRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -34,6 +37,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
@@ -47,6 +51,14 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
 
     @Override
     public void render(TileGooBlock blockentity, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+        renderInternal(blockentity, x, y, z, partialTicks, true);
+    }
+
+    public void renderCustom(TileGooBlock.Custom blockentity, double x, double y, double z, float partialTicks, boolean renderRevivalItems) {
+        renderInternal(blockentity, x, y, z, partialTicks, renderRevivalItems);
+    }
+
+    private void renderInternal(TileGooBlock blockentity, double x, double y, double z, float partialTicks, boolean renderCustomRevivalItems) {
         if (blockentity == null || blockentity.getWorld() == null) {
             return;
         }
@@ -57,7 +69,7 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
             GlStateManager.translate(x, y, z);
             IBlockState blockState = blockentity.getWorld().getBlockState(blockentity.getPos());
 
-            if (blockState.getBlock() instanceof BlockGooBlock && !blockState.getValue(BlockGooBlock.ALIVE)) {
+            if (shouldRenderRevivalItems(blockentity, blockState, renderCustomRevivalItems)) {
                 renderFloatingItem(blockentity, partialTicks);
             }
 
@@ -80,8 +92,12 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
         return true;
     }
 
-    private ItemStack getNextItemFromTier(int tier) {
-        List<ItemStack> items = revivalItemsForTier(tier);
+    private ItemStack getNextRevivalItem(TileGooBlock blockentity) {
+        IBlockState state = blockentity.getWorld().getBlockState(blockentity.getPos());
+        List<ItemStack> items = GooCatalystRegistry.revivalItemsFor(JDTBlockStateSpec.fromState(state));
+        if (items.isEmpty()) {
+            items = revivalItemsForTier(blockentity.getTier());
+        }
         if (items.isEmpty()) {
             return ItemStack.EMPTY;
         }
@@ -93,6 +109,13 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
         return next;
     }
 
+    private boolean shouldRenderRevivalItems(TileGooBlock blockentity, IBlockState blockState, boolean renderCustomRevivalItems) {
+        if (blockState.getBlock() instanceof BlockGooBlock) {
+            return !blockState.getValue(BlockGooBlock.ALIVE);
+        }
+        return renderCustomRevivalItems && GooCatalystRegistry.isCustomGoo(JDTBlockStateSpec.fromState(blockState)) && !blockentity.isGooAlive();
+    }
+
     private void renderFloatingItem(TileGooBlock blockentity, float partialTicks) {
         long currentTime = System.currentTimeMillis();
         long cycleDuration = 3600L;
@@ -100,7 +123,7 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
         float fadeFactor = (float) (0.5D - 0.5D * Math.cos((2.0D * Math.PI * elapsedTime) / cycleDuration));
 
         if (cachedItemStack.isEmpty() || elapsedTime < 50L && currentTime - lastChangeTime >= cycleDuration) {
-            cachedItemStack = getNextItemFromTier(blockentity.getTier());
+            cachedItemStack = getNextRevivalItem(blockentity);
             lastChangeTime = currentTime;
         }
         if (cachedItemStack.isEmpty()) {
@@ -166,12 +189,18 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.depthMask(false);
         GlStateManager.color(1.0F, 1.0F, 1.0F, fadeFactor);
         RenderHelper.enableStandardItemLighting();
-        Minecraft.getMinecraft().getRenderItem().renderItem(itemStack, ItemCameraTransforms.TransformType.GROUND);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.disableBlend();
-        GlStateManager.popMatrix();
+        try {
+            Minecraft.getMinecraft().getRenderItem().renderItem(itemStack, ItemCameraTransforms.TransformType.GROUND);
+        } finally {
+            RenderHelper.disableStandardItemLighting();
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.depthMask(true);
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
+        }
     }
 
     public void renderTextures(EnumFacing direction, TileGooBlock blockentity, float partialTicks, int remainingTicks, int maxTicks) {
@@ -195,18 +224,19 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
 
     public void renderTexturePattern(EnumFacing direction, TileGooBlock blockentity, float transparency, IBlockState pattern) {
         IBlockState renderState = blockentity.getWorld().getBlockState(blockentity.getPos());
-        if (!(renderState.getBlock() instanceof BlockGooBlock) || renderState.getBlock() == Blocks.AIR) {
+        if (!isRenderableGoo(renderState)) {
             return;
         }
+        int renderTier = renderTierFor(blockentity.getRecipeTier());
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         GlStateManager.pushMatrix();
         try {
             GlStateManager.translate(direction.getXOffset(), direction.getYOffset(), direction.getZOffset());
 
-            float translateF = (float) blockentity.getTier() / 2000.0F;
+            float translateF = (float) renderTier / 2000.0F;
             GlStateManager.translate(-translateF, -translateF, -translateF);
-            float scaleF = (float) blockentity.getTier() / 1000.0F;
+            float scaleF = (float) renderTier / 1000.0F;
             GlStateManager.scale(1.0F + scaleF, 1.0F + scaleF, 1.0F + scaleF);
 
             GlStateManager.translate(0.5F, 0.5F, 0.5F);
@@ -267,6 +297,7 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
     private void renderTargetDepthEqual(IBlockState renderState, IBlockAccess world, BlockPos pos, EnumFacing facing, float transparency) {
         IBakedModel model = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(renderState);
         BlockColors blockColors = Minecraft.getMinecraft().getBlockColors();
+        BlockModelRenderer blockModelRenderer = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer();
 
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -281,9 +312,55 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
         int alpha = (int) (Math.max(0.0F, Math.min(1.0F, transparency)) * 255.0F);
         int baseColor = alpha << 24 | 0x00FFFFFF;
         for (EnumFacing renderSide : EnumFacing.values()) {
-            getAoDirection(facing, renderSide);
+            renderModelQuadsWithAo(model, renderState, baseColor, blockColors, world, pos, blockModelRenderer, renderSide, getAoDirection(facing, renderSide));
         }
-        renderModelQuads(model, renderState, baseColor, blockColors, world, pos);
+        renderModelQuadsWithAo(model, renderState, baseColor, blockColors, world, pos, blockModelRenderer, null, facing);
+    }
+
+    private void renderModelQuadsWithAo(IBakedModel model, IBlockState state, int color, BlockColors blockColors, IBlockAccess world, BlockPos pos,
+                                        BlockModelRenderer blockModelRenderer, EnumFacing renderSide, EnumFacing aoDirection) {
+        List<BakedQuad> quads = model.getQuads(state, renderSide, 0L);
+        if (quads.isEmpty()) {
+            return;
+        }
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        float[] quadBounds = new float[EnumFacing.values().length * 2];
+        BitSet boundsFlags = new BitSet(3);
+        BlockModelRenderer.AmbientOcclusionFace aoFace = blockModelRenderer.new AmbientOcclusionFace();
+
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        for (BakedQuad quad : quads) {
+            blockModelRenderer.fillQuadBounds(state, quad.getVertexData(), quad.getFace(), quadBounds, boundsFlags);
+            aoFace.updateVertexBrightness(world, state, pos, aoDirection, quadBounds, boundsFlags);
+            buffer.addVertexData(quad.getVertexData());
+            buffer.putBrightness4(aoFace.vertexBrightness[0], aoFace.vertexBrightness[1], aoFace.vertexBrightness[2], aoFace.vertexBrightness[3]);
+            putAoColor(buffer, tintQuadColor(color, blockColors, state, world, pos, quad), quad, aoFace, aoDirection);
+        }
+        tessellator.draw();
+    }
+
+    private void putAoColor(BufferBuilder buffer, int color, BakedQuad quad, BlockModelRenderer.AmbientOcclusionFace aoFace, EnumFacing aoDirection) {
+        float red = ((color >> 16) & 255) / 255.0F;
+        float green = ((color >> 8) & 255) / 255.0F;
+        float blue = (color & 255) / 255.0F;
+        float alpha = ((color >> 24) & 255) / 255.0F;
+        float diffuse = quad.shouldApplyDiffuseLighting() ? LightUtil.diffuseLight(aoDirection) : 1.0F;
+
+        putAoColor(buffer, aoFace.vertexColorMultiplier[0] * diffuse, red, green, blue, alpha, 4);
+        putAoColor(buffer, aoFace.vertexColorMultiplier[1] * diffuse, red, green, blue, alpha, 3);
+        putAoColor(buffer, aoFace.vertexColorMultiplier[2] * diffuse, red, green, blue, alpha, 2);
+        putAoColor(buffer, aoFace.vertexColorMultiplier[3] * diffuse, red, green, blue, alpha, 1);
+    }
+
+    private void putAoColor(BufferBuilder buffer, float brightness, float red, float green, float blue, float alpha, int vertexIndex) {
+        int colorIndex = buffer.getColorIndex(vertexIndex);
+        buffer.putColorRGBA(colorIndex, clampColor(red * brightness), clampColor(green * brightness), clampColor(blue * brightness), clampColor(alpha));
+    }
+
+    private int clampColor(float color) {
+        return Math.max(0, Math.min(255, (int) (color * 255.0F)));
     }
 
     private void renderModelQuads(IBakedModel model, IBlockState state, int color, BlockColors blockColors, IBlockAccess world, BlockPos pos) {
@@ -299,6 +376,15 @@ public class RenderGooBlock extends TileEntitySpecialRenderer<TileGooBlock> {
             LightUtil.renderQuadColor(buffer, quad, tintQuadColor(color, blockColors, state, world, pos, quad));
         }
         tessellator.draw();
+    }
+
+    private boolean isRenderableGoo(IBlockState state) {
+        return state.getBlock() != Blocks.AIR
+                && (state.getBlock() instanceof BlockGooBlock || GooCatalystRegistry.isCustomGoo(JDTBlockStateSpec.fromState(state)));
+    }
+
+    private int renderTierFor(int recipeTier) {
+        return Math.max(1, Math.min(4, recipeTier));
     }
 
     private int tintQuadColor(int color, BlockColors blockColors, IBlockState state, IBlockAccess world, BlockPos pos, BakedQuad quad) {

@@ -36,6 +36,7 @@ public final class ModTileEntities {
         GameRegistry.registerTileEntity(TileGooBlock.Tier2.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier2"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier3.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier3"));
         GameRegistry.registerTileEntity(TileGooBlock.Tier4.class, new ResourceLocation(Reference.MOD_ID, "gooblock_tier4"));
+        GameRegistry.registerTileEntity(TileGooBlock.Custom.class, new ResourceLocation(Reference.MOD_ID, "gooblock_custom"));
         GameRegistry.registerTileEntity(TileGooSoil.class, new ResourceLocation(Reference.MOD_ID, "goosoilbe"));
         GameRegistry.registerTileEntity(TileGenerator.class, new ResourceLocation(Reference.MOD_ID, "generatort1"));
         GameRegistry.registerTileEntity(TileFluidGenerator.class, new ResourceLocation(Reference.MOD_ID, "generatorfluidt1"));

@@ -13,6 +13,14 @@ repositories {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
     }
+    maven {
+        name = 'Progwml6'
+        url = 'https://dvs1.progwml6.com/files/maven'
+    }
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
+    }
     mavenCentral()
     mavenLocal() // Must be last for caching to work
 }
@@ -29,4 +37,8 @@ dependencies {
     modRuntimeOnly "curse.maven:spark-361579:3542217"
     modCompileOnly "curse.maven:patchouli-306770:3162874"
     modRuntimeOnly "curse.maven:patchouli-306770:3162874"
+    modCompileOnly "CraftTweaker2:CraftTweaker2-API:4.1.19.548"
+    modCompileOnly "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.19.548"
+    modRuntimeOnly "CraftTweaker2:CraftTweaker2-API:4.1.19.548"
+    modRuntimeOnly "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.19.548"
 }

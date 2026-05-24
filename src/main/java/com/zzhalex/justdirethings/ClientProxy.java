@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings;
 
 import com.zzhalex.justdirethings.client.ClientRegistration;
 import com.zzhalex.justdirethings.client.gui.upstream.MachineSettingsCopierScreen;
+import com.zzhalex.justdirethings.common.goo.CustomGooRuntime;
 import com.zzhalex.justdirethings.client.overlay.ClientAbilityCooldowns;
 import com.zzhalex.justdirethings.client.particle.TimeCrystalParticles;
 import com.zzhalex.justdirethings.client.render.ThingFinder;
@@ -12,6 +13,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -54,6 +57,15 @@ public class ClientProxy extends CommonProxy {
             }
             ClientAbilityCooldowns.replaceAll(cooldowns);
         });
+    }
+
+    @Override
+    public void syncCustomGooTile(BlockPos pos, NBTTagCompound tag, boolean remove) {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        if (minecraft == null) {
+            return;
+        }
+        minecraft.addScheduledTask(() -> CustomGooRuntime.applyClientSync(minecraft.world, pos, tag, remove));
     }
 
     @Override

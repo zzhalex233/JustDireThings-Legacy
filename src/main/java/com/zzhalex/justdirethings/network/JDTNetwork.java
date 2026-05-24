@@ -1,6 +1,7 @@
 package com.zzhalex.justdirethings.network;
 
 import com.zzhalex.justdirethings.Reference;
+import com.zzhalex.justdirethings.network.message.MessageCustomGooTile;
 import com.zzhalex.justdirethings.network.message.MessageExecuteAbility;
 import com.zzhalex.justdirethings.network.message.MessageItemFlowParticle;
 import com.zzhalex.justdirethings.network.message.MessageSyncAbilityCooldowns;
@@ -14,6 +15,7 @@ import com.zzhalex.justdirethings.network.message.MessagePortalFavorite;
 import com.zzhalex.justdirethings.network.message.MessagePortalGunFavorite;
 import com.zzhalex.justdirethings.network.message.MessagePortalGunFavoriteChange;
 import com.zzhalex.justdirethings.network.message.MessageStartElytraFlight;
+import com.zzhalex.justdirethings.network.message.MessageReviveCustomGoo;
 import com.zzhalex.justdirethings.network.message.MessageSyncToolState;
 import com.zzhalex.justdirethings.network.message.MessageToolBindingSetting;
 import com.zzhalex.justdirethings.network.message.MessageToolRefreshSlots;
@@ -54,6 +56,8 @@ public final class JDTNetwork {
         CHANNEL.registerMessage(MessageSyncAbilityCooldowns.Handler.class, MessageSyncAbilityCooldowns.class, nextId++, Side.CLIENT);
         CHANNEL.registerMessage(MessageItemFlowParticle.Handler.class, MessageItemFlowParticle.class, nextId++, Side.CLIENT);
         CHANNEL.registerMessage(MessageCopyMachineSettings.Handler.class, MessageCopyMachineSettings.class, nextId++, Side.SERVER);
+        CHANNEL.registerMessage(MessageCustomGooTile.Handler.class, MessageCustomGooTile.class, nextId++, Side.CLIENT);
+        CHANNEL.registerMessage(MessageReviveCustomGoo.Handler.class, MessageReviveCustomGoo.class, nextId++, Side.SERVER);
         registered = true;
     }
 

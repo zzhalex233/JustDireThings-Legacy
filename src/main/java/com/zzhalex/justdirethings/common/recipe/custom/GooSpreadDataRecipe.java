@@ -13,13 +13,23 @@ public class GooSpreadDataRecipe extends AbstractJDTDataRecipe {
     private final JDTBlockStateSpec input;
     private final JDTBlockStateSpec output;
     private final int tierRequirement;
+    private final JDTBlockStateSpec catalyst;
     private final int craftingDuration;
 
     public GooSpreadDataRecipe(ResourceLocation sourceId, JDTBlockStateSpec input, JDTBlockStateSpec output, int tierRequirement, int craftingDuration) {
+        this(sourceId, input, output, tierRequirement, null, craftingDuration);
+    }
+
+    public GooSpreadDataRecipe(ResourceLocation sourceId, JDTBlockStateSpec input, JDTBlockStateSpec output, JDTBlockStateSpec catalyst, int craftingDuration) {
+        this(sourceId, input, output, -1, catalyst, craftingDuration);
+    }
+
+    private GooSpreadDataRecipe(ResourceLocation sourceId, JDTBlockStateSpec input, JDTBlockStateSpec output, int tierRequirement, JDTBlockStateSpec catalyst, int craftingDuration) {
         this.sourceId = sourceId;
         this.input = input;
         this.output = output;
         this.tierRequirement = tierRequirement;
+        this.catalyst = catalyst == null ? null : catalyst.withoutProperty("alive");
         this.craftingDuration = craftingDuration;
     }
 
@@ -39,18 +49,35 @@ public class GooSpreadDataRecipe extends AbstractJDTDataRecipe {
         return tierRequirement;
     }
 
+    public JDTBlockStateSpec getCatalyst() {
+        return catalyst;
+    }
+
     public int getCraftingDuration() {
         return craftingDuration;
     }
 
     public boolean matches(JDTBlockStateSpec sourceState, int gooTier) {
-        return input.getBlockId().equals(sourceState.getBlockId())
-                && input.getProperties().equals(sourceState.getProperties())
-                && gooTier >= tierRequirement;
+        return matches(sourceState, gooTier, null);
+    }
+
+    public boolean matches(JDTBlockStateSpec sourceState, int gooTier, JDTBlockStateSpec gooCatalyst) {
+        return input.equals(sourceState) && catalystMatches(gooTier, gooCatalyst);
     }
 
     public boolean matches(IBlockState sourceState, int gooTier) {
-        return input.matches(sourceState) && gooTier >= tierRequirement;
+        return matches(sourceState, gooTier, null);
+    }
+
+    public boolean matches(IBlockState sourceState, int gooTier, JDTBlockStateSpec gooCatalyst) {
+        return input.matches(sourceState) && catalystMatches(gooTier, gooCatalyst);
+    }
+
+    private boolean catalystMatches(int gooTier, JDTBlockStateSpec gooCatalyst) {
+        if (catalyst == null) {
+            return gooTier >= tierRequirement;
+        }
+        return catalyst.matches(gooCatalyst == null ? null : gooCatalyst.withoutProperty("alive"));
     }
 
     public static class Factory implements IRecipeFactory {

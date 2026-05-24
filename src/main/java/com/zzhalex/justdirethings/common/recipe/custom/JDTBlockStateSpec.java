@@ -62,6 +62,18 @@ public final class JDTBlockStateSpec {
         return true;
     }
 
+    public boolean matches(JDTBlockStateSpec state) {
+        if (state == null || !blockId.equals(state.blockId)) {
+            return false;
+        }
+        for (Map.Entry<String, String> expected : properties.entrySet()) {
+            if (!expected.getValue().equals(state.properties.get(expected.getKey()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public IBlockState toBlockState() {
         Block block = Block.REGISTRY.getObject(blockId);
         ResourceLocation resolvedId = Block.REGISTRY.getNameForObject(block);
@@ -106,6 +118,32 @@ public final class JDTBlockStateSpec {
             parsedProperties.put(key, propertiesTag.getString(key));
         }
         return new JDTBlockStateSpec(new ResourceLocation(root.getString("Name")), parsedProperties);
+    }
+
+    public JDTBlockStateSpec withoutProperty(String propertyName) {
+        if (!properties.containsKey(propertyName)) {
+            return this;
+        }
+        Map<String, String> filteredProperties = new LinkedHashMap<>(properties);
+        filteredProperties.remove(propertyName);
+        return new JDTBlockStateSpec(blockId, filteredProperties);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof JDTBlockStateSpec)) {
+            return false;
+        }
+        JDTBlockStateSpec that = (JDTBlockStateSpec) other;
+        return blockId.equals(that.blockId) && properties.equals(that.properties);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * blockId.hashCode() + properties.hashCode();
     }
 
     private static IProperty<?> findProperty(IBlockState state, String propertyName) {

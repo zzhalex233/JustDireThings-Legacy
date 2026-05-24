@@ -26,7 +26,10 @@ public class GooSpreadTagRecipeWrapper implements IRecipeWrapper {
     public void getIngredients(IIngredients ingredients) {
         List<List<ItemStack>> itemInputs = new ArrayList<>();
         itemInputs.add(JeiIngredientUtil.itemStacksForTag(recipe.getInputTag()));
-        itemInputs.add(JeiIngredientUtil.gooCatalysts(recipe.getTierRequirement()));
+        List<ItemStack> catalysts = JeiIngredientUtil.gooCatalysts(recipe.getTierRequirement(), recipe.getCatalyst());
+        if (!catalysts.isEmpty()) {
+            itemInputs.add(catalysts);
+        }
         ingredients.setInputLists(VanillaTypes.ITEM, itemInputs);
 
         List<ItemStack> outputItems = JeiIngredientUtil.itemStacks(recipe.getOutput());

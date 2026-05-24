@@ -2,6 +2,7 @@ package com.zzhalex.justdirethings.client.jei;
 
 import com.zzhalex.justdirethings.common.recipe.custom.GooFluidRecipeRuntime;
 import com.zzhalex.justdirethings.common.recipe.custom.JDTBlockStateSpec;
+import com.zzhalex.justdirethings.common.recipe.custom.GooCatalystRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
@@ -44,6 +45,10 @@ final class JeiIngredientUtil {
 
     static List<ItemStack> gooCatalysts(int tierRequirement) {
         return GooFluidRecipeRuntime.gooCatalystsForTier(tierRequirement);
+    }
+
+    static List<ItemStack> gooCatalysts(int tierRequirement, JDTBlockStateSpec catalyst) {
+        return catalyst == null ? gooCatalysts(tierRequirement) : GooCatalystRegistry.itemStacksForCatalyst(catalyst);
     }
 
     static List<ItemStack> singletonOrEmpty(ItemStack stack) {

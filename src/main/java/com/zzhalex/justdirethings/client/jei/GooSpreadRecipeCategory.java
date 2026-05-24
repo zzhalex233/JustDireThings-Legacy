@@ -81,7 +81,10 @@ public class GooSpreadRecipeCategory implements IRecipeCategory<GooSpreadRecipeW
         }
 
         items.init(1, true, 29, 12);
-        items.set(1, JeiIngredientUtil.gooCatalysts(wrapper.getRecipe().getTierRequirement()));
+        List<ItemStack> catalysts = JeiIngredientUtil.gooCatalysts(wrapper.getRecipe().getTierRequirement(), wrapper.getRecipe().getCatalyst());
+        if (!catalysts.isEmpty()) {
+            items.set(1, catalysts);
+        }
 
         List<ItemStack> outputItems = JeiIngredientUtil.itemStacks(wrapper.getRecipe().getOutput());
         FluidStack outputFluid = JeiIngredientUtil.fluidStack(wrapper.getRecipe().getOutput());

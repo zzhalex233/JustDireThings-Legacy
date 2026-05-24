@@ -1,9 +1,11 @@
 package com.zzhalex.justdirethings.common.tile.goo;
 
 import com.zzhalex.justdirethings.common.block.goo.BlockGooBlock;
+import com.zzhalex.justdirethings.common.recipe.custom.GooCatalystRegistry;
 import com.zzhalex.justdirethings.common.recipe.custom.GooFluidRecipeRuntime;
 import com.zzhalex.justdirethings.common.recipe.custom.GooSpreadDataRecipe;
 import com.zzhalex.justdirethings.common.recipe.custom.GooSpreadTagDataRecipe;
+import com.zzhalex.justdirethings.common.recipe.custom.JDTBlockStateSpec;
 import com.zzhalex.justdirethings.config.JDTConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
@@ -34,6 +36,7 @@ public class TileGooBlock extends TileEntity implements ITickable {
     public final Map<IBlockState, Integer> durationCache = new java.util.HashMap<>();
 
     private final int tier;
+    private boolean customGooAlive;
 
     public TileGooBlock() {
         this(1);
@@ -87,6 +90,26 @@ public class TileGooBlock extends TileEntity implements ITickable {
         return tier;
     }
 
+    public int getRecipeTier() {
+        return recipeTier(currentGooCatalyst());
+    }
+
+    public boolean isGooAlive() {
+        if (world == null || pos == null) {
+            return false;
+        }
+        IBlockState state = world.getBlockState(pos);
+        if (state.getBlock() instanceof BlockGooBlock) {
+            return state.getValue(BlockGooBlock.ALIVE);
+        }
+        return customGooAlive && GooCatalystRegistry.isCustomGoo(currentGooCatalyst());
+    }
+
+    public void reviveCustomGoo() {
+        customGooAlive = true;
+        markDirtyClient();
+    }
+
     public int getCraftingDuration(EnumFacing facing) {
         return sideDurations.get(facing);
     }
@@ -131,7 +154,7 @@ public class TileGooBlock extends TileEntity implements ITickable {
             int sideCounter = sideCounters.get(facing);
 
             if (output != null && output.getBlock() != Blocks.AIR) {
-                if (sideCounter == -1 && isAlive()) {
+                if (sideCounter == -1 && isGooAlive()) {
                     sideDurations.put(facing, duration);
                     updateSideCounter(facing, duration);
                     markDirtyClient();
@@ -170,12 +193,22 @@ public class TileGooBlock extends TileEntity implements ITickable {
 
     @Nullable
     public GooSpreadDataRecipe findGooSpreadRecipe(IBlockState state) {
-        return GooFluidRecipeRuntime.findGooSpreadRecipe(state, getTier());
+        JDTBlockStateSpec catalyst = currentGooCatalyst();
+        return GooFluidRecipeRuntime.findGooSpreadRecipe(state, recipeTier(catalyst), catalyst);
     }
 
     @Nullable
     public GooSpreadTagDataRecipe findGooSpreadTagRecipe(IBlockState state) {
-        return GooFluidRecipeRuntime.findGooSpreadTagRecipe(state, getTier());
+        JDTBlockStateSpec catalyst = currentGooCatalyst();
+        return GooFluidRecipeRuntime.findGooSpreadTagRecipe(state, recipeTier(catalyst), catalyst);
+    }
+
+    private JDTBlockStateSpec currentGooCatalyst() {
+        return world == null || pos == null ? null : JDTBlockStateSpec.fromState(world.getBlockState(pos));
+    }
+
+    private int recipeTier(JDTBlockStateSpec catalyst) {
+        return GooCatalystRegistry.effectiveTier(catalyst, getTier());
     }
 
     public void setBlockToTarget(IBlockState output, EnumFacing facing) {
@@ -215,11 +248,6 @@ public class TileGooBlock extends TileEntity implements ITickable {
         }
     }
 
-    private boolean isAlive() {
-        IBlockState state = world.getBlockState(pos);
-        return state.getBlock() instanceof BlockGooBlock && state.getValue(BlockGooBlock.ALIVE);
-    }
-
     private void killGoo() {
         if (!JDTConfig.gooCanDie) {
             return;
@@ -230,6 +258,10 @@ public class TileGooBlock extends TileEntity implements ITickable {
                 && world.rand.nextFloat() < JDTConfig.gooDeathChance) {
             world.setBlockState(pos, state.withProperty(BlockGooBlock.ALIVE, false), 3);
             world.playSound(null, pos, SoundType.SLIME.getBreakSound(), SoundCategory.BLOCKS, 1.0F, 0.25F);
+        } else if (GooCatalystRegistry.isCustomGoo(currentGooCatalyst()) && customGooAlive && world.rand.nextFloat() < JDTConfig.gooDeathChance) {
+            customGooAlive = false;
+            world.playSound(null, pos, SoundType.SLIME.getBreakSound(), SoundCategory.BLOCKS, 1.0F, 0.25F);
+            markDirtyClient();
         }
     }
 
@@ -268,6 +300,7 @@ public class TileGooBlock extends TileEntity implements ITickable {
         super.writeToNBT(compound);
         compound.setTag("sideCounters", writeSideMap(sideCounters, "counter"));
         compound.setTag("sideDurations", writeSideMap(sideDurations, "duration"));
+        compound.setBoolean("customGooAlive", customGooAlive);
         return compound;
     }
 
@@ -276,6 +309,7 @@ public class TileGooBlock extends TileEntity implements ITickable {
         super.readFromNBT(compound);
         readSideCounters(compound.getTagList("sideCounters", Constants.NBT.TAG_COMPOUND));
         readSideMap(compound.getTagList("sideDurations", Constants.NBT.TAG_COMPOUND), sideDurations, "duration");
+        customGooAlive = compound.getBoolean("customGooAlive");
     }
 
     @Override
@@ -358,6 +392,12 @@ public class TileGooBlock extends TileEntity implements ITickable {
     public static class Tier4 extends TileGooBlock {
         public Tier4() {
             super(4);
+        }
+    }
+
+    public static class Custom extends TileGooBlock {
+        public Custom() {
+            super(1);
         }
     }
 }

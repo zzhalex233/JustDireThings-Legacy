@@ -10,6 +10,7 @@ import com.zzhalex.justdirethings.config.JDTConfig;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +60,29 @@ public final class ModRecipes {
             }
         }
         return Optional.empty();
+    }
+
+    public static void addUpgradeStationRecipe(UpgradeStationRecipe recipe) {
+        UPGRADE_STATION_RECIPES.removeIf(existing -> existing.getId().equals(recipe.getId()));
+        UPGRADE_STATION_RECIPES.add(recipe);
+    }
+
+    public static int removeUpgradeStationRecipesByOutput(ItemStack output) {
+        if (output.isEmpty()) {
+            return 0;
+        }
+        int before = UPGRADE_STATION_RECIPES.size();
+        UPGRADE_STATION_RECIPES.removeIf(recipe -> {
+            ItemStack recipeOutput = recipe.getJeiOutputStack();
+            return isSameRecipeStack(recipeOutput, output);
+        });
+        return before - UPGRADE_STATION_RECIPES.size();
+    }
+
+    public static int removeUpgradeStationRecipe(String id) {
+        int before = UPGRADE_STATION_RECIPES.size();
+        UPGRADE_STATION_RECIPES.removeIf(recipe -> recipe.getId().equals(id));
+        return before - UPGRADE_STATION_RECIPES.size();
     }
 
     public static ItemStack getUpgradeStationOutput(ItemStack template, ItemStack base, ItemStack addition) {
@@ -159,7 +183,7 @@ public final class ModRecipes {
         addAbilityRecipe(recipes, "upgrade_epicarrow", "epicarrow", equipmentItems);
         addAbilityRecipe(recipes, "upgrade_time_protection", "timeprotection", equipmentItems);
 
-        return Collections.unmodifiableList(recipes);
+        return recipes;
     }
 
     private static void addToolTierRecipes(List<UpgradeStationRecipe> recipes, String id, String templateId, String baseTier, String additionId, String resultTier) {
@@ -234,6 +258,14 @@ public final class ModRecipes {
 
     private static boolean isSameRecipeItem(ItemStack stack, ItemStack allowed) {
         return !allowed.isEmpty() && stack.getItem() == allowed.getItem();
+    }
+
+    private static boolean isSameRecipeStack(ItemStack stack, ItemStack expected) {
+        return !stack.isEmpty()
+                && !expected.isEmpty()
+                && stack.getItem() == expected.getItem()
+                && (expected.getItemDamage() == OreDictionary.WILDCARD_VALUE || stack.getItemDamage() == expected.getItemDamage())
+                && ItemStack.areItemStackTagsEqual(stack, expected);
     }
 
     private static void addSmelting(String inputId, String outputId, float experience) {

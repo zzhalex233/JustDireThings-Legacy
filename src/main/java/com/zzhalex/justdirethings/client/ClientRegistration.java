@@ -4,6 +4,7 @@ import com.zzhalex.justdirethings.Reference;
 import com.zzhalex.justdirethings.client.ClientPortalKeys;
 import com.zzhalex.justdirethings.client.event.AbilityRenderHandler;
 import com.zzhalex.justdirethings.client.event.ClientPortalGunInputHandler;
+import com.zzhalex.justdirethings.client.event.CustomGooClientRenderHandler;
 import com.zzhalex.justdirethings.client.event.ElytraAbilityInputHandler;
 import com.zzhalex.justdirethings.client.event.MachineAreaRenderHandler;
 import com.zzhalex.justdirethings.client.event.MiningPreviewRenderHandler;
@@ -80,6 +81,7 @@ public final class ClientRegistration {
         MinecraftForge.EVENT_BUS.register(ClientPortalGunInputHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ElytraAbilityInputHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(PhaseClientEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(CustomGooClientRenderHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(MiningPreviewRenderHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(AbilityRenderHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(MachineAreaRenderHandler.INSTANCE);
@@ -103,6 +105,7 @@ public final class ClientRegistration {
         ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier2.class, new RenderGooBlock());
         ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier3.class, new RenderGooBlock());
         ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Tier4.class, new RenderGooBlock());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileGooBlock.Custom.class, new RenderGooBlock());
         ClientRegistry.bindTileEntitySpecialRenderer(TileExperienceHolder.class, new RenderExperienceHolder());
         ClientRegistry.bindTileEntitySpecialRenderer(TileInventoryHolder.class, new RenderInventoryHolder());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEclipseGate.class, new RenderEclipseGate());

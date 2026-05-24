@@ -29,7 +29,10 @@ public class GooSpreadRecipeWrapper implements IRecipeWrapper {
         if (!inputItems.isEmpty()) {
             itemInputs.add(inputItems);
         }
-        itemInputs.add(JeiIngredientUtil.gooCatalysts(recipe.getTierRequirement()));
+        List<ItemStack> catalysts = JeiIngredientUtil.gooCatalysts(recipe.getTierRequirement(), recipe.getCatalyst());
+        if (!catalysts.isEmpty()) {
+            itemInputs.add(catalysts);
+        }
         if (!itemInputs.isEmpty()) {
             ingredients.setInputLists(VanillaTypes.ITEM, itemInputs);
         }
