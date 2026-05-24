@@ -16,7 +16,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -25,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fluids.Fluid;
@@ -220,6 +220,7 @@ public class TileClicker extends TileTimedMachineBase {
         ItemStack heldStack = getItemHandler().getStackInSlot(0);
         boolean replaceable = MachineActionHelper.canReplace(world, targetPos);
         FakePlayer fakePlayer = getClickFakePlayer();
+        MachineActionHelper.alignFakePlayerForUse(fakePlayer, targetPos, facing);
         fakePlayer.setSneaking(sneaking);
         fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
         boolean result;
@@ -232,8 +233,6 @@ public class TileClicker extends TileTimedMachineBase {
             result = leftClickBlock(fakePlayer, targetPos, facing);
         } else if (clickType == 2) {
             result = holdUseItem(fakePlayer);
-        } else if (replaceable && MachineActionHelper.canAttemptPlacement(heldStack)) {
-            result = MachineActionHelper.useHeldItemOnTarget((WorldServer) world, fakePlayer, getItemHandler(), 0, targetPos, facing, true);
         } else {
             IBlockState state = world.getBlockState(targetPos);
             if (state.getBlock() == Blocks.AIR) {
@@ -284,14 +283,11 @@ public class TileClicker extends TileTimedMachineBase {
         if (clickType == 1) {
             return false;
         }
-        ItemStack heldStack = getItemHandler().getStackInSlot(0);
-        if (heldStack.isEmpty()) {
-            return false;
-        }
-
-        FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, this);
+        EnumFacing facing = MachineActionHelper.getFacing(this);
+        FakePlayer fakePlayer = getClickFakePlayer();
+        MachineActionHelper.alignFakePlayerForUse(fakePlayer, targetPos, facing);
         fakePlayer.setSneaking(sneaking);
-        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
+        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, getItemHandler().getStackInSlot(0).copy());
         if (clickType == 2) {
             boolean held = holdUseItem(fakePlayer);
             fakePlayer.setSneaking(false);
@@ -299,22 +295,33 @@ public class TileClicker extends TileTimedMachineBase {
         }
         RayTraceResult hit = rayTraceForAirClick(fakePlayer);
         if (hit != null && hit.typeOfHit == RayTraceResult.Type.BLOCK) {
-            boolean used = MachineActionHelper.useHeldItemOnTarget(
+            boolean used = MachineActionHelper.useHeldItemOnBlock(
                     (WorldServer) world,
                     fakePlayer,
                     getItemHandler(),
                     0,
                     hit.getBlockPos(),
                     hit.sideHit,
-                    false
+                    targetPos,
+                    facing
             );
             fakePlayer.setSneaking(false);
             return used;
         }
-        ActionResult<ItemStack> result = fakePlayer.getHeldItem(EnumHand.MAIN_HAND).getItem().onItemRightClick(world, fakePlayer, EnumHand.MAIN_HAND);
-        getItemHandler().setStackInSlot(0, result.getResult());
+        if (fakePlayer.getHeldItem(EnumHand.MAIN_HAND).isEmpty()) {
+            ForgeHooks.onEmptyClick(fakePlayer, EnumHand.MAIN_HAND);
+            fakePlayer.setSneaking(false);
+            return true;
+        }
+        EnumActionResult result = fakePlayer.interactionManager.processRightClick(
+                fakePlayer,
+                world,
+                fakePlayer.getHeldItem(EnumHand.MAIN_HAND),
+                EnumHand.MAIN_HAND
+        );
+        getItemHandler().setStackInSlot(0, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
         fakePlayer.setSneaking(false);
-        return result.getType() == EnumActionResult.SUCCESS;
+        return result == EnumActionResult.SUCCESS;
     }
 
     protected RayTraceResult rayTraceForAirClick(FakePlayer fakePlayer) {
@@ -328,7 +335,7 @@ public class TileClicker extends TileTimedMachineBase {
     protected boolean clickEntity(EntityLivingBase entity) {
         ItemStack heldStack = getItemHandler().getStackInSlot(0);
         FakePlayer fakePlayer = MachineActionHelper.createFakePlayer((WorldServer) world, this);
-        MachineActionHelper.alignFakePlayer(fakePlayer, entity.getPosition(), MachineActionHelper.getFacing(this));
+        MachineActionHelper.alignFakePlayerForUse(fakePlayer, entity.getPosition(), MachineActionHelper.getFacing(this));
         fakePlayer.setSneaking(sneaking);
         fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
 
@@ -522,7 +529,7 @@ public class TileClicker extends TileTimedMachineBase {
             if (state.getBlock() instanceof BlockLiquid || state.getBlock() instanceof IFluidBlock) {
                 return matchesFluidFilter(resolveFluid(state));
             }
-            return state.getBlock() == Blocks.AIR || matchesBlockFilter(state, targetPos);
+            return matchesBlockFilter(state, targetPos);
         }
 
         @Override

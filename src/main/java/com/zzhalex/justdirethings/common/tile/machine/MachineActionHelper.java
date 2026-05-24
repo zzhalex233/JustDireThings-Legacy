@@ -12,7 +12,6 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemBlockSpecial;
 import net.minecraft.item.ItemRedstone;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -20,7 +19,6 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayer;
@@ -63,6 +61,24 @@ public final class MachineActionHelper {
         );
         fakePlayer.rotationYaw = FakePlayerMath.yawForFacing(facing);
         fakePlayer.rotationPitch = FakePlayerMath.pitchForFacing(facing);
+    }
+
+    public static void alignFakePlayerForUse(FakePlayer fakePlayer, BlockPos targetPos, EnumFacing facing) {
+        fakePlayer.setPosition(
+                targetPos.getX() + useSideOffset(facing, EnumFacing.Axis.X),
+                targetPos.getY() + useSideOffset(facing, EnumFacing.Axis.Y) - fakePlayer.getEyeHeight(),
+                targetPos.getZ() + useSideOffset(facing, EnumFacing.Axis.Z)
+        );
+        fakePlayer.rotationYaw = FakePlayerMath.yawForFacing(facing);
+        fakePlayer.rotationYawHead = fakePlayer.rotationYaw;
+        fakePlayer.rotationPitch = FakePlayerMath.pitchForFacing(facing);
+    }
+
+    private static double useSideOffset(EnumFacing facing, EnumFacing.Axis axis) {
+        if (facing.getAxis() != axis) {
+            return 0.5D;
+        }
+        return facing.getAxisDirection() == EnumFacing.AxisDirection.NEGATIVE ? 0.95D : 0.05D;
     }
 
     public static boolean canReplace(World world, BlockPos pos) {
@@ -231,61 +247,67 @@ public final class MachineActionHelper {
     }
 
     public static boolean useHeldItemOnTarget(WorldServer world, FakePlayer fakePlayer, InternalItemHandler itemHandler, int slot, BlockPos targetPos, EnumFacing facing, boolean targetIsReplaceable) {
-        ItemStack heldStack = itemHandler.getStackInSlot(slot);
-        if (heldStack.isEmpty()) {
-            return false;
-        }
-
-        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, heldStack.copy());
-
-        BlockPos clickPos = targetIsReplaceable ? targetPos.offset(facing.getOpposite()) : targetPos;
+        alignFakePlayerForUse(fakePlayer, targetPos, facing);
         EnumFacing hitFace = targetIsReplaceable ? facing : facing.getOpposite();
-        float hitX = 0.5F;
-        float hitY = 0.5F;
-        float hitZ = 0.5F;
+        return useHeldItemOnBlock(world, fakePlayer, itemHandler, slot, targetPos, hitFace);
+    }
 
-        PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(fakePlayer, EnumHand.MAIN_HAND, clickPos, hitFace, ForgeHooks.rayTraceEyeHitVec(fakePlayer, 2.0D));
-        if (event.isCanceled() || event.getUseItem() == Event.Result.DENY) {
+    public static boolean useHeldItemOnBlock(WorldServer world, FakePlayer fakePlayer, InternalItemHandler itemHandler, int slot, BlockPos clickPos, EnumFacing hitFace, BlockPos playerTargetPos, EnumFacing playerFacing) {
+        alignFakePlayerForUse(fakePlayer, playerTargetPos, playerFacing);
+        return useHeldItemOnBlock(world, fakePlayer, itemHandler, slot, clickPos, hitFace);
+    }
+
+    public static boolean useHeldItemOnBlock(WorldServer world, FakePlayer fakePlayer, InternalItemHandler itemHandler, int slot, BlockPos clickPos, EnumFacing hitFace) {
+        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, itemHandler.getStackInSlot(slot).copy());
+        if (fakePlayer.getHeldItem(EnumHand.MAIN_HAND).isEmpty()) {
+            return useEmptyHandOnBlock(world, fakePlayer, clickPos, hitFace);
+        }
+
+        EnumActionResult blockResult = fakePlayer.interactionManager.processRightClickBlock(
+                fakePlayer,
+                world,
+                fakePlayer.getHeldItem(EnumHand.MAIN_HAND),
+                EnumHand.MAIN_HAND,
+                clickPos,
+                hitFace,
+                0.5F,
+                0.5F,
+                0.5F
+        );
+        syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+        if (blockResult == EnumActionResult.SUCCESS) {
+            return true;
+        }
+        if (blockResult == EnumActionResult.FAIL || fakePlayer.getHeldItem(EnumHand.MAIN_HAND).isEmpty()) {
             return false;
         }
 
-        ItemStack activeStack = fakePlayer.getHeldItem(EnumHand.MAIN_HAND);
-        EnumActionResult firstUseResult = activeStack.onItemUseFirst(fakePlayer, world, clickPos, EnumHand.MAIN_HAND, hitFace, hitX, hitY, hitZ);
-        if (firstUseResult == EnumActionResult.SUCCESS) {
-            syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
-            return true;
-        }
-        if (firstUseResult == EnumActionResult.FAIL) {
+        EnumActionResult itemResult = fakePlayer.interactionManager.processRightClick(
+                fakePlayer,
+                world,
+                fakePlayer.getHeldItem(EnumHand.MAIN_HAND),
+                EnumHand.MAIN_HAND
+        );
+        syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
+        return itemResult == EnumActionResult.SUCCESS;
+    }
+
+    private static boolean useEmptyHandOnBlock(WorldServer world, FakePlayer fakePlayer, BlockPos clickPos, EnumFacing hitFace) {
+        PlayerInteractEvent.RightClickBlock event = net.minecraftforge.common.ForgeHooks.onRightClickBlock(
+                fakePlayer,
+                EnumHand.MAIN_HAND,
+                clickPos,
+                hitFace,
+                net.minecraftforge.common.ForgeHooks.rayTraceEyeHitVec(fakePlayer, fakePlayer.interactionManager.getBlockReachDistance() + 1)
+        );
+        if (event.isCanceled() || event.getUseBlock() == Event.Result.DENY) {
             return false;
         }
-
-        EnumActionResult useResult = activeStack.onItemUse(fakePlayer, world, clickPos, EnumHand.MAIN_HAND, hitFace, hitX, hitY, hitZ);
-        if (useResult == EnumActionResult.SUCCESS) {
-            syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
-            return true;
-        }
-        if (useResult == EnumActionResult.FAIL) {
+        if (fakePlayer.isSneaking() && event.getUseBlock() != Event.Result.ALLOW) {
             return false;
         }
-
-        IBlockState targetState = world.getBlockState(targetPos);
-        if (!targetIsReplaceable && event.getUseBlock() != Event.Result.DENY
-                && targetState.getBlock().onBlockActivated(world, targetPos, targetState, fakePlayer, EnumHand.MAIN_HAND, hitFace, hitX, hitY, hitZ)) {
-            syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
-            return true;
-        }
-
-        if (event.getUseItem() == Event.Result.DENY) {
-            return false;
-        }
-
-        ActionResult<ItemStack> rightClickResult = activeStack.getItem().onItemRightClick(world, fakePlayer, EnumHand.MAIN_HAND);
-        fakePlayer.setHeldItem(EnumHand.MAIN_HAND, rightClickResult.getResult());
-        if (rightClickResult.getType() == EnumActionResult.SUCCESS) {
-            syncFakePlayerHeldItem(itemHandler, slot, fakePlayer.getHeldItem(EnumHand.MAIN_HAND));
-            return true;
-        }
-        return false;
+        IBlockState state = world.getBlockState(clickPos);
+        return state.getBlock().onBlockActivated(world, clickPos, state, fakePlayer, EnumHand.MAIN_HAND, hitFace, 0.5F, 0.5F, 0.5F);
     }
 
     private static void syncFakePlayerHeldItem(InternalItemHandler itemHandler, int slot, ItemStack stack) {

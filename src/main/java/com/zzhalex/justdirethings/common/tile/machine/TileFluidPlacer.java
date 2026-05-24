@@ -201,7 +201,9 @@ public class TileFluidPlacer extends TileTimedMachineBase implements ITickable {
     }
 
     public boolean isBlockPosValid(BlockPos blockPos, FakePlayer fakePlayer) {
-        return world.isBlockModifiable(fakePlayer, blockPos) && canPlaceFluidAt(blockPos);
+        return world.isBlockModifiable(fakePlayer, blockPos)
+                && canPlaceFluidAt(blockPos)
+                && MachineActionHelper.canBreakAndPlaceAt(world, blockPos, fakePlayer);
     }
 
     protected IFluidHandler createPlacementFluidSource() {

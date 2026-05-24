@@ -168,6 +168,7 @@ public class TileBlockPlacer extends TileTimedMachineBase implements ITickable {
                 if (!MachineActionHelper.canReplace(world, targetPos)) {
                     continue;
                 }
+                MachineActionHelper.alignFakePlayerForUse(fakePlayer, targetPos, facing);
                 BlockPos supportPos = targetPos.offset(facing);
                 if (!matchesBlockFilter(world.getBlockState(supportPos), supportPos)) {
                     continue;

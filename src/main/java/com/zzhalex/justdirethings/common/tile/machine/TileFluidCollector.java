@@ -194,7 +194,8 @@ public class TileFluidCollector extends TileTimedMachineBase {
                 && state.getValue(BlockLiquid.LEVEL) != 0) {
             return false;
         }
-        return getFluidState().getAmount() + 1000 <= getFluidState().getCapacity();
+        return getFluidState().getAmount() + 1000 <= getFluidState().getCapacity()
+                && MachineActionHelper.canPlaceAt(world, blockPos, fakePlayer);
     }
 
     protected List<BlockPos> findSpotsToCollect(FakePlayer fakePlayer) {
