@@ -1,20 +1,16 @@
 # JustDireThings-Legacy
 
+[![MCVersion](https://cf.way2muchnoise.eu/versions/1552220.svg)](https://www.curseforge.com/minecraft/mc-mods/justdirethings-legacy)
+
 `JustDireThings-Legacy` is a Minecraft 1.12.2 backport project for [`JustDireThings`](https://github.com/Direwolf20-MC/JustDireThings).
 With [Crafttweaker support](https://github.com/zzhalex233/JustDireThings-Legacy/wiki/Crafttweaker-support)
 
----
 
 ## About
 
 Just Dire Things started as a collection of random items and blocks I wanted added to the game.
 Then things kind of got away from me...
 
----
-
-## Features
-
-This mod adds:
 
 ### Resources
 
