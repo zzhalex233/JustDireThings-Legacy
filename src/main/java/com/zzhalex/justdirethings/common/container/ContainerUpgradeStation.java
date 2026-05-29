@@ -105,7 +105,7 @@ public class ContainerUpgradeStation extends Container {
             return ItemStack.EMPTY;
         }
 
-        slot.onTake(playerIn, current);
+        slot.onTake(playerIn, index == TileUpgradeStation.SLOT_OUTPUT ? original : current);
         return original;
     }
 }
