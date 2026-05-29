@@ -1,0 +1,21 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "ff",
+    "pp",
+    "pp"
+  ],
+  "key": {
+    "f": {
+      "item": "justdirethings:ferricore_ingot"
+    },
+    "p": {
+      "type": "forge:ore_dict",
+      "ore": "plankWood"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_station"
+  }
+}

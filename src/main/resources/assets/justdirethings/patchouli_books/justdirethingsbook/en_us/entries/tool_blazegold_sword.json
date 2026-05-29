@@ -1,18 +1,18 @@
 {
-    "name":  "Blazegold Sword",
-    "sortnum":  7,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:blazegold_sword",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "Enhanced damage over the $(l:tool_ferricore_sword)Ferricore Sword$(/l). Features \u0027Lava Repair\u0027 for full repair when dropped into lava."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_sword",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Blazegold Sword",
+  "sortnum": 7,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:blazegold_sword",
+  "pages": [
+    {
+      "type": "text",
+      "text": "Enhanced damage over the $(l:tool_ferricore_sword)Ferricore Sword$(/l). Features 'Lava Repair' for full repair when dropped into lava."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_sword",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

@@ -1,22 +1,22 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    " e ",
-                    "fbf",
-                    " e "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:piston"
-                      },
-                "f":  {
-                          "item":  "minecraft:slime"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_groundstomp"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " e ",
+    "fbf",
+    " e "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:piston"
+    },
+    "f": {
+      "item": "minecraft:slime"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_groundstomp"
+  }
 }

@@ -1,13 +1,13 @@
-﻿{
-    "type":  "minecraft:crafting_shapeless",
-    "group":  "justdirethings",
-    "ingredients":  [
-                        {
-                            "item":  "justdirethings:eclipsealloy_block"
-                        }
-                    ],
-    "result":  {
-                   "item":  "justdirethings:eclipsealloy_ingot",
-                   "count":  9
-               }
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "justdirethings",
+  "ingredients": [
+    {
+      "item": "justdirethings:eclipsealloy_block"
+    }
+  ],
+  "result": {
+    "item": "justdirethings:eclipsealloy_ingot",
+    "count": 9
+  }
 }

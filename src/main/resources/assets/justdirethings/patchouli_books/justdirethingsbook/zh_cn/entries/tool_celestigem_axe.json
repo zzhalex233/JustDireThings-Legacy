@@ -1,18 +1,18 @@
 {
-    "name":  "苍穹晶斧",
-    "sortnum":  16,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:celestigem_axe",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "由$(l:tool_blazegold_axe)烈焰金斧$(/l)升级而来，此斧使用 FE，容量为 10,000FE。可用$(l:item_pocket_generator)便携发电器$(/l)维持能量充足。"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_celestigem_axe",
-                      "title":  "升级工作台配方",
-                      "text":  "在升级工作台中升级此物品。"
-                  }
-              ]
+  "name": "苍穹晶斧",
+  "sortnum": 16,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:celestigem_axe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "由$(l:tool_blazegold_axe)烈焰金斧$(/l)升级而来，此斧使用 FE，容量为 10,000FE。可用$(l:item_pocket_generator)便携发电器$(/l)维持能量充足。"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_celestigem_axe",
+      "title": "升级工作台配方",
+      "text": "在升级工作台中升级此物品。"
+    }
+  ]
 }

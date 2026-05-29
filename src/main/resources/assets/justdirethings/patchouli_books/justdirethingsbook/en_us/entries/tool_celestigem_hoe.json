@@ -1,18 +1,18 @@
 {
-    "name":  "Celestigem Hoe",
-    "sortnum":  17,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:celestigem_hoe",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "Upgraded from $(l:tool_blazegold_hoe)Blazegold Hoe$(/l), Celestigem tools have Forge Energy instead of durability. This hoe creates Voidshimmer soil.$(br2)If the hoe has \u0027teleport drops\u0027 ability, and is bound to an inventory, the soil will teleport the autoharvested blocks to that inventory."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_celestigem_hoe",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Celestigem Hoe",
+  "sortnum": 17,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:celestigem_hoe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "Upgraded from $(l:tool_blazegold_hoe)Blazegold Hoe$(/l), Celestigem tools have Forge Energy instead of durability. This hoe creates Voidshimmer soil.$(br2)If the hoe has 'teleport drops' ability, and is bound to an inventory, the soil will teleport the autoharvested blocks to that inventory."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_celestigem_hoe",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

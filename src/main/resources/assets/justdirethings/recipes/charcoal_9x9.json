@@ -1,18 +1,18 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "###",
-                    "###",
-                    "###"
-                ],
-    "key":  {
-                "#":  {
-                          "item":  "minecraft:coal",
-                          "data":  1
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:charcoal"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:coal",
+      "data": 1
+    }
+  },
+  "result": {
+    "item": "justdirethings:charcoal"
+  }
 }

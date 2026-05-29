@@ -1,24 +1,24 @@
-﻿{
-    "conditions":  [
-                       {
-                           "type":  "justdirethings:config_enabled",
-                           "key":  "enableSmithingTemplates"
-                       }
-                   ],
-    "type":  "minecraft:crafting_shapeless",
-    "ingredients":  [
-                        {
-                            "item":  "justdirethings:template_blazegold"
-                        },
-                        {
-                            "item":  "justdirethings:blazegold_ingot"
-                        },
-                        {
-                            "item":  "justdirethings:blazegold_ingot"
-                        }
-                    ],
-    "result":  {
-                   "item":  "justdirethings:template_blazegold",
-                   "count":  2
-               }
+{
+  "conditions": [
+    {
+      "type": "justdirethings:config_enabled",
+      "key": "enableSmithingTemplates"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "justdirethings:template_blazegold"
+    },
+    {
+      "item": "justdirethings:blazegold_ingot"
+    },
+    {
+      "item": "justdirethings:blazegold_ingot"
+    }
+  ],
+  "result": {
+    "item": "justdirethings:template_blazegold",
+    "count": 2
+  }
 }

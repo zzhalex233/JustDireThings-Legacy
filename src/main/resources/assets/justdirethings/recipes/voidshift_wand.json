@@ -1,23 +1,23 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "  c",
-                    " w ",
-                    "b  "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:blazegold_ingot"
-                      },
-                "c":  {
-                          "item":  "justdirethings:celestigem"
-                      },
-                "w":  {
-                          "item":  "justdirethings:blazejet_wand"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:voidshift_wand"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "  c",
+    " w ",
+    "b  "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:blazegold_ingot"
+    },
+    "c": {
+      "item": "justdirethings:celestigem"
+    },
+    "w": {
+      "item": "justdirethings:blazejet_wand"
+    }
+  },
+  "result": {
+    "item": "justdirethings:voidshift_wand"
+  }
 }

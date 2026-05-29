@@ -1,23 +1,23 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    " bt",
-                    " ib",
-                    "i  "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:blazegold_ingot"
-                      },
-                "i":  {
-                          "item":  "justdirethings:ferricore_ingot"
-                      },
-                "t":  {
-                          "item":  "justdirethings:time_crystal"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:time_wand"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    " bt",
+    " ib",
+    "i  "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:blazegold_ingot"
+    },
+    "i": {
+      "item": "justdirethings:ferricore_ingot"
+    },
+    "t": {
+      "item": "justdirethings:time_crystal"
+    }
+  },
+  "result": {
+    "item": "justdirethings:time_wand"
+  }
 }

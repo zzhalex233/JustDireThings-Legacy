@@ -1,18 +1,18 @@
 {
-    "name":  "烈焰金斧",
-    "sortnum":  10,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:blazegold_axe",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "劈砍比$(l:tool_ferricore_axe)核源铁斧$(/l)更有力。拥有“熔岩修补”，会在熔岩中自动修复自身。"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_axe",
-                      "title":  "升级工作台配方",
-                      "text":  "在升级工作台中升级此物品。"
-                  }
-              ]
+  "name": "烈焰金斧",
+  "sortnum": 10,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:blazegold_axe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "劈砍比$(l:tool_ferricore_axe)核源铁斧$(/l)更有力。拥有“熔岩修补”，会在熔岩中自动修复自身。"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_axe",
+      "title": "升级工作台配方",
+      "text": "在升级工作台中升级此物品。"
+    }
+  ]
 }

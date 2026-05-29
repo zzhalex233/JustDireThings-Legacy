@@ -1,25 +1,25 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "psp",
-                    "gbg",
-                    "psp"
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "g":  {
-                          "item":  "minecraft:ghast_tear"
-                      },
-                "p":  {
-                          "item":  "minecraft:ender_eye"
-                      },
-                "s":  {
-                          "item":  "minecraft:nether_star"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_epicarrow"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "psp",
+    "gbg",
+    "psp"
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "g": {
+      "item": "minecraft:ghast_tear"
+    },
+    "p": {
+      "item": "minecraft:ender_eye"
+    },
+    "s": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_epicarrow"
+  }
 }

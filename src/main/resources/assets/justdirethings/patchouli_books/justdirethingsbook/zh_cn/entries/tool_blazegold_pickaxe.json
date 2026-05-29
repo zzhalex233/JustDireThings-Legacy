@@ -1,18 +1,18 @@
 {
-    "name":  "烈焰金镐",
-    "sortnum":  8,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:blazegold_pickaxe",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "比$(l:tool_ferricore_pickaxe)核源铁镐$(/l)速度更快，还拥有“熔岩修补”——投入熔岩时能够修复自身。"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_pickaxe",
-                      "title":  "升级工作台配方",
-                      "text":  "在升级工作台中升级此物品。"
-                  }
-              ]
+  "name": "烈焰金镐",
+  "sortnum": 8,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:blazegold_pickaxe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "比$(l:tool_ferricore_pickaxe)核源铁镐$(/l)速度更快，还拥有“熔岩修补”——投入熔岩时能够修复自身。"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_pickaxe",
+      "title": "升级工作台配方",
+      "text": "在升级工作台中升级此物品。"
+    }
+  ]
 }

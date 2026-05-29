@@ -1,22 +1,22 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "p p",
-                    "gbg",
-                    "p p"
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "g":  {
-                          "item":  "minecraft:glass_bottle"
-                      },
-                "p":  {
-                          "item":  "minecraft:dragon_breath"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_lingering"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "p p",
+    "gbg",
+    "p p"
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "g": {
+      "item": "minecraft:glass_bottle"
+    },
+    "p": {
+      "item": "minecraft:dragon_breath"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_lingering"
+  }
 }

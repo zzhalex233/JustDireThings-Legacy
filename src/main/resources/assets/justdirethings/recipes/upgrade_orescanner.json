@@ -1,22 +1,22 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    " e ",
-                    "fbf",
-                    " e "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:redstone"
-                      },
-                "f":  {
-                          "item":  "minecraft:quartz"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_orescanner"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " e ",
+    "fbf",
+    " e "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:redstone"
+    },
+    "f": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_orescanner"
+  }
 }

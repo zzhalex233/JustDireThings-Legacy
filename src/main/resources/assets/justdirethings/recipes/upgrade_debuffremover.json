@@ -1,26 +1,26 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "mem",
-                    "fbf",
-                    "mem"
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:sugar"
-                      },
-                "f":  {
-                          "item":  "minecraft:golden_apple",
-                          "data":  0
-                      },
-                "m":  {
-                          "item":  "minecraft:milk_bucket"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_debuffremover"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "mem",
+    "fbf",
+    "mem"
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:sugar"
+    },
+    "f": {
+      "item": "minecraft:golden_apple",
+      "data": 0
+    },
+    "m": {
+      "item": "minecraft:milk_bucket"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_debuffremover"
+  }
 }

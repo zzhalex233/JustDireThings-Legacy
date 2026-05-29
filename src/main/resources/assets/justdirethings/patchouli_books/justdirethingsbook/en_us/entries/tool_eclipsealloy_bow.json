@@ -1,18 +1,18 @@
 {
-    "name":  "Eclipse Alloy Bow",
-    "sortnum":  25,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:bow_eclipsealloy",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "The Eclipse Alloy Bow embodies the ultimate in ranged weaponry, providing vast energy reserves for prolonged use. $(br2)It features 4 slots for Potion Canisters, enhancing arrows with various effects. $(l:item_potion_canister)Potion Canister$(/l)"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_eclipsealloy_bow",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Eclipse Alloy Bow",
+  "sortnum": 25,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:bow_eclipsealloy",
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Eclipse Alloy Bow embodies the ultimate in ranged weaponry, providing vast energy reserves for prolonged use. $(br2)It features 4 slots for Potion Canisters, enhancing arrows with various effects. $(l:item_potion_canister)Potion Canister$(/l)"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_eclipsealloy_bow",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

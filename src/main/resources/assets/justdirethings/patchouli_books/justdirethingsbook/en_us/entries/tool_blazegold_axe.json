@@ -1,18 +1,18 @@
 {
-    "name":  "Blazegold Axe",
-    "sortnum":  10,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:blazegold_axe",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "Cuts faster than the $(l:tool_ferricore_axe)Ferricore Axe$(/l). It possesses \u0027Lava Repair\u0027, automatically repairing itself in lava."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_axe",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Blazegold Axe",
+  "sortnum": 10,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:blazegold_axe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "Cuts faster than the $(l:tool_ferricore_axe)Ferricore Axe$(/l). It possesses 'Lava Repair', automatically repairing itself in lava."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_axe",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

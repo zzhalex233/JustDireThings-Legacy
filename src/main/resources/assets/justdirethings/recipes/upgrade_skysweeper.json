@@ -1,23 +1,23 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    " e ",
-                    "fbf",
-                    " e "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:sand",
-                          "data":  0
-                      },
-                "f":  {
-                          "item":  "minecraft:gravel"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_skysweeper"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " e ",
+    "fbf",
+    " e "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:sand",
+      "data": 0
+    },
+    "f": {
+      "item": "minecraft:gravel"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_skysweeper"
+  }
 }

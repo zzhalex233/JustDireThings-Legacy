@@ -1,19 +1,19 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "   ",
-                    "fbf",
-                    "   "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "f":  {
-                          "item":  "minecraft:wheat_seeds"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_lawnmower"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "fbf",
+    "   "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "f": {
+      "item": "minecraft:wheat_seeds"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_lawnmower"
+  }
 }

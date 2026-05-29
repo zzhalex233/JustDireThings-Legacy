@@ -1,12 +1,12 @@
-﻿{
-    "type":  "minecraft:crafting_shapeless",
-    "group":  "justdirethings",
-    "ingredients":  [
-                        {
-                            "item":  "justdirethings:inventory_holder"
-                        }
-                    ],
-    "result":  {
-                   "item":  "justdirethings:inventory_holder"
-               }
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "justdirethings",
+  "ingredients": [
+    {
+      "item": "justdirethings:inventory_holder"
+    }
+  ],
+  "result": {
+    "item": "justdirethings:inventory_holder"
+  }
 }

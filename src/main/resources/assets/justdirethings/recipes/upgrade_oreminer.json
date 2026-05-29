@@ -1,19 +1,19 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "   ",
-                    "fbf",
-                    "   "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "f":  {
-                          "item":  "minecraft:iron_pickaxe"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_oreminer"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "fbf",
+    "   "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "f": {
+      "item": "minecraft:iron_pickaxe"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_oreminer"
+  }
 }

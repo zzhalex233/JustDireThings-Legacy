@@ -1,24 +1,24 @@
 {
-    "name":  "Eclipse Alloy Paxel",
-    "sortnum":  26,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:eclipsealloy_paxel",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "The Eclipse Alloy Paxel represents the pinnacle of tool integration, combining the functionality of a pickaxe, axe, and shovel into a single formidable tool. $(br2)Craft it either by combining an Eclipse Alloy Pickaxe, Axe, and Shovel in a Upgrade Station, or upgrade a $(l:tool_celestigem_paxel)Celestigem Paxel$(/l) using the Upgrade Station. Both methods preserve any installed upgrades."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:paxel_fusion_eclipsealloy",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Combine the matching pickaxe, axe, and shovel in the Upgrade Station."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_paxel_eclipsealloy",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Eclipse Alloy Paxel",
+  "sortnum": 26,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:eclipsealloy_paxel",
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Eclipse Alloy Paxel represents the pinnacle of tool integration, combining the functionality of a pickaxe, axe, and shovel into a single formidable tool. $(br2)Craft it either by combining an Eclipse Alloy Pickaxe, Axe, and Shovel in a Upgrade Station, or upgrade a $(l:tool_celestigem_paxel)Celestigem Paxel$(/l) using the Upgrade Station. Both methods preserve any installed upgrades."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:paxel_fusion_eclipsealloy",
+      "title": "Upgrade Station Recipe",
+      "text": "Combine the matching pickaxe, axe, and shovel in the Upgrade Station."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_paxel_eclipsealloy",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

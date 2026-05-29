@@ -1,18 +1,18 @@
 {
-    "name":  "Blazegold Helmet",
-    "sortnum":  5,
-    "category":  "justdirethings:armor",
-    "icon":  "justdirethings:blazegold_helmet",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "The Blazegold Helmet offers superior protection compared to its Ferricore predecessor, enhanced with the unique Lava Repair ability. Drop this item into a lava source block to fully repair it."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_helmet",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Blazegold Helmet",
+  "sortnum": 5,
+  "category": "justdirethings:armor",
+  "icon": "justdirethings:blazegold_helmet",
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Blazegold Helmet offers superior protection compared to its Ferricore predecessor, enhanced with the unique Lava Repair ability. Drop this item into a lava source block to fully repair it."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_helmet",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

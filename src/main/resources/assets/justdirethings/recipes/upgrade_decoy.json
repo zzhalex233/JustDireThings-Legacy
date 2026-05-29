@@ -1,26 +1,26 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "aea",
-                    "fbf",
-                    "aea"
-                ],
-    "key":  {
-                "a":  {
-                          "item":  "minecraft:ghast_tear"
-                      },
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:skull",
-                          "data":  1
-                      },
-                "f":  {
-                          "item":  "minecraft:armor_stand"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_decoy"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "aea",
+    "fbf",
+    "aea"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:ghast_tear"
+    },
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:skull",
+      "data": 1
+    },
+    "f": {
+      "item": "minecraft:armor_stand"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_decoy"
+  }
 }

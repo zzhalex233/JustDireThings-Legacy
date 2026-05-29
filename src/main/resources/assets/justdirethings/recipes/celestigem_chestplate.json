@@ -1,17 +1,17 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "f f",
-                    "fff",
-                    "fff"
-                ],
-    "key":  {
-                "f":  {
-                          "item":  "justdirethings:celestigem"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:celestigem_chestplate"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "f f",
+    "fff",
+    "fff"
+  ],
+  "key": {
+    "f": {
+      "item": "justdirethings:celestigem"
+    }
+  },
+  "result": {
+    "item": "justdirethings:celestigem_chestplate"
+  }
 }

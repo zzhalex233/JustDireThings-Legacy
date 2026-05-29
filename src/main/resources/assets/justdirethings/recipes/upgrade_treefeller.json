@@ -1,19 +1,19 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "   ",
-                    "fbf",
-                    "   "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "f":  {
-                          "item":  "minecraft:diamond_axe"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_treefeller"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "fbf",
+    "   "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "f": {
+      "item": "minecraft:diamond_axe"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_treefeller"
+  }
 }

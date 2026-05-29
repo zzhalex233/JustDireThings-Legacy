@@ -1,27 +1,27 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "bdb",
-                    "lel",
-                    "bdb"
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:blazegold_ingot"
-                      },
-                "d":  {
-                          "item":  "minecraft:diamond"
-                      },
-                "e":  {
-                          "item":  "minecraft:ender_pearl"
-                      },
-                "l":  {
-                          "item":  "minecraft:dye",
-                          "data":  4
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:totem_of_death_recall"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "bdb",
+    "lel",
+    "bdb"
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:blazegold_ingot"
+    },
+    "d": {
+      "item": "minecraft:diamond"
+    },
+    "e": {
+      "item": "minecraft:ender_pearl"
+    },
+    "l": {
+      "item": "minecraft:dye",
+      "data": 4
+    }
+  },
+  "result": {
+    "item": "justdirethings:totem_of_death_recall"
+  }
 }

@@ -1,18 +1,18 @@
 {
-    "name":  "烈焰金剑",
-    "sortnum":  7,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:blazegold_sword",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "伤害比$(l:tool_ferricore_sword)核源铁剑$(/l)更高。拥有“熔岩修补”，会在投入熔岩后修复自身。"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_sword",
-                      "title":  "升级工作台配方",
-                      "text":  "在升级工作台中升级此物品。"
-                  }
-              ]
+  "name": "烈焰金剑",
+  "sortnum": 7,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:blazegold_sword",
+  "pages": [
+    {
+      "type": "text",
+      "text": "伤害比$(l:tool_ferricore_sword)核源铁剑$(/l)更高。拥有“熔岩修补”，会在投入熔岩后修复自身。"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_sword",
+      "title": "升级工作台配方",
+      "text": "在升级工作台中升级此物品。"
+    }
+  ]
 }

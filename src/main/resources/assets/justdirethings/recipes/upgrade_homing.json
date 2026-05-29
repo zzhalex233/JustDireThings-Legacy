@@ -1,22 +1,22 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "p p",
-                    "gbg",
-                    "p p"
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "g":  {
-                          "item":  "minecraft:compass"
-                      },
-                "p":  {
-                          "item":  "minecraft:ender_eye"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_homing"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "p p",
+    "gbg",
+    "p p"
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "g": {
+      "item": "minecraft:compass"
+    },
+    "p": {
+      "item": "minecraft:ender_eye"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_homing"
+  }
 }

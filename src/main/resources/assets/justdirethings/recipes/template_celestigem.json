@@ -1,25 +1,25 @@
-﻿{
-    "conditions":  [
-                       {
-                           "type":  "justdirethings:config_enabled",
-                           "key":  "enableSmithingTemplates"
-                       }
-                   ],
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "f f",
-                    "fbf",
-                    " f "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "f":  {
-                          "item":  "justdirethings:celestigem"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:template_celestigem"
-               }
+{
+  "conditions": [
+    {
+      "type": "justdirethings:config_enabled",
+      "key": "enableSmithingTemplates"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "f f",
+    "fbf",
+    " f "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "f": {
+      "item": "justdirethings:celestigem"
+    }
+  },
+  "result": {
+    "item": "justdirethings:template_celestigem"
+  }
 }

@@ -1,26 +1,26 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "fdf",
-                    "dod",
-                    "frf"
-                ],
-    "key":  {
-                "d":  {
-                          "item":  "minecraft:ender_eye"
-                      },
-                "f":  {
-                          "item":  "justdirethings:celestigem"
-                      },
-                "o":  {
-                          "item":  "justdirethings:sensort1"
-                      },
-                "r":  {
-                          "item":  "minecraft:redstone"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:sensort2"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "fdf",
+    "dod",
+    "frf"
+  ],
+  "key": {
+    "d": {
+      "item": "minecraft:ender_eye"
+    },
+    "f": {
+      "item": "justdirethings:celestigem"
+    },
+    "o": {
+      "item": "justdirethings:sensort1"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "justdirethings:sensort2"
+  }
 }

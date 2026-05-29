@@ -1,25 +1,25 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "aea",
-                    "fbf",
-                    "aea"
-                ],
-    "key":  {
-                "a":  {
-                          "item":  "minecraft:ghast_tear"
-                      },
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:end_crystal"
-                      },
-                "f":  {
-                          "item":  "minecraft:feather"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_flight"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "aea",
+    "fbf",
+    "aea"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:ghast_tear"
+    },
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:end_crystal"
+    },
+    "f": {
+      "item": "minecraft:feather"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_flight"
+  }
 }

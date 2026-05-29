@@ -1,18 +1,18 @@
 {
-    "name":  "Blazegold Pickaxe",
-    "sortnum":  8,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:blazegold_pickaxe",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "Faster than the $(l:tool_ferricore_pickaxe)Ferricore Pickaxe$(/l) and includes \u0027Lava Repair\u0027—repairs itself when dropped into lava."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_blazegold_pickaxe",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Blazegold Pickaxe",
+  "sortnum": 8,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:blazegold_pickaxe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "Faster than the $(l:tool_ferricore_pickaxe)Ferricore Pickaxe$(/l) and includes 'Lava Repair'—repairs itself when dropped into lava."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_blazegold_pickaxe",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

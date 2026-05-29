@@ -1,23 +1,23 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    " e ",
-                    "fbf",
-                    " e "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:dye",
-                          "data":  4
-                      },
-                "f":  {
-                          "item":  "minecraft:fermented_spider_eye"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_mindfog"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " e ",
+    "fbf",
+    " e "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:dye",
+      "data": 4
+    },
+    "f": {
+      "item": "minecraft:fermented_spider_eye"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_mindfog"
+  }
 }

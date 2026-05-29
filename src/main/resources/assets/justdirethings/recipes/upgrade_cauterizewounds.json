@@ -1,23 +1,23 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    " e ",
-                    "fbf",
-                    " e "
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:golden_apple",
-                          "data":  0
-                      },
-                "f":  {
-                          "item":  "minecraft:magma_cream"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_cauterizewounds"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " e ",
+    "fbf",
+    " e "
+  ],
+  "key": {
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:golden_apple",
+      "data": 0
+    },
+    "f": {
+      "item": "minecraft:magma_cream"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_cauterizewounds"
+  }
 }

@@ -1,24 +1,24 @@
-﻿{
-    "conditions":  [
-                       {
-                           "type":  "justdirethings:config_enabled",
-                           "key":  "enableSmithingTemplates"
-                       }
-                   ],
-    "type":  "minecraft:crafting_shapeless",
-    "ingredients":  [
-                        {
-                            "item":  "justdirethings:template_eclipsealloy"
-                        },
-                        {
-                            "item":  "justdirethings:eclipsealloy_ingot"
-                        },
-                        {
-                            "item":  "justdirethings:eclipsealloy_ingot"
-                        }
-                    ],
-    "result":  {
-                   "item":  "justdirethings:template_eclipsealloy",
-                   "count":  2
-               }
+{
+  "conditions": [
+    {
+      "type": "justdirethings:config_enabled",
+      "key": "enableSmithingTemplates"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "justdirethings:template_eclipsealloy"
+    },
+    {
+      "item": "justdirethings:eclipsealloy_ingot"
+    },
+    {
+      "item": "justdirethings:eclipsealloy_ingot"
+    }
+  ],
+  "result": {
+    "item": "justdirethings:template_eclipsealloy",
+    "count": 2
+  }
 }

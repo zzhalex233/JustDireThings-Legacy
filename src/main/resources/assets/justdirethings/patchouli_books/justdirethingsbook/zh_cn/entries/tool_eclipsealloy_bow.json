@@ -1,18 +1,18 @@
 {
-    "name":  "蚀空合金弓",
-    "sortnum":  25,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:bow_eclipsealloy",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "蚀空合金弓即是远程武器的顶点，能量储备充足，可供长时间使用。$(br2)此弓有 4 个$(l:item_potion_canister)药水罐$(/l)槽，发射出的箭矢因此可携带多种效果。"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_eclipsealloy_bow",
-                      "title":  "升级工作台配方",
-                      "text":  "在升级工作台中升级此物品。"
-                  }
-              ]
+  "name": "蚀空合金弓",
+  "sortnum": 25,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:bow_eclipsealloy",
+  "pages": [
+    {
+      "type": "text",
+      "text": "蚀空合金弓即是远程武器的顶点，能量储备充足，可供长时间使用。$(br2)此弓有 4 个$(l:item_potion_canister)药水罐$(/l)槽，发射出的箭矢因此可携带多种效果。"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_eclipsealloy_bow",
+      "title": "升级工作台配方",
+      "text": "在升级工作台中升级此物品。"
+    }
+  ]
 }

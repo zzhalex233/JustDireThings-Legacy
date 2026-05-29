@@ -1,18 +1,18 @@
 {
-    "name":  "蚀空合金锹",
-    "sortnum":  22,
-    "category":  "justdirethings:tools",
-    "icon":  "justdirethings:eclipsealloy_shovel",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "在搬运大量材料的作业效率上，蚀空合金锹凭借庞大的能量容量立于顶点，无工具能出其之右。$(br2)此锹足以胜任最艰苦的挖掘工作。"
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_eclipsealloy_shovel",
-                      "title":  "升级工作台配方",
-                      "text":  "在升级工作台中升级此物品。"
-                  }
-              ]
+  "name": "蚀空合金锹",
+  "sortnum": 22,
+  "category": "justdirethings:tools",
+  "icon": "justdirethings:eclipsealloy_shovel",
+  "pages": [
+    {
+      "type": "text",
+      "text": "在搬运大量材料的作业效率上，蚀空合金锹凭借庞大的能量容量立于顶点，无工具能出其之右。$(br2)此锹足以胜任最艰苦的挖掘工作。"
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_eclipsealloy_shovel",
+      "title": "升级工作台配方",
+      "text": "在升级工作台中升级此物品。"
+    }
+  ]
 }

@@ -1,16 +1,16 @@
-﻿{
-    "type":  "minecraft:crafting_shapeless",
-    "group":  "justdirethings",
-    "ingredients":  [
-                        {
-                            "item":  "justdirethings:blazegold_ingot"
-                        },
-                        {
-                            "item":  "minecraft:nether_wart"
-                        }
-                    ],
-    "result":  {
-                   "item":  "justdirethings:polymorphic_catalyst",
-                   "count":  4
-               }
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "justdirethings",
+  "ingredients": [
+    {
+      "item": "justdirethings:blazegold_ingot"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    }
+  ],
+  "result": {
+    "item": "justdirethings:polymorphic_catalyst",
+    "count": 4
+  }
 }

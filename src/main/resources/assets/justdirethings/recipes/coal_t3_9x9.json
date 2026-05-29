@@ -1,17 +1,17 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "###",
-                    "###",
-                    "###"
-                ],
-    "key":  {
-                "#":  {
-                          "item":  "justdirethings:coal_t3"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:coalblock_t3"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "justdirethings:coal_t3"
+    }
+  },
+  "result": {
+    "item": "justdirethings:coalblock_t3"
+  }
 }

@@ -1,25 +1,25 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "aea",
-                    "fbf",
-                    "aea"
-                ],
-    "key":  {
-                "a":  {
-                          "item":  "minecraft:ender_pearl"
-                      },
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:ender_chest"
-                      },
-                "f":  {
-                          "item":  "minecraft:quartz"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_dropteleport"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "aea",
+    "fbf",
+    "aea"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:ender_pearl"
+    },
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:ender_chest"
+    },
+    "f": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_dropteleport"
+  }
 }

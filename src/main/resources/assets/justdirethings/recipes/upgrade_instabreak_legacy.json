@@ -1,25 +1,25 @@
 {
-    "type":  "minecraft:crafting_shaped",
-    "pattern":  [
-                    "aea",
-                    "fbf",
-                    "aea"
-                ],
-    "key":  {
-                "a":  {
-                          "item":  "justdirethings:time_crystal"
-                      },
-                "b":  {
-                          "item":  "justdirethings:upgrade_blank"
-                      },
-                "e":  {
-                          "item":  "minecraft:nether_star"
-                      },
-                "f":  {
-                          "item":  "minecraft:diamond_pickaxe"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:upgrade_instabreak"
-               }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "aea",
+    "fbf",
+    "aea"
+  ],
+  "key": {
+    "a": {
+      "item": "justdirethings:time_crystal"
+    },
+    "b": {
+      "item": "justdirethings:upgrade_blank"
+    },
+    "e": {
+      "item": "minecraft:nether_star"
+    },
+    "f": {
+      "item": "minecraft:diamond_pickaxe"
+    }
+  },
+  "result": {
+    "item": "justdirethings:upgrade_instabreak"
+  }
 }

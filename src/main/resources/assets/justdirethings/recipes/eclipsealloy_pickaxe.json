@@ -1,20 +1,20 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "fff",
-                    " s ",
-                    " s "
-                ],
-    "key":  {
-                "f":  {
-                          "item":  "justdirethings:eclipsealloy_ingot"
-                      },
-                "s":  {
-                          "item":  "minecraft:stick"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:eclipsealloy_pickaxe"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "fff",
+    " s ",
+    " s "
+  ],
+  "key": {
+    "f": {
+      "item": "justdirethings:eclipsealloy_ingot"
+    },
+    "s": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "justdirethings:eclipsealloy_pickaxe"
+  }
 }

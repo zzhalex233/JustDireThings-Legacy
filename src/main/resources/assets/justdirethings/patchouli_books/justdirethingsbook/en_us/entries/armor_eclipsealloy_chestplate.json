@@ -1,18 +1,18 @@
 {
-    "name":  "Eclipse Alloy Chestplate",
-    "sortnum":  21,
-    "category":  "justdirethings:armor",
-    "icon":  "justdirethings:eclipsealloy_chestplate",
-    "pages":  [
-                  {
-                      "type":  "text",
-                      "text":  "This top-tier chestplate utilizes 500,000 FE of Forge Energy, offering unprecedented protection. Recharge it regularly with a $(l:item_pocket_generator)Pocket Generator$(/l) to ensure maximum efficiency."
-                  },
-                  {
-                      "type":  "justdirethings:upgrade_station_recipe",
-                      "recipe":  "justdirethings:tier_eclipsealloy_chestplate",
-                      "title":  "Upgrade Station Recipe",
-                      "text":  "Upgrade this item in the Upgrade Station."
-                  }
-              ]
+  "name": "Eclipse Alloy Chestplate",
+  "sortnum": 21,
+  "category": "justdirethings:armor",
+  "icon": "justdirethings:eclipsealloy_chestplate",
+  "pages": [
+    {
+      "type": "text",
+      "text": "This top-tier chestplate utilizes 500,000 FE of Forge Energy, offering unprecedented protection. Recharge it regularly with a $(l:item_pocket_generator)Pocket Generator$(/l) to ensure maximum efficiency."
+    },
+    {
+      "type": "justdirethings:upgrade_station_recipe",
+      "recipe": "justdirethings:tier_eclipsealloy_chestplate",
+      "title": "Upgrade Station Recipe",
+      "text": "Upgrade this item in the Upgrade Station."
+    }
+  ]
 }

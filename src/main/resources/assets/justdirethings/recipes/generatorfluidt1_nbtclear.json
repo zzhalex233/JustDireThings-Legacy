@@ -1,12 +1,12 @@
-﻿{
-    "type":  "minecraft:crafting_shapeless",
-    "group":  "justdirethings",
-    "ingredients":  [
-                        {
-                            "item":  "justdirethings:generatorfluidt1"
-                        }
-                    ],
-    "result":  {
-                   "item":  "justdirethings:generatorfluidt1"
-               }
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "justdirethings",
+  "ingredients": [
+    {
+      "item": "justdirethings:generatorfluidt1"
+    }
+  ],
+  "result": {
+    "item": "justdirethings:generatorfluidt1"
+  }
 }

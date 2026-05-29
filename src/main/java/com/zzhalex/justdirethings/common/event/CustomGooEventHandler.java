@@ -16,6 +16,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -81,7 +82,7 @@ public final class CustomGooEventHandler {
         if (!player.capabilities.isCreativeMode) {
             held.shrink(1);
         }
-        if (player instanceof EntityPlayerMP) {
+        if (player instanceof EntityPlayerMP && !(player instanceof FakePlayer)) {
             ((EntityPlayerMP) player).sendContainerToPlayer(player.inventoryContainer);
         }
         return true;

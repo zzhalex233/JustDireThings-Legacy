@@ -1,26 +1,26 @@
-﻿{
-    "type":  "minecraft:crafting_shaped",
-    "group":  "justdirethings",
-    "pattern":  [
-                    "brb",
-                    "wgw",
-                    "brb"
-                ],
-    "key":  {
-                "b":  {
-                          "item":  "minecraft:obsidian"
-                      },
-                "g":  {
-                          "item":  "justdirethings:gooblock_tier3"
-                      },
-                "r":  {
-                          "item":  "minecraft:dragon_breath"
-                      },
-                "w":  {
-                          "item":  "minecraft:chorus_fruit_popped"
-                      }
-            },
-    "result":  {
-                   "item":  "justdirethings:gooblock_tier4"
-               }
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "justdirethings",
+  "pattern": [
+    "brb",
+    "wgw",
+    "brb"
+  ],
+  "key": {
+    "b": {
+      "item": "minecraft:obsidian"
+    },
+    "g": {
+      "item": "justdirethings:gooblock_tier3"
+    },
+    "r": {
+      "item": "minecraft:dragon_breath"
+    },
+    "w": {
+      "item": "minecraft:chorus_fruit_popped"
+    }
+  },
+  "result": {
+    "item": "justdirethings:gooblock_tier4"
+  }
 }

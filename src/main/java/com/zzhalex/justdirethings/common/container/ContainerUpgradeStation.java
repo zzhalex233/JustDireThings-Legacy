@@ -80,6 +80,32 @@ public class ContainerUpgradeStation extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-        return ItemStack.EMPTY;
+        Slot slot = inventorySlots.get(index);
+        if (slot == null || !slot.getHasStack()) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack current = slot.getStack();
+        ItemStack original = current.copy();
+        if (index < SLOT_COUNT) {
+            if (!mergeItemStack(current, SLOT_COUNT, inventorySlots.size(), true)) {
+                return ItemStack.EMPTY;
+            }
+        } else if (!mergeItemStack(current, TileUpgradeStation.SLOT_TEMPLATE, TileUpgradeStation.SLOT_OUTPUT, false)) {
+            return ItemStack.EMPTY;
+        }
+
+        if (current.isEmpty()) {
+            slot.putStack(ItemStack.EMPTY);
+        } else {
+            slot.onSlotChanged();
+        }
+
+        if (current.getCount() == original.getCount()) {
+            return ItemStack.EMPTY;
+        }
+
+        slot.onTake(playerIn, current);
+        return original;
     }
 }
