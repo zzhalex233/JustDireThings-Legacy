@@ -2,7 +2,6 @@ package com.zzhalex.justdirethings;
 
 import com.zzhalex.justdirethings.config.JDTConfig;
 import com.zzhalex.justdirethings.network.JDTNetwork;
-import com.zzhalex.justdirethings.registry.ModFluids;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -13,10 +12,6 @@ import org.apache.logging.log4j.Logger;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION)
 public class JustDireThingsLegacy {
-
-    static {
-        ModFluids.bootstrap();
-    }
 
     public static final Logger LOGGER = LogManager.getLogger(Reference.MOD_NAME);
 
