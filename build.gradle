@@ -207,6 +207,7 @@ jar {
                 attribute_map['FMLCorePlugin'] = propertyString('coremod_plugin_class_name')
                 if (propertyBool('coremod_includes_mod')) {
                     attribute_map['FMLCorePluginContainsFMLMod'] = true
+                    attribute_map['ForceLoadAsMod'] = true
                 }
             }
             if (propertyBool('use_access_transformer')) {
