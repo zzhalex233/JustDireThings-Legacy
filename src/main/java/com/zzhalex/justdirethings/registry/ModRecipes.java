@@ -206,6 +206,9 @@ public final class ModRecipes {
     }
 
     private static void addTierRecipe(List<UpgradeStationRecipe> recipes, String id, String templateId, String baseId, String additionId, String resultId) {
+        if (!JDTConfig.enableTierUpgrade) {
+            return;
+        }
         Item templateItem = content(templateId);
         Item baseItem = equipment(baseId);
         Item additionItem = content(additionId);

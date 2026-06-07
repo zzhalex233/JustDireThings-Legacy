@@ -49,14 +49,14 @@ public final class ModContentBlocks {
     public static final Block GOO_SOIL_TIER4 = register(new BlockGooSoil("goosoil_tier4", 4));
     public static final Block ECLIPSE_GATE_BLOCK = register(new BlockEclipseGate());
 
-    public static final Block RAW_FERRICORE_ORE = registerRawOre("raw_ferricore_ore", Material.ROCK, SoundType.STONE, 3.0F, 5.0F, 1);
-    public static final Block RAW_BLAZEGOLD_ORE = registerRawOre("raw_blazegold_ore", Material.ROCK, SoundType.STONE, 3.5F, 5.0F, 2);
-    public static final Block RAW_CELESTIGEM_ORE = registerRawOre("raw_celestigem_ore", Material.ROCK, SoundType.STONE, 4.0F, 6.0F, 2);
-    public static final Block RAW_ECLIPSEALLOY_ORE = registerRawOre("raw_eclipsealloy_ore", Material.ROCK, SoundType.STONE, 5.0F, 6.0F, 3);
-    public static final Block RAW_COAL_T1_ORE = registerRawOre("raw_coal_t1_ore", Material.ROCK, SoundType.STONE, 3.0F, 5.0F, 1);
-    public static final Block RAW_COAL_T2_ORE = registerRawOre("raw_coal_t2_ore", Material.ROCK, SoundType.STONE, 3.5F, 5.0F, 2);
-    public static final Block RAW_COAL_T3_ORE = registerRawOre("raw_coal_t3_ore", Material.ROCK, SoundType.STONE, 4.0F, 6.0F, 2);
-    public static final Block RAW_COAL_T4_ORE = registerRawOre("raw_coal_t4_ore", Material.ROCK, SoundType.STONE, 5.0F, 6.0F, 3);
+    public static final Block RAW_FERRICORE_ORE = registerRawOre("raw_ferricore_ore", "raw_ferricore", Material.ROCK, SoundType.STONE, 3.0F, 5.0F, 1);
+    public static final Block RAW_BLAZEGOLD_ORE = registerRawOre("raw_blazegold_ore", "raw_blazegold", Material.ROCK, SoundType.STONE, 3.5F, 5.0F, 2);
+    public static final Block RAW_CELESTIGEM_ORE = registerRawOre("raw_celestigem_ore", "celestigem", Material.ROCK, SoundType.STONE, 4.0F, 6.0F, 2);
+    public static final Block RAW_ECLIPSEALLOY_ORE = registerRawOre("raw_eclipsealloy_ore", "raw_eclipsealloy", Material.ROCK, SoundType.STONE, 5.0F, 6.0F, 3);
+    public static final Block RAW_COAL_T1_ORE = registerRawOre("raw_coal_t1_ore", "coal_t1", Material.ROCK, SoundType.STONE, 3.0F, 5.0F, 1);
+    public static final Block RAW_COAL_T2_ORE = registerRawOre("raw_coal_t2_ore", "coal_t2", Material.ROCK, SoundType.STONE, 3.5F, 5.0F, 2);
+    public static final Block RAW_COAL_T3_ORE = registerRawOre("raw_coal_t3_ore", "coal_t3", Material.ROCK, SoundType.STONE, 4.0F, 6.0F, 2);
+    public static final Block RAW_COAL_T4_ORE = registerRawOre("raw_coal_t4_ore", "coal_t4", Material.ROCK, SoundType.STONE, 5.0F, 6.0F, 3);
 
     public static final Block TIME_CRYSTAL_BLOCK = register(new BlockTimeCrystalBlock());
     public static final Block TIME_CRYSTAL_BUDDING_BLOCK = register(new BlockTimeCrystalBudding());
@@ -91,8 +91,8 @@ public final class ModContentBlocks {
         return register(new BlockSimpleContent(id, material, soundType, hardness, resistance, harvestLevel));
     }
 
-    private static Block registerRawOre(String id, Material material, SoundType soundType, float hardness, float resistance, int harvestLevel) {
-        return register(new BlockRawOre(id, material, soundType, hardness, resistance, harvestLevel));
+    private static Block registerRawOre(String id, String dropItemId, Material material, SoundType soundType, float hardness, float resistance, int harvestLevel) {
+        return register(new BlockRawOre(id, dropItemId, material, soundType, hardness, resistance, harvestLevel));
     }
 
     private static Block register(Block block) {

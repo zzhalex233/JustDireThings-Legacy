@@ -1,5 +1,6 @@
 package com.zzhalex.justdirethings.common.block;
 
+import com.zzhalex.justdirethings.registry.ModContentItems;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -8,6 +9,9 @@ import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Mirror;
@@ -18,6 +22,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.Random;
 
 public class BlockRawOre extends BlockSimpleContent {
 
@@ -32,8 +38,11 @@ public class BlockRawOre extends BlockSimpleContent {
             box(2, 2, 2, 16, 14, 14)
     };
 
-    public BlockRawOre(String registryPath, Material material, SoundType soundType, float hardness, float resistance, int harvestLevel) {
+    private final String dropItemId;
+
+    public BlockRawOre(String registryPath, String dropItemId, Material material, SoundType soundType, float hardness, float resistance, int harvestLevel) {
         super(registryPath, material, soundType, hardness, resistance, harvestLevel);
+        this.dropItemId = dropItemId;
         setDefaultState(blockState.getBaseState().withProperty(FACING, EnumFacing.UP));
     }
 
@@ -104,6 +113,36 @@ public class BlockRawOre extends BlockSimpleContent {
     @Override
     public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
         return BlockFaceShape.UNDEFINED;
+    }
+
+    @Override
+    public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+        return true;
+    }
+
+    @Override
+    protected boolean canSilkHarvest() {
+        return true;
+    }
+
+    @Override
+    protected ItemStack getSilkTouchDrop(IBlockState state) {
+        return new ItemStack(this);
+    }
+
+    @Override
+    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+        return ModContentItems.getItem(dropItemId);
+    }
+
+    @Override
+    public int quantityDropped(Random random) {
+        return 3 + random.nextInt(2);
+    }
+
+    @Override
+    public int quantityDroppedWithBonus(int fortune, Random random) {
+        return quantityDropped(random);
     }
 
     @SideOnly(Side.CLIENT)

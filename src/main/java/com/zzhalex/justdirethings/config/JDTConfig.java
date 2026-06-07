@@ -84,8 +84,13 @@ public final class JDTConfig {
 
     @Config.RequiresMcRestart
     @Config.Name("enableSmithingTemplates")
-    @Config.Comment("Enable the four Just Dire Things smithing template items and require them for tier upgrades in the Upgrade Station.")
+    @Config.Comment("Enable the four Just Dire Things smithing template items. When tier upgrades are enabled, require them in the Upgrade Station.")
     public static boolean enableSmithingTemplates = true;
+
+    @Config.RequiresMcRestart
+    @Config.Name("enableTierUpgrade")
+    @Config.Comment("Enable Upgrade Station recipes that upgrade equipment from one tier to the next.")
+    public static boolean enableTierUpgrade = true;
 
     @Config.Name("gooCanDie")
     @Config.Comment("Allow goo blocks to return to their dead state after completing a goo spread recipe.")
