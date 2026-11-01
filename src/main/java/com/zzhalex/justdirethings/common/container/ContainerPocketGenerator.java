@@ -85,6 +85,21 @@ public class ContainerPocketGenerator extends Container {
     }
 
     @Override
+    public void addListener(IContainerListener listener) {
+        super.addListener(listener);
+        sendIntProperty(listener, FIELD_ENERGY, pocketGeneratorItem.getStoredEnergy(boundStack));
+        sendIntProperty(listener, FIELD_COUNTER, pocketGeneratorItem.getCounter(boundStack));
+        sendIntProperty(listener, FIELD_MAX_BURN, pocketGeneratorItem.getMaxBurn(boundStack));
+        sendIntProperty(listener, FIELD_FUEL_MULTIPLIER, pocketGeneratorItem.getFuelMultiplier(boundStack));
+    }
+
+    private void sendIntProperty(IContainerListener listener, int field, int value) {
+        // Window properties carry signed shorts, so each int needs two properties.
+        listener.sendWindowProperty(this, field * 2, value & 0xFFFF);
+        listener.sendWindowProperty(this, field * 2 + 1, value >>> 16);
+    }
+
+    @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
@@ -95,16 +110,16 @@ public class ContainerPocketGenerator extends Container {
 
         for (IContainerListener listener : listeners) {
             if (energy != syncedEnergy) {
-                listener.sendWindowProperty(this, FIELD_ENERGY, energy);
+                sendIntProperty(listener, FIELD_ENERGY, energy);
             }
             if (counter != syncedCounter) {
-                listener.sendWindowProperty(this, FIELD_COUNTER, counter);
+                sendIntProperty(listener, FIELD_COUNTER, counter);
             }
             if (maxBurn != syncedMaxBurn) {
-                listener.sendWindowProperty(this, FIELD_MAX_BURN, maxBurn);
+                sendIntProperty(listener, FIELD_MAX_BURN, maxBurn);
             }
             if (fuelMultiplier != syncedFuelMultiplier) {
-                listener.sendWindowProperty(this, FIELD_FUEL_MULTIPLIER, fuelMultiplier);
+                sendIntProperty(listener, FIELD_FUEL_MULTIPLIER, fuelMultiplier);
             }
         }
 
@@ -116,22 +131,31 @@ public class ContainerPocketGenerator extends Container {
 
     @Override
     public void updateProgressBar(int id, int data) {
-        switch (id) {
+        if (id < 0 || id > FIELD_FUEL_MULTIPLIER * 2 + 1) {
+            super.updateProgressBar(id, data);
+            return;
+        }
+        switch (id / 2) {
             case FIELD_ENERGY:
-                syncedEnergy = data;
+                syncedEnergy = mergeProperty(syncedEnergy, id, data);
                 break;
             case FIELD_COUNTER:
-                syncedCounter = data;
+                syncedCounter = mergeProperty(syncedCounter, id, data);
                 break;
             case FIELD_MAX_BURN:
-                syncedMaxBurn = data;
+                syncedMaxBurn = mergeProperty(syncedMaxBurn, id, data);
                 break;
             case FIELD_FUEL_MULTIPLIER:
-                syncedFuelMultiplier = Math.max(1, data);
+                syncedFuelMultiplier = mergeProperty(syncedFuelMultiplier, id, data);
                 break;
             default:
                 super.updateProgressBar(id, data);
         }
+    }
+
+    private static int mergeProperty(int current, int id, int data) {
+        return (id & 1) == 0 ? (current & 0xFFFF0000) | (data & 0xFFFF)
+                : (current & 0xFFFF) | ((data & 0xFFFF) << 16);
     }
 
     public int getStoredEnergy() {

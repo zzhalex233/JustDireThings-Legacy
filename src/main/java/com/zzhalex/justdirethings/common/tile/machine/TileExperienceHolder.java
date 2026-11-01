@@ -140,55 +140,31 @@ public class TileExperienceHolder extends TileMachineBase implements ITickable {
         if (!canInteract(player)) {
             return;
         }
-        if (levels == -1) {
-            int totalExperience = ExperienceUtils.getPlayerTotalExperience(player);
-            int remaining = addExperience(totalExperience);
-            player.addExperience(-totalExperience);
-            player.addExperienceLevel(-1);
-            if (remaining > 0) {
-                player.addExperience(remaining);
-            }
-        } else if (levels > 0) {
-            int expInCurrentLevel = (int) (player.experience * player.xpBarCap());
-            if (player.experience > 0.0F) {
-                int removed = ExperienceUtils.removePoints(player, expInCurrentLevel);
-                int remaining = addExperience(removed);
-                levels--;
-                player.experience = 0.0F;
-                if (remaining > 0) {
-                    player.addExperience(remaining);
-                }
-            }
-            if (levels > 0) {
-                int removed = ExperienceUtils.removeLevels(player, levels);
-                int remaining = addExperience(removed);
-                if (remaining > 0) {
-                    player.addExperience(remaining);
-                }
-            }
+        if (levels != -1 && levels <= 0) {
+            return;
         }
+        int total = ExperienceUtils.getPlayerTotalExperience(player);
+        int level = ExperienceUtils.getLevelFromTotalExperience(total);
+        boolean hasProgress = total > ExperienceUtils.getTotalExperienceForLevel(level);
+        int targetLevel = levels == -1 ? 0 : Math.max(0, level - levels + (hasProgress ? 1 : 0));
+        int amount = total - ExperienceUtils.getTotalExperienceForLevel(targetLevel);
+        int accepted = amount - addExperience(amount);
+        ExperienceUtils.removePoints(player, accepted);
     }
 
     public void extractExperience(EntityPlayer player, int levels) {
         if (!canInteract(player) || storedExperience <= 0) {
             return;
         }
-        if (levels == -1) {
-            int expToGive = storedExperience;
-            player.addExperience(expToGive);
-            storedExperience = 0;
-        } else if (levels > 0) {
-            if (roundUpToNextLevel(player)) {
-                levels--;
-            }
-            if (levels > 0 && storedExperience > 0) {
-                int expForNextLevels = ExperienceUtils.getTotalExperienceForLevel(player.experienceLevel + levels) - ExperienceUtils.getPlayerTotalExperience(player);
-                int expToGive = Math.min(storedExperience, expForNextLevels);
-                player.addExperience(expToGive);
-                storedExperience -= expToGive;
-                roundUpToNextLevel(player);
-            }
+        if (levels != -1 && levels <= 0) {
+            return;
         }
+        int total = ExperienceUtils.getPlayerTotalExperience(player);
+        int level = ExperienceUtils.getLevelFromTotalExperience(total);
+        int targetLevel = (int) Math.min(Integer.MAX_VALUE, (long) level + Math.max(0, levels));
+        int amount = levels == -1 ? storedExperience : Math.min(storedExperience,
+                ExperienceUtils.getTotalExperienceForLevel(targetLevel) - total);
+        storedExperience -= ExperienceUtils.addPoints(player, amount);
     }
 
     private boolean collectExperienceOrbs() {
@@ -196,9 +172,16 @@ public class TileExperienceHolder extends TileMachineBase implements ITickable {
         List<EntityXPOrb> orbs = world.getEntitiesWithinAABB(EntityXPOrb.class, area);
         boolean changed = false;
         for (EntityXPOrb orb : orbs) {
-            addExperience(orb.xpValue);
+            int remaining = addExperience(orb.xpValue);
+            if (remaining == orb.xpValue) {
+                continue;
+            }
             doParticles(new Vec3d(orb.posX, orb.posY, orb.posZ), true);
-            orb.setDead();
+            if (remaining == 0) {
+                orb.setDead();
+            } else {
+                orb.xpValue = remaining;
+            }
             changed = true;
         }
         return changed;
@@ -293,11 +276,11 @@ public class TileExperienceHolder extends TileMachineBase implements ITickable {
         if (storedExperience <= 0) {
             return false;
         }
-        int expInCurrentLevel = (int) (player.experience * player.xpBarCap());
+        int total = ExperienceUtils.getPlayerTotalExperience(player);
+        int expInCurrentLevel = total - ExperienceUtils.getTotalExperienceForLevel(ExperienceUtils.getLevelFromTotalExperience(total));
         if (expInCurrentLevel > 0) {
             int expToGive = Math.min(storedExperience, ExperienceUtils.getExpNeededForNextLevel(player));
-            player.addExperience(expToGive);
-            storedExperience -= expToGive;
+            storedExperience -= ExperienceUtils.addPoints(player, expToGive);
             return true;
         }
         return false;
@@ -312,7 +295,8 @@ public class TileExperienceHolder extends TileMachineBase implements ITickable {
                 || storedExperience != 0
                 || targetExperience != 0
                 || collectExperience
-                || ownerOnly;
+                || ownerOnly
+                || !showParticles;
     }
 
     public NBTTagCompound writePortableData(NBTTagCompound compound) {
@@ -375,6 +359,8 @@ public class TileExperienceHolder extends TileMachineBase implements ITickable {
         if (compound.hasKey("showParticles")) {
             showParticles = compound.getBoolean("showParticles");
         }
+        storedExperience = Math.max(0, storedExperience);
+        targetExperience = Math.max(0, targetExperience);
     }
 
     private boolean hasNonDefaultMachineSettings() {

@@ -33,6 +33,9 @@ public class ContainerFuelCanister extends Container {
     @Override
     public void onContainerClosed(EntityPlayer playerIn) {
         super.onContainerClosed(playerIn);
+        if (playerIn.world.isRemote) {
+            return;
+        }
 
         ItemStack input = handler.getStackInSlot(SLOT_INPUT);
         if (input.isEmpty()) {
@@ -40,8 +43,11 @@ public class ContainerFuelCanister extends Container {
         }
 
         handler.setStackInSlot(SLOT_INPUT, ItemStack.EMPTY);
-        if (!input.isEmpty()) {
+        if (playerIn.isEntityAlive()) {
             playerIn.addItemStackToInventory(input);
+        }
+        if (!input.isEmpty()) {
+            playerIn.dropItem(input, false);
         }
     }
 

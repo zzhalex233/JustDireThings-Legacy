@@ -8,7 +8,6 @@ import com.zzhalex.justdirethings.common.item.base.LeftClickableTool;
 import com.zzhalex.justdirethings.common.item.base.AbilityExecutionHelper;
 import com.zzhalex.justdirethings.common.item.base.ToggleableTool;
 import com.zzhalex.justdirethings.common.item.material.JDTToolTier;
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
@@ -39,17 +38,30 @@ import java.util.Set;
 public class ItemJDTPaxel extends ItemTool implements ToggleableTool, LeftClickableTool {
 
     private static final ImmutableSet<Material> AXE_LIKE_MATERIALS = ImmutableSet.of(Material.WOOD, Material.PLANTS, Material.VINE);
+    private static final ImmutableSet<Material> PICKAXE_LIKE_MATERIALS = ImmutableSet.of(Material.ROCK, Material.IRON, Material.ANVIL);
+    private static final ImmutableSet<Material> SHOVEL_LIKE_MATERIALS = ImmutableSet.of(Material.GROUND, Material.GRASS, Material.SAND, Material.CLAY, Material.SNOW, Material.CRAFTED_SNOW);
+    private static final ImmutableSet<String> TOOL_CLASSES = ImmutableSet.of("pickaxe", "axe", "shovel");
     private final JDTToolTier tier;
 
     public ItemJDTPaxel(String id, JDTToolTier tier, float attackDamage, float attackSpeed) {
         super(attackDamage, attackSpeed, tier.asVanillaMaterial(), ImmutableSet.of());
         this.tier = tier;
+        for (String toolClass : TOOL_CLASSES) {
+            setHarvestLevel(toolClass, tier.asVanillaMaterial().getHarvestLevel());
+        }
         EquipmentItemSupport.configure(this, id);
     }
 
     @Override
     public boolean canHarvestBlock(IBlockState state) {
-        return isSupportedHarvestTool(state) || AXE_LIKE_MATERIALS.contains(state.getMaterial());
+        String harvestTool = state.getBlock().getHarvestTool(state);
+        if (harvestTool != null) {
+            return TOOL_CLASSES.contains(harvestTool)
+                    && tier.asVanillaMaterial().getHarvestLevel() >= state.getBlock().getHarvestLevel(state);
+        }
+        Material material = state.getMaterial();
+        return PICKAXE_LIKE_MATERIALS.contains(material) || AXE_LIKE_MATERIALS.contains(material)
+                || SHOVEL_LIKE_MATERIALS.contains(material);
     }
 
     @Override
@@ -147,12 +159,6 @@ public class ItemJDTPaxel extends ItemTool implements ToggleableTool, LeftClicka
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         EquipmentItemSupport.appendEquipmentTooltip(this, stack, tooltip);
-    }
-
-    private boolean isSupportedHarvestTool(IBlockState state) {
-        Block block = state.getBlock();
-        String harvestTool = block.getHarvestTool(state);
-        return "pickaxe".equals(harvestTool) || "axe".equals(harvestTool) || "shovel".equals(harvestTool);
     }
 
     private EnumActionResult tryUseAsAxeOrShovel(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing) {

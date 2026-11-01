@@ -211,7 +211,7 @@ public class TileInventoryHolder extends TileInventoryMachineBase {
     }
 
     public boolean hasPortableData() {
-        if (compareNbt || filtersOnly || automatedFiltersOnly || compareCounts || automatedCompareCounts || renderedSlot != 27) {
+        if (compareNbt || filtersOnly || automatedFiltersOnly || compareCounts || automatedCompareCounts || renderedSlot != 27 || !renderPlayer) {
             return true;
         }
         for (int i = 0; i < filterHandler.getSlots(); i++) {

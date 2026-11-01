@@ -67,7 +67,7 @@ public class GuiPocketGenerator extends GuiTooltipContainer {
             return;
         }
 
-        int remaining = Math.max(0, Math.min(13, (container.getRemainingBurnTicks() * 13) / maxBurn));
+        int remaining = (int) Math.max(0, Math.min(13, (container.getRemainingBurnTicks() * 13L) / maxBurn));
         if (remaining > 0) {
             drawTexturedModalRect(left + 80, top + 17 + 13 - remaining, 176, 13 - remaining, 14, remaining + 1);
         }
@@ -79,7 +79,7 @@ public class GuiPocketGenerator extends GuiTooltipContainer {
             return;
         }
 
-        int remaining = Math.max(0, Math.min(70, (container.getStoredEnergy() * 70) / maxEnergy));
+        int remaining = (int) Math.max(0, Math.min(70, (container.getStoredEnergy() * 70L) / maxEnergy));
         if (remaining > 0) {
             drawTexturedModalRect(left + 8, top + 78 - remaining, 176, 84 - remaining, 16, remaining + 1);
         }

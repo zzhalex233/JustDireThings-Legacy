@@ -41,4 +41,5 @@ dependencies {
     modCompileOnly "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.19.548"
     modRuntimeOnly "CraftTweaker2:CraftTweaker2-API:4.1.19.548"
     modRuntimeOnly "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.19.548"
+    modImplementation "curse.maven:mekanism-ce-unofficial-840735:9339590"
 }

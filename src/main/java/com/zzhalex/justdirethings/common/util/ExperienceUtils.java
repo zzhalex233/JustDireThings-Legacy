@@ -8,6 +8,9 @@ public final class ExperienceUtils {
     }
 
     public static int getTotalExperienceForLevel(int level) {
+        if (level <= 0) {
+            return 0;
+        }
         if (level <= 16) {
             return level * level + 6 * level;
         }
@@ -19,6 +22,7 @@ public final class ExperienceUtils {
     }
 
     public static int getLevelFromTotalExperience(int totalExperience) {
+        totalExperience = Math.max(0, totalExperience);
         if (totalExperience < getTotalExperienceForLevel(16)) {
             return (int) Math.floor((-6.0D + Math.sqrt(36.0D + 4.0D * totalExperience)) / 2.0D);
         }
@@ -29,30 +33,50 @@ public final class ExperienceUtils {
     }
 
     public static int getExperienceForNextLevel(int level) {
+        level = Math.max(0, level);
         if (level >= 30) {
-            return 112 + (level - 30) * 9;
+            return (int) Math.min(Integer.MAX_VALUE, 112L + (level - 30L) * 9L);
         }
         return level >= 15 ? 37 + (level - 15) * 5 : 7 + level * 2;
     }
 
     public static int getExpNeededForNextLevel(EntityPlayer player) {
-        return player.xpBarCap() - (int) (player.experience * player.xpBarCap());
+        int total = getPlayerTotalExperience(player);
+        int level = getLevelFromTotalExperience(total);
+        return getTotalExperienceForLevel(level + 1) - total;
     }
 
     public static int getPlayerTotalExperience(EntityPlayer player) {
         int base = getTotalExperienceForLevel(player.experienceLevel);
-        int partial = Math.round(player.experience * player.xpBarCap());
-        return Math.max(0, base + partial);
+        float progress = Float.isFinite(player.experience) ? Math.max(0.0F, Math.min(1.0F, player.experience)) : 0.0F;
+        int partial = Math.round(progress * getExperienceForNextLevel(player.experienceLevel));
+        return (int) Math.min(Integer.MAX_VALUE, (long) base + partial);
+    }
+
+    public static void setPlayerTotalExperience(EntityPlayer player, int totalExperience) {
+        int total = Math.max(0, totalExperience);
+        int level = getLevelFromTotalExperience(total);
+        player.experienceLevel = level;
+        player.experience = getProgressToNextLevel(total);
+        player.experienceTotal = total;
+    }
+
+    public static int addPoints(EntityPlayer player, int pointsToAdd) {
+        int current = getPlayerTotalExperience(player);
+        int added = Math.min(Integer.MAX_VALUE - current, Math.max(0, pointsToAdd));
+        setPlayerTotalExperience(player, current + added);
+        return added;
     }
 
     public static int removeLevels(EntityPlayer player, int levelsToRemove) {
+        if (levelsToRemove <= 0) {
+            return 0;
+        }
         int currentTotalExp = getPlayerTotalExperience(player);
         int targetLevel = Math.max(0, player.experienceLevel - Math.max(0, levelsToRemove));
         int targetTotalExp = getTotalExperienceForLevel(targetLevel);
         int expToRemove = Math.max(0, currentTotalExp - targetTotalExp);
-        if (levelsToRemove > 0) {
-            player.addExperienceLevel(-levelsToRemove);
-        }
+        setPlayerTotalExperience(player, currentTotalExp - expToRemove);
         return expToRemove;
     }
 
@@ -66,9 +90,7 @@ public final class ExperienceUtils {
     public static int removePoints(EntityPlayer player, int pointsToRemove) {
         int current = getPlayerTotalExperience(player);
         int removed = Math.min(current, Math.max(0, pointsToRemove));
-        if (removed > 0) {
-            player.addExperience(-removed);
-        }
+        setPlayerTotalExperience(player, current - removed);
         return removed;
     }
 
